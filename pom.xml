@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.sysunite.coinsweb</groupId>
+  <artifactId>coins-2-validator</artifactId>
+  <version>${validator.version}</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>coins-validator</module>
+    <module>coins-plugin-test</module>
+    <module>coins-plugin-test2</module>
+  </modules>
+
+
+
+  <dependencies>   
+
+<!--junit-4.5.jar-->
+<!--commons-lang3-3.3.2.jar-->
+<!--jena-arq-3.0.0.jar-->
+<!--jena-iri-3.0.0.jar-->
+<!--jena-base-3.0.0.jar-->
+<!--jena-core-3.0.0.jar-->
+<!--jena-core-3.0.0-tests.jar-->
+<!--jcl-over-slf4j-1.7.12.jar-->
+<!--log4j-1.2.17.jar-->
+<!--slf4j-api-1.7.12.jar-->
+<!--slf4j-log4j12-1.7.12.jar-->
+<!--xercesImpl-2.11.0.jar-->
+<!--xml-apis-1.4.01.jar-->
+<!--jena-shaded-guava-3.0.0.jar-->
+
+    <!--<dependency>-->
+      <!--<groupId>org.apache.jena</groupId>-->
+      <!--<artifactId>apache-jena-libs</artifactId>-->
+      <!--<version>3.0.0</version>-->
+    <!--</dependency>-->
+
+    <!--<dependency>-->
+      <!--<groupId>com.complexible.stardog.jena</groupId>-->
+      <!--<artifactId>stardog-jena</artifactId>-->
+      <!--<version>4.2.3</version>-->
+      <!--<type>pom</type>-->
+    <!--</dependency>-->
+
+    <!--<dependency>-->
+      <!--<groupId>org.codehaus.plexus</groupId>-->
+      <!--<artifactId>plexus-utils</artifactId>-->
+      <!--<version>1.1</version>-->
+    <!--</dependency>-->
+
+
+  </dependencies>
+
+  <properties>
+    <validator.version>1.0.0-SNAPSHOT</validator.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <build>
+    <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.5.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+          <debug>false</debug>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+
+    <repositories>
+    <repository>
+      <id>stardog-public</id>
+      <url>http://maven.stardog.com</url>
+    </repository>
+  </repositories>
+
+</project>

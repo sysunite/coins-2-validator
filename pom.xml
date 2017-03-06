@@ -6,58 +6,40 @@
 
   <groupId>com.sysunite.coinsweb</groupId>
   <artifactId>coins-2-validator</artifactId>
-  <version>${validator.version}</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-
-  <modules>
-    <module>coins-validator</module>
-    <module>coins-plugin-test</module>
-    <module>coins-plugin-test2</module>
-  </modules>
-
 
 
   <dependencies>   
 
-<!--junit-4.5.jar-->
-<!--commons-lang3-3.3.2.jar-->
-<!--jena-arq-3.0.0.jar-->
-<!--jena-iri-3.0.0.jar-->
-<!--jena-base-3.0.0.jar-->
-<!--jena-core-3.0.0.jar-->
-<!--jena-core-3.0.0-tests.jar-->
-<!--jcl-over-slf4j-1.7.12.jar-->
-<!--log4j-1.2.17.jar-->
-<!--slf4j-api-1.7.12.jar-->
-<!--slf4j-log4j12-1.7.12.jar-->
-<!--xercesImpl-2.11.0.jar-->
-<!--xml-apis-1.4.01.jar-->
-<!--jena-shaded-guava-3.0.0.jar-->
 
-    <!--<dependency>-->
-      <!--<groupId>org.apache.jena</groupId>-->
-      <!--<artifactId>apache-jena-libs</artifactId>-->
-      <!--<version>3.0.0</version>-->
-    <!--</dependency>-->
 
-    <!--<dependency>-->
-      <!--<groupId>com.complexible.stardog.jena</groupId>-->
-      <!--<artifactId>stardog-jena</artifactId>-->
-      <!--<version>4.2.3</version>-->
-      <!--<type>pom</type>-->
-    <!--</dependency>-->
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>apache-jena-libs</artifactId>
+      <version>3.0.0</version>
+    </dependency>
 
-    <!--<dependency>-->
-      <!--<groupId>org.codehaus.plexus</groupId>-->
-      <!--<artifactId>plexus-utils</artifactId>-->
-      <!--<version>1.1</version>-->
-    <!--</dependency>-->
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-yaml</artifactId>
+      <version>2.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.2.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.4</version>
+    </dependency>
 
 
   </dependencies>
 
   <properties>
-    <validator.version>1.0.0-SNAPSHOT</validator.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -77,12 +59,5 @@
 
     </plugins>
   </build>
-
-    <repositories>
-    <repository>
-      <id>stardog-public</id>
-      <url>http://maven.stardog.com</url>
-    </repository>
-  </repositories>
 
 </project>

@@ -1,0 +1,13 @@
+version: '2'
+
+services:
+
+  virtuoso:
+    image: tenforce/virtuoso:1.1.0-virtuoso7.2.4
+    ports:
+     - "1111:1111"
+     - "8890:8890"
+    environment:
+     - DBA_PASSWORD=3h34ln3
+     - SPARQL_UPDATE=true
+     - DEFAULT_GRAPH=http://virt-docker/default

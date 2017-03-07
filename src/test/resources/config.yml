@@ -1,0 +1,82 @@
+#
+# coins-validator configuration
+#
+# for a full reference of this configuration go to:
+# http://coinsweb.nl/validator/conf.html
+#
+# tips:
+# - to test a config.yml file run:
+#   coins-validator validate -n -c config.yml
+# - to list the available graphs from a container run:
+#   coins-validator describe container.ccr
+# - to list the available validationsteps run:
+#   coins-validator info
+
+environment:
+  models:
+
+    - graphname: http://www.coinsweb.nl/cbim-2.0.rdf#
+      content: instances
+      type: online
+      uri: http://www.coinsweb.nl/cbim-2.0.rdf
+
+    - graphname: http://default#
+      content: library
+      type: container
+
+    - graphname: http://libraries/1#
+      content: library
+      type: file
+      path: ./se.ttl
+
+    - graphname: http://libraries/2#
+      content: library
+      type: endpoint
+      endpoint:
+        uri: http://127.0.0.1:8890/sparql-graph-crud #-auth
+#        user: dba
+#        password: 3h34ln3
+
+    - graphname: http://libraries/3#
+      content: library
+      type: endpoint
+
+  store:
+    type: endpoint
+    endpoint:
+      uri: http://127.0.0.1:8890/sparql-graph-crud
+#      user: admin
+#      password: pw123
+
+
+
+run:
+  containers:
+    - type: file
+      path: /tmp/container.ccr
+    - type: online
+      uri: http://www.google.com
+
+  steps:
+
+    - type: FileSystemValidation
+
+    - type: ProfileValidation
+      profile:
+        type: online
+        uri: http://www.coinsweb.nl/coins2/profiles/COINSLite-0.9.6.profile
+      maxResults: 50
+
+  reports:
+
+    - type: xml
+      path: ./report.xml
+#      template:
+#        type: file
+#        path: ./template.xml
+
+    - type: html
+      path: ./report.html
+#      template:
+#        type: file
+#        path: ./template.xml

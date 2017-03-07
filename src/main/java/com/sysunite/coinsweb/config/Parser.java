@@ -23,11 +23,29 @@ public class Parser {
     }
   }
 
+  public static void isNotEmpty(Object[] array) {
+
+    RuntimeException error = new RuntimeException("The array is empty but should contain at least one element");
+
+    if(array.length < 1) {
+      throw error;
+    }
+  }
+
   public static void isNotNull(Object object) {
 
     RuntimeException error = new RuntimeException("The object should not be null");
 
     if(object == null) {
+      throw error;
+    }
+  }
+
+  public static void isNull(Object object) {
+
+    RuntimeException error = new RuntimeException("The object should not be set");
+
+    if(object != null) {
       throw error;
     }
   }
@@ -42,6 +60,24 @@ public class Parser {
 
     File file = new File(value);
     if(!file.exists() || !file.isFile()) {
+      throw error;
+    }
+  }
+
+  public static void canCreateFile(String value) {
+
+    RuntimeException error = new RuntimeException("The value " + value + " can not be interpreted as a output file");
+
+    if(value == null || value.isEmpty()) {
+      throw error;
+    }
+
+    File file = new File(value);
+    try {
+      if (!(file.getParentFile().exists() || file.getParentFile().mkdirs()) || !(file.createNewFile() || file.canWrite())) {
+        throw error;
+      }
+    } catch(IOException e) {
       throw error;
     }
   }

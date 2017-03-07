@@ -1,13 +1,18 @@
 package com.sysunite.coinsweb.config;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
+import org.apache.log4j.Logger;
 
 import static com.sysunite.coinsweb.config.Parser.*;
 
 /**
  * @author bastbijl, Sysunite 2017
  */
+@JsonDeserialize(converter=ModelSanitizer.class)
 public class Model {
+
+  private static Logger log = Logger.getLogger(Model.class);
 
   private String graphname;
   private String content;
@@ -20,13 +25,24 @@ public class Model {
   public String getGraphname() {
     return graphname;
   }
+  public String getContent() {
+    return content;
+  }
+  public String getType() {
+    return type;
+  }
+  public String getUri() {
+    return uri;
+  }
+  public String getPath() {
+    return path;
+  }
+  public Endpoint getEndpoint() {
+    return endpoint;
+  }
 
   public void setGraphname(String graphname) {
     this.graphname = graphname;
-  }
-
-  public String getContent() {
-    return content;
   }
 
   public void setContent(String content) {
@@ -34,33 +50,17 @@ public class Model {
     this.content = content;
   }
 
-  public String getType() {
-    return type;
-  }
-
   public void setType(String type) {
     validate(type, "file", "online", "container", "endpoint");
     this.type = type;
-  }
-
-  public String getUri() {
-    return uri;
   }
 
   public void setUri(String uri) {
     this.uri = uri;
   }
 
-  public String getPath() {
-    return path;
-  }
-
   public void setPath(String path) {
     this.path = path;
-  }
-
-  public Endpoint getEndpoint() {
-    return endpoint;
   }
 
   public void setEndpoint(Endpoint endpoint) {
@@ -70,8 +70,16 @@ public class Model {
 
 
 class ModelSanitizer extends StdConverter<Model, Model> {
+
+  private static Logger log = Logger.getLogger(ModelSanitizer.class);
+
   @Override
   public Model convert(Model obj) {
+
+    isNotNull(obj.getGraphname());
+    isNotNull(obj.getContent());
+    isNotNull(obj.getType());
+
     if(obj.getType().equals("file")) {
       isFile(obj.getPath());
     }
@@ -79,7 +87,7 @@ class ModelSanitizer extends StdConverter<Model, Model> {
       isResolvable(obj.getUri());
     }
     if(obj.getType().equals("container")) {
-      isFile(obj.getPath());
+      // a container should be referenced in the run section
     }
     if(obj.getType().equals("endpoint")) {
       isNotNull(obj.getEndpoint());

@@ -2,6 +2,7 @@ package com.sysunite.coinsweb.config;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
+import org.apache.log4j.Logger;
 
 import static com.sysunite.coinsweb.config.Parser.isFile;
 import static com.sysunite.coinsweb.config.Parser.isResolvable;
@@ -12,6 +13,9 @@ import static com.sysunite.coinsweb.config.Parser.validate;
  */
 @JsonDeserialize(converter=LocatorSanitizer.class)
 public class Locator {
+
+  private static Logger log = Logger.getLogger(Locator.class);
+
   private String type;
   private String path;
   private String uri;
@@ -19,22 +23,20 @@ public class Locator {
   public String getType() {
     return type;
   }
+  public String getPath() {
+    return path;
+  }
+  public String getUri() {
+    return uri;
+  }
 
   public void setType(String type) {
     validate(type, "file", "online");
     this.type = type;
   }
 
-  public String getPath() {
-    return path;
-  }
-
   public void setPath(String path) {
     this.path = path;
-  }
-
-  public String getUri() {
-    return uri;
   }
 
   public void setUri(String uri) {
@@ -44,6 +46,9 @@ public class Locator {
 
 
 class LocatorSanitizer extends StdConverter<Locator, Locator> {
+
+  private static Logger log = Logger.getLogger(LocatorSanitizer.class);
+
   @Override
   public Locator convert(Locator obj) {
     if(obj.getType().equals("file")) {

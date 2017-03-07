@@ -27,26 +27,33 @@ environment:
     - graphname: http://libraries/1#
       content: library
       type: file
-      path: ./se.ttl
+      path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/main/resources/test.ttl
 
-    - graphname: http://libraries/2#
-      content: library
-      type: endpoint
-      endpoint:
-        uri: http://127.0.0.1:8890/sparql-graph-crud #-auth
-#        user: dba
-#        password: 3h34ln3
+#    - graphname: http://libraries/2#
+#      content: library
+#      type: endpoint
+#      endpoint:
+#        adapter: virtuoso
+#        uri: http://127.0.0.1:8890/sparql-graph-crud #-auth
+##        user: dba
+##        password: 3h34ln3
 
     - graphname: http://libraries/3#
       content: library
       type: endpoint
+      endpoint:
+        adapter: fuseki
+        uri: http://127.0.0.1:3030/ds/data
+  ##      user: admin
+  ##      password: pw123
 
   store:
     type: endpoint
     endpoint:
-      uri: http://127.0.0.1:8890/sparql-graph-crud
-#      user: admin
-#      password: pw123
+      adapter: fuseki
+      uri: http://127.0.0.1:3030/ds/data
+##      user: admin
+##      password: pw123
 
 
 
@@ -70,13 +77,13 @@ run:
   reports:
 
     - type: xml
-      path: ./report.xml
-#      template:
-#        type: file
-#        path: ./template.xml
+      path: /tmp/report.xml
 
     - type: html
-      path: ./report.html
-#      template:
-#        type: file
-#        path: ./template.xml
+      path: /tmp/report.html
+
+    - type: custom
+      path: /tmp/log.txt
+      template:
+        type: file
+        path: /tmp/log.ftl

@@ -1,0 +1,20 @@
+version: '2'
+services:
+  graphdb:
+    image: "sysunite/graphdb-8.1.0"
+    ports:
+    - "7200:7200"
+    volumes:
+    - ./data:/opt/graphdb-free-8.1.0/data
+    # environment:
+    # - GDB_JAVA_OPTS=d      #- Sets additional Java options (-D or -X)
+    # - GDB_MIN_MEM=d        #- Sets the Java minimum heap size (-Xms option).
+    # - GDB_MAX_MEM=d        #- Sets the Java maximum heap size (-Xmx option).
+    # - GDB_HEAP_SIZE=d      #- Sets the Java minimum and maximum heap size (-Xms and -Xmx option).
+    #                        #  Overrides both GDB_MIN_MEM and GDB_MAX_MEM.
+    #                        #  Recommended if you need to specify the heap size.
+    # - GDB_HEAP_NEWSIZE=d   #- Sets the initial and maximum heap size for the young generation (-Xmn option).
+    # - GDB_GC_LOG=d         #- Enables (if set to true) the logging of Java garbage collection.
+    #                        #  The log will be written to gc-<pid>.log in the distribution directory,
+    #                        #  unless GDB_GC_LOG_FILE is set to a custom file.
+    # - GDB_GC_LOG_FILE=d    #- Specifies a custom file for GC logging. 

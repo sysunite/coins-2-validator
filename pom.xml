@@ -11,11 +11,15 @@
 
   <dependencies>
 
+    <!--<dependency>-->
+      <!--<groupId>org.apache.jena</groupId>-->
+      <!--<artifactId>apache-jena-libs</artifactId>-->
+      <!--<version>3.2.0</version>-->
+      <!--<type>pom</type>-->
+    <!--</dependency>-->
     <dependency>
-      <groupId>org.apache.jena</groupId>
-      <artifactId>apache-jena-libs</artifactId>
-      <version>3.2.0</version>
-      <type>pom</type>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-runtime</artifactId>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -117,5 +121,17 @@
 
     </plugins>
   </build>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-bom</artifactId>
+        <version>2.2</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
 </project>

@@ -2,19 +2,16 @@ package com.sysunite.coinsweb.config;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.jena.query.DatasetAccessor;
-import org.apache.jena.query.DatasetAccessorFactory;
-import org.apache.jena.riot.web.HttpOp;
 import org.apache.log4j.Logger;
 
-import static com.sysunite.coinsweb.config.Parser.*;
+import java.util.Map;
+
+import static com.sysunite.coinsweb.config.Parser.isNotNull;
+import static com.sysunite.coinsweb.config.Parser.validate;
+
+//import org.apache.jena.query.DatasetAccessor;
+//import org.apache.jena.query.DatasetAccessorFactory;
+//import org.apache.jena.riot.web.HttpOp;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -25,65 +22,74 @@ public class Endpoint {
   private static Logger log = Logger.getLogger(Endpoint.class);
 
   private String adapter;
-  private String uri;
-  private String user;
-  private String password;
+//  private String uri;
+//  private String user;
+//  private String password;
+
+  private Map<String, String> config;
 
   public String getAdapter() {
     return adapter;
   }
-  public String getUri() {
-    return uri;
+  public Map<String, String> getConfig() {
+    return config;
   }
-  public String getUser() {
-    return user;
-  }
-  public String getPassword() {
-    return password;
-  }
+//  public String getUri() {
+//    return uri;
+//  }
+//  public String getUser() {
+//    return user;
+//  }
+//  public String getPassword() {
+//    return password;
+//  }
 
   public void setAdapter(String adapter) {
-    validate(adapter, "fuseki", "virtuoso");
+    validate(adapter, "graphdb"); // , "virtuoso", "fuseki"
     this.adapter = adapter;
   }
 
-  public void setUri(String uri) {
-    this.uri = uri;
+  public void setConfig(Map<String, String> config) {
+    this.config = config;
   }
 
-  public void setUser(String user) {
-    this.user = user;
-  }
+//  public void setUri(String uri) {
+//    this.uri = uri;
+//  }
+//
+//  public void setUser(String user) {
+//    this.user = user;
+//  }
+//
+//  public void setPassword(String password) {
+//    this.password = password;
+//  }
 
-  public void setPassword(String password) {
-    this.password = password;
-  }
 
 
 
+//  public HttpClient getAuthenticatedClient() {
+//    if(user == null || user.isEmpty() || password == null || password.isEmpty()) {
+//      return null;
+//    }
+//    CredentialsProvider credsProvider = new BasicCredentialsProvider();
+//    Credentials credentials = new UsernamePasswordCredentials(user, password);
+//    credsProvider.setCredentials(AuthScope.ANY, credentials);
+//    HttpClient httpclient = HttpClients.custom()
+//    .setDefaultCredentialsProvider(credsProvider)
+//    .build();
+//    HttpOp.setDefaultHttpClient(httpclient);
+//    return httpclient;
+//  }
 
-  public HttpClient getAuthenticatedClient() {
-    if(user == null || user.isEmpty() || password == null || password.isEmpty()) {
-      return null;
-    }
-    CredentialsProvider credsProvider = new BasicCredentialsProvider();
-    Credentials credentials = new UsernamePasswordCredentials(user, password);
-    credsProvider.setCredentials(AuthScope.ANY, credentials);
-    HttpClient httpclient = HttpClients.custom()
-    .setDefaultCredentialsProvider(credsProvider)
-    .build();
-    HttpOp.setDefaultHttpClient(httpclient);
-    return httpclient;
-  }
-
-  public DatasetAccessor connect() {
-    HttpClient httpclient = getAuthenticatedClient();
-    if(httpclient != null) {
-      return DatasetAccessorFactory.createHTTP(uri, httpclient);
-    } else {
-      return DatasetAccessorFactory.createHTTP(uri);
-    }
-  }
+//  public DatasetAccessor connect() {
+//    HttpClient httpclient = getAuthenticatedClient();
+//    if(httpclient != null) {
+//      return DatasetAccessorFactory.createHTTP(uri, httpclient);
+//    } else {
+//      return DatasetAccessorFactory.createHTTP(uri);
+//    }
+//  }
 }
 
 class EndpointSanitizer extends StdConverter<Endpoint, Endpoint> {
@@ -94,7 +100,7 @@ class EndpointSanitizer extends StdConverter<Endpoint, Endpoint> {
   public Endpoint convert(Endpoint obj) {
 
     isNotNull(obj.getAdapter());
-    isUri(obj.getUri());
+//    isUri(obj.getUri());
 
 //    // Test if this is a fully available endpoint by temporarily writing a graph to it
 //    RuntimeException error = new RuntimeException("The endpoint " + obj.getUri() + " with credentials " + obj.getUser() + "/" + obj.getPassword() + " was not accessable for writing.");

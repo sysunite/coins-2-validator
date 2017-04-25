@@ -14,18 +14,10 @@ public class Environment {
 
   private static Logger log = Logger.getLogger(Environment.class);
 
-  private Model[] models;
   private Store store;
 
-  public Model[] getModels() {
-    return models;
-  }
   public Store getStore() {
     return store;
-  }
-
-  public void setModels(Model[] models) {
-    this.models = models;
   }
 
   public void setStore(Store store) {
@@ -39,7 +31,7 @@ class EnvironmentSanitizer extends StdConverter<Environment, Environment> {
 
   @Override
   public Environment convert(Environment obj) {
-    // should be some form of checking the model definitions
+    // todo: should be some form of checking the model definitions
     isNotNull(obj.getStore());
     return obj;
   }

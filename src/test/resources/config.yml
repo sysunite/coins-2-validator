@@ -13,56 +13,76 @@
 #   coins-validator info
 
 environment:
-  models:
-
-    - graphname: http://www.coinsweb.nl/cbim-2.0.rdf#
-      content: instances
-      type: online
-      uri: http://www.coinsweb.nl/cbim-2.0.rdf
-
-    - graphname: http://default#
-      content: library
-      type: container
-
-    - graphname: http://libraries/1#
-      content: library
-      type: file
-      path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/main/resources/test.ttl
-
-#    - graphname: http://libraries/2#
-#      content: library
-#      type: endpoint
-#      endpoint:
-#        adapter: virtuoso
-#        uri: http://127.0.0.1:8890/sparql-graph-crud #-auth
-##        user: dba
-##        password: 3h34ln3
-
-    - graphname: http://libraries/3#
-      content: library
-      type: endpoint
-      endpoint:
-        adapter: fuseki
-        uri: http://127.0.0.1:3030/ds/data
-  ##      user: admin
-  ##      password: pw123
 
   store:
     type: endpoint
     endpoint:
-      adapter: fuseki
-      uri: http://127.0.0.1:3030/ds/data
-##      user: admin
-##      password: pw123
+      adapter: graphdb
+      config:
+        uri: http://127.0.0.1:3030/ds/data
+        user: admin
+        password: pw123
+        custom: baaaaa
 
 
 
 run:
+
   containers:
-    - type: file
-      path: /tmp/container.ccr
-    - type: online
-      uri: http://www.google.com
+
+    - type: container
+      location:
+        type: file
+        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/otl-2.1/01_NetwerkRuimteVoorbeeld_OTL21.ccr
+
+      models:
+
+        - graphname: http://www.coinsweb.nl/cbim-2.0.rdf#
+          content: instances
+          type: online
+          uri: http://www.coinsweb.nl/cbim-2.0.rdf
+
+        - graphname: http://default#
+          content: library
+          type: container
+
+        - graphname: http://libraries/1#
+          content: library
+          type: file
+          path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/main/resources/test.ttl
+
+    #    - graphname: http://libraries/2#
+    #      content: library
+    #      type: endpoint
+    #      endpoint:
+    #        adapter: virtuoso
+    #        uri: http://127.0.0.1:8890/sparql-graph-crud #-auth
+    ##        user: dba
+    ##        password: 3h34ln3
+
+        - graphname: http://libraries/3#
+          content: library
+          type: endpoint
+          endpoint:
+            adapter: graphdb
+            config:
+              uri: http://127.0.0.1:3030/ds/data
+        ##      user: admin
+        ##      password: pw123
+
+    - type: container
+      location:
+        type: online
+        uri: http:/bit.ly#conf.ccr
+
+    - type: virtual
+
+      models:
+
+        - graphname: http://www.coinsweb.nl/cbim-2.0.rdf#
+          content: instances
+          type: online
+          uri: http://www.coinsweb.nl/cbim-2.0.rdf
 
   steps:
 
@@ -82,8 +102,8 @@ run:
     - type: html
       path: /tmp/report.html
 
-    - type: custom
-      path: /tmp/log.txt
-      template:
-        type: file
-        path: /tmp/log.ftl
+#    - type: custom
+#      path: /tmp/log.txt
+#      template:
+#        type: file
+#        path: /tmp/log.ftl

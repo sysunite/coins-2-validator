@@ -14,11 +14,11 @@ public class Run {
 
   private static Logger log = Logger.getLogger(Run.class);
 
-  private Locator[] containers;
+  private Container[] containers;
   private Step[] steps;
   private Report[] reports;
 
-  public Locator[] getContainers() {
+  public Container[] getContainers() {
     return containers;
   }
   public Step[] getSteps() {
@@ -28,7 +28,7 @@ public class Run {
     return reports;
   }
 
-  public void setContainers(Locator[] containers) {
+  public void setContainers(Container[] containers) {
     this.containers = containers;
   }
 

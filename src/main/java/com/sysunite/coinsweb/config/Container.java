@@ -1,5 +1,7 @@
 package com.sysunite.coinsweb.config;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import org.apache.log4j.Logger;
@@ -9,23 +11,24 @@ import static com.sysunite.coinsweb.config.Parser.*;
 /**
  * @author bastbijl, Sysunite 2017
  */
+@JsonInclude(Include.NON_NULL)
 @JsonDeserialize(converter=ContainerSanitizer.class)
 public class Container {
 
   private static final Logger log = Logger.getLogger(Environment.class);
 
   private String type;
-  private Model[] models;
   private Locator location;
+  private Graph[] graphs;
 
   public String getType() {
     return type;
   }
-  public Model[] getModels() {
-    return models;
-  }
   public Locator getLocation() {
     return location;
+  }
+  public Graph[] getGraphs() {
+    return graphs;
   }
 
 
@@ -33,8 +36,8 @@ public class Container {
     validate(type, "container", "virtual");
     this.type = type;
   }
-  public void setModels(Model[] models) {
-    this.models = models;
+  public void setGraphs(Graph[] graphs) {
+    this.graphs = graphs;
   }
   public void setLocation(Locator location) {
     this.location = location;

@@ -1,16 +1,17 @@
 package com.sysunite.coinsweb.config;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import org.apache.log4j.Logger;
 
-import static com.sysunite.coinsweb.config.Parser.isFile;
-import static com.sysunite.coinsweb.config.Parser.isResolvable;
-import static com.sysunite.coinsweb.config.Parser.validate;
+import static com.sysunite.coinsweb.config.Parser.*;
 
 /**
  * @author bastbijl, Sysunite 2017
  */
+@JsonInclude(Include.NON_NULL)
 @JsonDeserialize(converter=LocatorSanitizer.class)
 public class Locator {
 

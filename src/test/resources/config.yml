@@ -15,16 +15,12 @@
 environment:
 
   store:
-    type: endpoint
-    endpoint:
-      adapter: graphdb
-      config:
-        uri: http://127.0.0.1:3030/ds/data
-        user: admin
-        password: pw123
-        custom: baaaaa
-
-
+    type: graphdb
+    config:
+      endpoint: http://127.0.0.1:3030/ds/data
+      user: admin
+      password: pw123
+      custom: baaaaa
 
 run:
 
@@ -35,7 +31,7 @@ run:
         type: file
         path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/otl-2.1/01_NetwerkRuimteVoorbeeld_OTL21.ccr
 
-      models:
+      graphs:
 
         - graphname: http://www.coinsweb.nl/cbim-2.0.rdf#
           content: instances
@@ -62,22 +58,22 @@ run:
 
         - graphname: http://libraries/3#
           content: library
-          type: endpoint
-          endpoint:
-            adapter: graphdb
+          type: store
+          store:
+            type: graphdb
             config:
-              uri: http://127.0.0.1:3030/ds/data
+              endpoint: http://127.0.0.1:3030/ds/data
         ##      user: admin
         ##      password: pw123
 
-    - type: container
-      location:
-        type: online
-        uri: http:/bit.ly#conf.ccr
+#    - type: container
+#      location:
+#        type: online
+#        uri: http://bit.ly#conf.ccr
 
     - type: virtual
 
-      models:
+      graphs:
 
         - graphname: http://www.coinsweb.nl/cbim-2.0.rdf#
           content: instances

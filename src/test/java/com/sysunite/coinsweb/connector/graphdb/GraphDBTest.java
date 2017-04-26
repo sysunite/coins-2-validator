@@ -21,11 +21,18 @@ public class GraphDBTest {
 
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     try {
-      File file = new File(getClass().getClassLoader().getResource("config.yml").getFile());
-      ConfigFile configFile = mapper.readValue(file, ConfigFile.class);
 
-      GraphDB connector = new GraphDB(configFile.getEnvironment().getStore().getEndpoint());
+      File configYml = new File(getClass().getClassLoader().getResource("config.yml").getFile());
+      ConfigFile configFile = mapper.readValue(configYml, ConfigFile.class);
+
+      GraphDB connector = new GraphDB(configFile.getEnvironment().getStore());
       log.info(connector.testConnection());
+
+      File otl = new File(getClass().getClassLoader().getResource("otl-2.1/otl-2.1.ttl").getFile());
+      log.info(connector.uploadFile(otl, "http://ns"));
+
+//      log.info(connector.cleanup());
+
     } catch (Exception e) {
       System.out.println(e.getLocalizedMessage());
     }

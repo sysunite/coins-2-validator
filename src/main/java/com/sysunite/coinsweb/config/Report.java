@@ -12,7 +12,7 @@ import static com.sysunite.coinsweb.config.Parser.*;
 @JsonDeserialize(converter=ReportSanitizer.class)
 public class Report {
 
-  private static Logger log = Logger.getLogger(Report.class);
+  private static final Logger log = Logger.getLogger(Report.class);
 
   private String type;
   private String path;
@@ -44,7 +44,7 @@ public class Report {
 
 class ReportSanitizer extends StdConverter<Report, Report> {
 
-  private static Logger log = Logger.getLogger(ReportSanitizer.class);
+  private static final Logger log = Logger.getLogger(ReportSanitizer.class);
 
   @Override
   public Report convert(Report obj) {

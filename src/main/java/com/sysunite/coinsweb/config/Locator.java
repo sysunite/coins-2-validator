@@ -14,7 +14,7 @@ import static com.sysunite.coinsweb.config.Parser.validate;
 @JsonDeserialize(converter=LocatorSanitizer.class)
 public class Locator {
 
-  private static Logger log = Logger.getLogger(Locator.class);
+  private static final Logger log = Logger.getLogger(Locator.class);
 
   private String type;
   private String path;
@@ -47,7 +47,7 @@ public class Locator {
 
 class LocatorSanitizer extends StdConverter<Locator, Locator> {
 
-  private static Logger log = Logger.getLogger(LocatorSanitizer.class);
+  private static final Logger log = Logger.getLogger(LocatorSanitizer.class);
 
   @Override
   public Locator convert(Locator obj) {

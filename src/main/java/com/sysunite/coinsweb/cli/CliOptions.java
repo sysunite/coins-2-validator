@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class CliOptions {
 
-  private static Logger log = Logger.getLogger(CliOptions.class);
+  private static final Logger log = Logger.getLogger(CliOptions.class);
 
 
 

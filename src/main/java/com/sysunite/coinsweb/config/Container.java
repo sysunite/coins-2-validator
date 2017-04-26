@@ -12,7 +12,7 @@ import static com.sysunite.coinsweb.config.Parser.*;
 @JsonDeserialize(converter=ContainerSanitizer.class)
 public class Container {
 
-  private static Logger log = Logger.getLogger(Environment.class);
+  private static final Logger log = Logger.getLogger(Environment.class);
 
   private String type;
   private Model[] models;
@@ -44,7 +44,7 @@ public class Container {
 
 class ContainerSanitizer extends StdConverter<Container, Container> {
 
-  private static Logger log = Logger.getLogger(ContainerSanitizer.class);
+  private static final Logger log = Logger.getLogger(ContainerSanitizer.class);
 
   @Override
   public Container convert(Container obj) {

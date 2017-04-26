@@ -12,7 +12,7 @@ import static com.sysunite.coinsweb.config.Parser.isNotNull;
 @JsonDeserialize(converter=EnvironmentSanitizer.class)
 public class Environment {
 
-  private static Logger log = Logger.getLogger(Environment.class);
+  private static final Logger log = Logger.getLogger(Environment.class);
 
   private Store store;
 
@@ -27,7 +27,7 @@ public class Environment {
 
 class EnvironmentSanitizer extends StdConverter<Environment, Environment> {
 
-  private static Logger log = Logger.getLogger(EnvironmentSanitizer.class);
+  private static final Logger log = Logger.getLogger(EnvironmentSanitizer.class);
 
   @Override
   public Environment convert(Environment obj) {

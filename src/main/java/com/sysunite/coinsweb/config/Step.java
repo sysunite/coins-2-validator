@@ -13,7 +13,7 @@ import static com.sysunite.coinsweb.config.Parser.validate;
 @JsonDeserialize(converter=StepSanitizer.class)
 public class Step {
 
-  private static Logger log = Logger.getLogger(Step.class);
+  private static final Logger log = Logger.getLogger(Step.class);
 
   private String type;
   private Locator profile;
@@ -45,7 +45,7 @@ public class Step {
 
 class StepSanitizer extends StdConverter<Step, Step> {
 
-  private static Logger log = Logger.getLogger(StepSanitizer.class);
+  private static final Logger log = Logger.getLogger(StepSanitizer.class);
 
   @Override
   public Step convert(Step obj) {

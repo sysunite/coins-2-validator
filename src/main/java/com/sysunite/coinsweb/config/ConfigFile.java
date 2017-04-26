@@ -12,7 +12,7 @@ import static com.sysunite.coinsweb.config.Parser.isNotNull;
 @JsonDeserialize(converter=ConfigFileSanitizer.class)
 public class ConfigFile {
 
-  private static Logger log = Logger.getLogger(ConfigFile.class);
+  private static final Logger log = Logger.getLogger(ConfigFile.class);
 
   private Environment environment;
   private Run run;
@@ -36,7 +36,7 @@ public class ConfigFile {
 
 class ConfigFileSanitizer extends StdConverter<ConfigFile, ConfigFile> {
 
-  private static Logger log = Logger.getLogger(ConfigFileSanitizer.class);
+  private static final Logger log = Logger.getLogger(ConfigFileSanitizer.class);
   
   @Override
   public ConfigFile convert(ConfigFile obj) {

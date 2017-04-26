@@ -12,7 +12,7 @@ import static com.sysunite.coinsweb.config.Parser.isNotEmpty;
 @JsonDeserialize(converter=RunSanitizer.class)
 public class Run {
 
-  private static Logger log = Logger.getLogger(Run.class);
+  private static final Logger log = Logger.getLogger(Run.class);
 
   private Container[] containers;
   private Step[] steps;
@@ -43,7 +43,7 @@ public class Run {
 
 class RunSanitizer extends StdConverter<Run, Run> {
 
-  private static Logger log = Logger.getLogger(RunSanitizer.class);
+  private static final Logger log = Logger.getLogger(RunSanitizer.class);
 
   @Override
   public Run convert(Run obj) {

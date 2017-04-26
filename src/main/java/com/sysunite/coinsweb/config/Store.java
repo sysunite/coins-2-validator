@@ -12,7 +12,7 @@ import static com.sysunite.coinsweb.config.Parser.*;
 @JsonDeserialize(converter=StoreSanitizer.class)
 public class Store {
 
-  private static Logger log = Logger.getLogger(Store.class);
+  private static final Logger log = Logger.getLogger(Store.class);
 
   private String type;
   private Endpoint endpoint;
@@ -36,7 +36,7 @@ public class Store {
 
 class StoreSanitizer extends StdConverter<Store, Store> {
 
-  private static Logger log = Logger.getLogger(StoreSanitizer.class);
+  private static final Logger log = Logger.getLogger(StoreSanitizer.class);
 
   @Override
   public Store convert(Store obj) {

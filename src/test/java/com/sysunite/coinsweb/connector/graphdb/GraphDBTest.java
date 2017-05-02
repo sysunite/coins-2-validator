@@ -2,7 +2,7 @@ package com.sysunite.coinsweb.connector.graphdb;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.sysunite.coinsweb.config.ConfigFile;
+import com.sysunite.coinsweb.parser.config.ConfigFile;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 

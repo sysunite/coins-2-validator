@@ -1,6 +1,6 @@
 package com.sysunite.coinsweb.connector.graphdb;
 
-import com.sysunite.coinsweb.config.Store;
+import com.sysunite.coinsweb.parser.config.Store;
 import com.sysunite.coinsweb.connector.Connector;
 import org.apache.log4j.Logger;
 import org.eclipse.rdf4j.model.Resource;

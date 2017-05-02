@@ -1,7 +1,5 @@
-package com.sysunite.coinsweb.config;
+package com.sysunite.coinsweb.filemanager;
 
-import com.sysunite.coinsweb.filemanager.ConfigGenerator;
-import com.sysunite.coinsweb.filemanager.ContainerFile;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 

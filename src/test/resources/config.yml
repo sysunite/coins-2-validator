@@ -90,6 +90,8 @@ run:
         uri: http://www.coinsweb.nl/coins2/profiles/COINSLite-0.9.6.profile
       maxResults: 50
 
+    - type: DocumentReferenceValidation
+
   reports:
 
     - type: xml

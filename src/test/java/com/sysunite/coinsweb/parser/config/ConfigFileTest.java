@@ -1,4 +1,4 @@
-package com.sysunite.coinsweb.config;
+package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -22,6 +22,10 @@ public class ConfigFileTest {
     try {
       File file = new File(getClass().getClassLoader().getResource("config.yml").getFile());
       ConfigFile configFile = mapper.readValue(file, ConfigFile.class);
+      for(Step step : configFile.getRun().getSteps()) {
+        log.warn(step.getValidationStep().getClass().toString());
+      }
+      log.warn(configFile);
     } catch (Exception e) {
       System.out.println(e.getLocalizedMessage());
     }

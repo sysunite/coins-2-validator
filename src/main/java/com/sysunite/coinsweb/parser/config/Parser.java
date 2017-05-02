@@ -1,4 +1,4 @@
-package com.sysunite.coinsweb.config;
+package com.sysunite.coinsweb.parser.config;
 
 import java.io.File;
 import java.io.IOException;

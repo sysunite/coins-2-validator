@@ -1,4 +1,4 @@
-package com.sysunite.coinsweb.config;
+package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import org.apache.log4j.Logger;
 
-import static com.sysunite.coinsweb.config.Parser.isNotNull;
+import static com.sysunite.coinsweb.parser.config.Parser.isNotNull;
 
 /**
  * @author bastbijl, Sysunite 2017

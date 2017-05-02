@@ -3,7 +3,7 @@ package com.sysunite.coinsweb.filemanager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
-import com.sysunite.coinsweb.config.*;
+import com.sysunite.coinsweb.parser.config.*;
 import org.apache.log4j.Logger;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Namespace;

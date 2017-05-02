@@ -1,4 +1,4 @@
-package com.sysunite.coinsweb.config;
+package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
@@ -6,8 +6,8 @@ import org.apache.log4j.Logger;
 
 import java.util.Map;
 
-import static com.sysunite.coinsweb.config.Parser.isNotNull;
-import static com.sysunite.coinsweb.config.Parser.validate;
+import static com.sysunite.coinsweb.parser.config.Parser.isNotNull;
+import static com.sysunite.coinsweb.parser.config.Parser.validate;
 
 //import org.apache.jena.query.DatasetAccessor;
 //import org.apache.jena.query.DatasetAccessorFactory;
@@ -35,7 +35,7 @@ public class Store {
 
 
   public void setType(String type) {
-    validate(type, "rdf4j-sail-memory", "graphdb"); // , "virtuoso", "fuseki"
+    validate(type, "rdf4j-sail-memory", "graphdb");
     this.type = type;
   }
 

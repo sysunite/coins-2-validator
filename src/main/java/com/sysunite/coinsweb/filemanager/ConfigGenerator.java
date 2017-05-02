@@ -2,6 +2,7 @@ package com.sysunite.coinsweb.filemanager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
 import com.sysunite.coinsweb.config.*;
 import org.apache.log4j.Logger;
 import org.eclipse.rdf4j.model.Model;
@@ -32,31 +33,36 @@ public class ConfigGenerator {
 
     String result = "";
 
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory().enable(Feature.MINIMIZE_QUOTES));
     try {
 
       ArrayList<Graph> graphs = new ArrayList();
       for(String contentFile : containerFile.getContentFiles()) {
 
         File file = containerFile.getContentFile(contentFile);
+        for(String namespace : namespacesForFile(file)) {
 
-        Graph graph = new Graph();
-        graph.setGraphname(namespaceForFile(file));
-        graph.setType("container");
-        graph.setContent("instances");
-        graph.setPath(containerFile.getContentFilePath(contentFile).toString());
-        graphs.add(graph);
+          Graph graph = new Graph();
+          graph.setGraphname(namespace);
+          graph.setType("container");
+          graph.setContent("instances");
+          graph.setPath(containerFile.getContentFilePath(contentFile).toString());
+          graphs.add(graph);
+        }
       }
       for(String repositoryFile : containerFile.getRepositoryFiles()) {
 
         File file = containerFile.getRepositoryFile(repositoryFile);
 
-        Graph graph = new Graph();
-        graph.setGraphname(namespaceForFile(file));
-        graph.setType("container");
-        graph.setContent("library");
-        graph.setPath(containerFile.getRepositoryFilePath(repositoryFile).toString());
-        graphs.add(graph);
+        for(String namespace : namespacesForFile(file)) {
+
+          Graph graph = new Graph();
+          graph.setGraphname(namespace);
+          graph.setType("container");
+          graph.setContent("library");
+          graph.setPath(containerFile.getRepositoryFilePath(repositoryFile).toString());
+          graphs.add(graph);
+        }
       }
 
       Locator locator = new Locator();
@@ -109,7 +115,9 @@ public class ConfigGenerator {
     return result;
   }
 
-  public static String namespaceForFile(File file) {
+  public static ArrayList<String> namespacesForFile(File file) {
+
+    ArrayList<String> namespaces = new ArrayList();
 
     Optional<RDFFormat> format = Rio.getParserFormatForFileName(file.toString());
     if(!format.isPresent()) {
@@ -127,14 +135,25 @@ public class ConfigGenerator {
       e.printStackTrace();
     }
 
+    // If there are contexts, use these
     for(Resource context : model.contexts()) {
-      log.warn("context: " + context);      // todo: this worksssss for nquad :D
+      if(context != null) {
+        namespaces.add(context.toString());
+      }
     }
 
-    Optional<Namespace> namespace = model.getNamespace("");
-    if(namespace.isPresent()) {
-      return namespace.get().getName();
+    // If no contexts, use the empty namespace
+    if(namespaces.size() < 1) {
+      Optional<Namespace> namespace = model.getNamespace("");
+      if (namespace.isPresent()) {
+        namespaces.add(namespace.get().getName());
+      }
     }
-    return "http://a"; // todo: point to a default
+
+    // If still no namespace
+    if(namespaces.size() < 1) {
+      throw new RuntimeException("No namespace found to represent this file.");
+    }
+    return namespaces;
   }
 }

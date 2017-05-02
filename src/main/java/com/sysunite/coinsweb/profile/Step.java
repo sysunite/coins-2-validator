@@ -69,7 +69,6 @@ public class Step {
     int cutoff = 0;
     for(String line : lines) {
       int count = line.indexOf(line.trim());
-      log.error(count);
       if(cutoff == 0) {
         cutoff = count;
       }
@@ -90,6 +89,8 @@ public class Step {
 }
 
 class Query {
+
+  private static final Logger log = Logger.getLogger(Query.class);
 
   @JacksonXmlProperty(localName = "prefixes", isAttribute = true)
   private String prefixes;

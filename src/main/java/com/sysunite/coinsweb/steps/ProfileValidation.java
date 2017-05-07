@@ -1,7 +1,13 @@
 package com.sysunite.coinsweb.steps;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.sysunite.coinsweb.filemanager.ContainerFile;
+import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.parser.config.Locator;
+import com.sysunite.coinsweb.parser.profile.ProfileFile;
+import com.sysunite.coinsweb.validator.ValidationExecutor;
+
+import java.util.Map;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -28,5 +34,16 @@ public class ProfileValidation implements ValidationStep {
   }
   public void setMinResults(int minResults) {
     this.minResults = minResults;
+  }
+
+  @Override
+  public Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet) {
+
+    // Load the profile file
+    ProfileFile profileFile = ProfileFile.parse(profile);
+    ValidationExecutor executor = new ValidationExecutor(profileFile);
+
+    // Execute the validation
+    return executor.validate(graphSet);
   }
 }

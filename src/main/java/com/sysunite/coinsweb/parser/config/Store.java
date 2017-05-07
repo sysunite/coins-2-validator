@@ -2,12 +2,12 @@ package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
+import com.sysunite.coinsweb.connector.ConnectorFactory;
 import org.apache.log4j.Logger;
 
 import java.util.Map;
 
 import static com.sysunite.coinsweb.parser.config.Parser.isNotNull;
-import static com.sysunite.coinsweb.parser.config.Parser.validate;
 
 //import org.apache.jena.query.DatasetAccessor;
 //import org.apache.jena.query.DatasetAccessorFactory;
@@ -35,7 +35,6 @@ public class Store {
 
 
   public void setType(String type) {
-    validate(type, "rdf4j-sail-memory", "graphdb");
     this.type = type;
   }
 
@@ -59,7 +58,9 @@ class StoreSanitizer extends StdConverter<Store, Store> {
   public Store convert(Store obj) {
 
     isNotNull(obj.getType());
-
+    if(!ConnectorFactory.exists(obj.getType())) {
+      throw new RuntimeException("This value was not found as connector type: "+obj.getType());
+    }
 
     return obj;
   }

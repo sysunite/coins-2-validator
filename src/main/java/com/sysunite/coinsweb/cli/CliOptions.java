@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -18,7 +19,27 @@ public class CliOptions {
 
   private static final Logger log = Logger.getLogger(CliOptions.class);
 
+  public static boolean QUIET = false;
 
+  public static void printHeader() {
+
+    if(QUIET) {
+      return;
+    }
+
+    // Load version from properties file
+    Properties props = new Properties();
+    String version = "";
+    try {
+      props.load(Application.class.getResourceAsStream("/coins-cli.properties"));
+      version = props.get("version").toString();
+    } catch (IOException e) {
+      System.out.println("(!) unable to read coins-cli.properties from jar");
+    }
+
+    // Print header
+    System.out.println(")} \uD83D\uDC1A  COINS 2.0 validator\ncommand line interface (version "+version+")\n");
+  }
 
   public static Options getOptions() {
 
@@ -37,7 +58,7 @@ public class CliOptions {
     return options;
   }
   public static void usage() {
-    if(!Application.QUIET) {
+    if(!CliOptions.QUIET) {
       HelpFormatter formatter = new HelpFormatter();
       formatter.printHelp("coins-cli map", getOptions());
     }
@@ -56,8 +77,23 @@ public class CliOptions {
   private CommandLine cmd;
 
   // Constructor
-  public CliOptions(String[] args) throws ParseException {
-    cmd = parser.parse( getOptions(), args);
+  public CliOptions(String[] args) {
+    try {
+      cmd = parser.parse( getOptions(), args);
+      CliOptions.QUIET = quietMode();
+
+      // Check if config file is set
+      if(!hasConfig()) {
+        throw new Exception("Config file is required");
+      }
+
+    } catch (Exception e) {
+      CliOptions.printHeader();
+      System.out.println("(!)" + e.getMessage() + "\n");
+      CliOptions.usage();
+      System.exit(1);
+      return;
+    }
   }
 
 
@@ -75,6 +111,9 @@ public class CliOptions {
 
   public boolean hasProfile() { return cmd.hasOption("p"); }
   public String getProfile() { return (!hasProfile()) ? null : cmd.getOptionValue("p"); }
+
+  public boolean hasConfig() { return cmd.hasOption("p"); }
+  public Path getConfig() { return (!hasConfig()) ? null : CliOptions.resolvePath(cmd.getOptionValue("c")); }
 
   public boolean hasProfileVersion() { return cmd.hasOption("v"); }
   public String getProfileVersion() { return (!hasProfileVersion()) ? null : cmd.getOptionValue("v"); }

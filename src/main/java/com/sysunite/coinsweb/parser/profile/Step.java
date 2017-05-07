@@ -3,6 +3,7 @@ package com.sysunite.coinsweb.parser.profile;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
+import com.sysunite.coinsweb.parser.Markdown;
 import org.apache.log4j.Logger;
 
 /**
@@ -12,6 +13,9 @@ import org.apache.log4j.Logger;
 public class Step {
 
   private static final Logger log = Logger.getLogger(Step.class);
+
+  @JacksonXmlProperty(localName = "type", isAttribute = true)
+  private String type;
 
   @JacksonXmlProperty(localName = "reference")
   private String reference;
@@ -34,7 +38,7 @@ public class Step {
   }
 
   public String getDescription() {
-    return description;
+    return Markdown.parseLinksToHtml(description);
   }
 
   public void setDescription(String description) {

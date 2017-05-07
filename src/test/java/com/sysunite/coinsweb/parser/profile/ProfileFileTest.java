@@ -35,20 +35,19 @@ public class ProfileFileTest {
         log.warn("requirement: "+requirement.buildQuery());
       }
 
-      for(Step schemaInference : profileFile.getSchemaInferences()) {
-        log.warn("schemaInference: "+schemaInference.getReference());
-        log.warn("schemaInference: "+schemaInference.buildQuery());
+      for(Run runs : profileFile.getRuns()) {
+        log.warn("run name: "+ runs.getName());
+        for(Step step : runs.getSteps()) {
+          log.warn("step: "+step.getReference());
+          log.warn("step: "+step.getDescription());
+          log.warn("step: "+step.getFormat());
+          log.warn("step: "+step.buildQuery());
+        }
       }
 
-      for(Step dataInference : profileFile.getDataInferences()) {
-        log.warn("dataInference: "+dataInference.getReference());
-        log.warn("dataInference: "+dataInference.buildQuery());
-      }
 
-      for(Step rule : profileFile.getRules()) {
-        log.warn("rule: "+rule.getReference());
-        log.warn("rule: "+rule.buildQuery());
-      }
+
+
 
       profileFile.getRequirements();
     } catch (Exception e) {

@@ -14,32 +14,27 @@ public class Report {
 
   private static final Logger log = Logger.getLogger(Report.class);
 
+  public static final String XML = "xml";
+  public static final String HTML = "html";
+
   private String type;
-  private String path;
-  private Locator template;
+  private Locator location;
 
   public String getType() {
     return type;
   }
-  public String getPath() {
-    return path;
-  }
-  public Locator getTemplate() {
-    return template;
+  public Locator getLocation() {
+    return location;
   }
 
   public void setType(String type) {
-    validate(type, "xml", "html", "custom");
+    validate(type, "xml", "html");
     this.type = type;
   }
-
-  public void setPath(String path) {
-    this.path = path;
+  public void setLocation(Locator location) {
+    this.location = location;
   }
 
-  public void setTemplate(Locator template) {
-    this.template = template;
-  }
 }
 
 class ReportSanitizer extends StdConverter<Report, Report> {
@@ -50,14 +45,8 @@ class ReportSanitizer extends StdConverter<Report, Report> {
   public Report convert(Report obj) {
 
     isNotNull(obj.getType());
-    canCreateFile(obj.getPath());
-
-    if(obj.getType().equals("xml") || obj.getType().equals("html")) {
-      isNull(obj.getTemplate());
-    }
-
-    if(obj.getType().equals("custom")) {
-      isNotNull(obj.getTemplate());
+    if(obj.getLocation() != null && "file".equals(obj.getLocation().getType())) {
+      canCreateFile(obj.getLocation().getPath());
     }
 
     return obj;

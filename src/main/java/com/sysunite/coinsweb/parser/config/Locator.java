@@ -17,6 +17,9 @@ public class Locator {
 
   private static final Logger log = Logger.getLogger(Locator.class);
 
+  public static final String FILE = "file";
+  public static final String ONLINE = "online";
+
   private String type;
   private String path;
   private String uri;

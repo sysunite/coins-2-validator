@@ -94,14 +94,17 @@ run:
 
   reports:
 
-    - type: xml
-      path: /tmp/report.xml
-
     - type: html
-      path: /tmp/report.html
+      location:
+        type: file
+        path: /tmp/report.html
 
-#    - type: custom
-#      path: /tmp/log.txt
-#      template:
-#        type: file
-#        path: /tmp/log.ftl
+    - type: xml
+      location:
+        type: file
+        path: /tmp/report.xml
+
+    - type: xml
+      location:
+        type: online
+        path: http://83.149.69.130:39444/reports

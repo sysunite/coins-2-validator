@@ -2,9 +2,16 @@ package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
 
 import static com.sysunite.coinsweb.parser.config.Parser.isNotNull;
 
@@ -19,6 +26,20 @@ public class ConfigFile {
 
   private Environment environment;
   private Run run;
+
+  public static ConfigFile parse(File file) {
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    try {
+      return mapper.readValue(file, ConfigFile.class);
+    } catch (JsonMappingException e) {
+      e.printStackTrace();
+    } catch (JsonParseException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    throw new RuntimeException("Was not able to parse config file");
+  }
 
   public Run getRun() {
     return run;

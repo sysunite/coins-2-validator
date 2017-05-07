@@ -1,13 +1,14 @@
 package com.sysunite.coinsweb.filemanager;
 
+import com.sysunite.coinsweb.parser.config.Locator;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -24,6 +25,39 @@ public class ContainerFile extends File {
 
   public static String tempLocation = "/tmp";
   private boolean scanned = false;
+
+  public static ContainerFile parse(Locator locator) {
+
+    if(Locator.FILE.equals(locator.getType())) {
+      return new ContainerFile(locator.getPath());
+    }
+    if(Locator.ONLINE.equals(locator.getType())) {
+      try {
+        File file = new File(tempLocation + "/" + RandomStringUtils.random(8, true, true) + ".ccr");
+        URL url = new URL(locator.getUri());
+        URLConnection connection = url.openConnection();
+        InputStream input = connection.getInputStream();
+        byte[] buffer = new byte[4096];
+        int n;
+
+        OutputStream output = new FileOutputStream(file);
+        while ((n = input.read(buffer)) != -1) {
+          output.write(buffer, 0, n);
+        }
+        output.close();
+        file.deleteOnExit();
+
+        return new ContainerFile(file.getPath());
+      } catch (MalformedURLException e) {
+        e.printStackTrace();
+      } catch (FileNotFoundException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    throw new RuntimeException("Profile file could not be loaded.");
+  }
 
   public ContainerFile(String pathname) {
     super(pathname);

@@ -1,9 +1,17 @@
 package com.sysunite.coinsweb.parser.profile;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.sysunite.coinsweb.parser.config.Locator;
 import org.apache.log4j.Logger;
 
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -26,13 +34,42 @@ public class ProfileFile {
   @JacksonXmlProperty(localName = "requirements")
   private ArrayList<Step> requirements;
 
-  @JacksonXmlProperty(localName = "schemaInferences")
+  public static ProfileFile parse(Locator locator) {
+    ObjectMapper objectMapper = new XmlMapper();
+    if(Locator.FILE.equals(locator.getType())) {
+      try {
+        File file = new File(locator.getPath());
+        return objectMapper.readValue(new FileReader(file), ProfileFile.class);
+      } catch (JsonMappingException e) {
+        e.printStackTrace();
+      } catch (JsonParseException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    if(Locator.ONLINE.equals(locator.getType())) {
+      try {
+        URL url = new URL(locator.getUri());
+        Reader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+        return objectMapper.readValue(reader, ProfileFile.class);
+      } catch (MalformedURLException e) {
+        e.printStackTrace();
+      } catch (JsonMappingException e) {
+        e.printStackTrace();
+      } catch (JsonParseException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    throw new RuntimeException("Profile file could not be loaded.");
+  }
+
+
+  private ArrayList<Run> runs;
   private ArrayList<Step> schemaInferences;
-
-  @JacksonXmlProperty(localName = "dataInferences")
   private ArrayList<Step> dataInferences;
-
-  @JacksonXmlProperty(localName = "rules")
   private ArrayList<Step> rules;
 
 
@@ -62,6 +99,13 @@ public class ProfileFile {
   }
   public void setRequirements(ArrayList<Step> requirements) {
     this.requirements = requirements;
+  }
+
+  public ArrayList<Run> getRuns() {
+    return runs;
+  }
+  public void setRuns(ArrayList<Run> runs) {
+    this.runs = runs;
   }
 
   public ArrayList<Step> getSchemaInferences() {

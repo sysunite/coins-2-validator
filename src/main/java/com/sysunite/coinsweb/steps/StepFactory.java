@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class StepsRegister {
+public class StepFactory {
 
   private static final Map<String, Class<? extends ValidationStep>> register;
   static

@@ -1,10 +1,17 @@
 package com.sysunite.coinsweb.cli;
 
-import org.apache.commons.cli.ParseException;
+import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.connector.ConnectorFactory;
+import com.sysunite.coinsweb.filemanager.ContainerFile;
+import com.sysunite.coinsweb.graphset.ContainerGraphSet;
+import com.sysunite.coinsweb.graphset.GraphSetFactory;
+import com.sysunite.coinsweb.parser.config.*;
+import com.sysunite.coinsweb.report.ReportFactory;
+import com.sysunite.coinsweb.steps.ValidationStep;
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -13,24 +20,12 @@ public class Application {
 
   private static final Logger log = Logger.getLogger(Application.class);
 
-  public static boolean QUIET = false;
-
   public static void main(String[] args) {
 
-    CliOptions options;
-    try {
-      options = new CliOptions(args);
-    } catch (ParseException e) {
-      Application.printHeader();
-      System.out.println("(!)" + e.getMessage() + "\n");
-      CliOptions.usage();
-      System.exit(1);
-      return;
-    }
+    CliOptions options = new CliOptions(args);
 
     // Print header
-    Application.QUIET = options.quietMode();
-    Application.printHeader();
+    CliOptions.printHeader();
 
     // Asked for help
     if(options.printHelpOption()) {
@@ -38,25 +33,55 @@ public class Application {
       System.exit(1);
       return;
     }
-  }
 
-  public static void printHeader() {
+    // Get config
+    ConfigFile configFile = ConfigFile.parse(options.getConfig().toFile());
+    Connector connector = ConnectorFactory.build(configFile.getEnvironment().getStore());
 
-    if(QUIET) {
-      return;
+    // For each container file execute steps
+    for(Container containerConfig : configFile.getRun().getContainers()) {
+
+      ContainerFile container = ContainerFile.parse(containerConfig.getLocation());
+      ContainerGraphSet graphSet = GraphSetFactory.loadContainer(container, connector, containerConfig);
+
+      Map<String, Object> reportItems = new HashMap();
+
+      for(Step step : configFile.getRun().getSteps()) {
+
+        ValidationStep validationStep = step.getValidationStep();
+        Map<String, Object> items = validationStep.execute(container, graphSet);
+        reportItems.putAll(items);
+      }
+
+      // Generate the reports
+      String xml = null;
+      String html = null;
+      for(Report report : configFile.getRun().getReports()) {
+        String payload = null;
+        if(Report.XML.equals(report.getType())) {
+          if(xml == null) {
+            xml = ReportFactory.buildXml(reportItems);
+          }
+          payload = xml;
+        }
+        if(Report.HTML.equals(report.getType())) {
+          if(html == null) {
+            html = ReportFactory.buildHtml(reportItems);
+          }
+          payload = html;
+        }
+
+        if(Locator.FILE.equals(report.getLocation().getType()) && payload != null) {
+          ReportFactory.saveReport(payload, report.getLocation().getPath());
+        }
+        if(Locator.ONLINE.equals(report.getLocation().getType()) && payload != null) {
+          ReportFactory.postReport(payload, report.getLocation().getUri());
+        }
+      }
+
     }
 
-    // Load version from properties file
-    Properties props = new Properties();
-    String version = "";
-    try {
-      props.load(Application.class.getResourceAsStream("/coins-cli.properties"));
-      version = props.get("version").toString();
-    } catch (IOException e) {
-      System.out.println("(!) unable to read coins-cli.properties from jar");
-    }
-
-    // Print header
-    System.out.println(")} \uD83D\uDC1A  COINS 2.0 validator\ncommand line interface (version "+version+")\n");
   }
+
+
 }

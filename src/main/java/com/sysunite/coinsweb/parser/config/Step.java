@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.sysunite.coinsweb.steps.StepsRegister;
+import com.sysunite.coinsweb.steps.StepFactory;
 import com.sysunite.coinsweb.steps.ValidationStep;
 import org.apache.log4j.Logger;
 
@@ -83,11 +83,11 @@ class StepDeserializer extends StdDeserializer<Step> {
     Step step = new Step();
     step.setType(node.get("type").textValue());
 
-    if(!StepsRegister.exists(step.getType())) {
+    if(!StepFactory.exists(step.getType())) {
       throw new RuntimeException("This value was not found as validation object: "+step.getType());
     }
 
-    Class<? extends ValidationStep> clazz = StepsRegister.get(step.getType());
+    Class<? extends ValidationStep> clazz = StepFactory.get(step.getType());
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     ValidationStep validationStep = mapper.treeToValue(node, clazz);
 

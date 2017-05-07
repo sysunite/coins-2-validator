@@ -1,0 +1,24 @@
+version: '2.1'
+services:
+  registry-service:
+    image: sysunite/coins-registry-service:0.0.1
+    expose:
+    - "39444"
+    ports:
+    - "39444:39444"
+    depends_on:
+    - registry-database
+    links:
+    - registry-database
+
+  registry-database:
+    image: mysql:5.7
+    expose:
+    - "39445"
+    ports:
+    - "39445:3306"
+    environment:
+    - MYSQL_ROOT_PASSWORD=vZGZww8HLWTLqnPY
+    - MYSQL_DATABASE=registry
+    - MYSQL_USER=registry
+    - MYSQL_PASSWORD=vZGZww8HLWTLqnPY

@@ -2,7 +2,8 @@ package com.sysunite.coinsweb.filemanager;
 
 import com.sysunite.coinsweb.parser.config.Locator;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -21,7 +22,7 @@ import java.util.zip.ZipInputStream;
  */
 public class ContainerFile extends File {
 
-  private static final Logger log = Logger.getLogger(ContainerFile.class);
+  private static final Logger log = LoggerFactory.getLogger(ContainerFile.class);
 
   public static String tempLocation = "/tmp";
   private boolean scanned = false;
@@ -76,6 +77,7 @@ public class ContainerFile extends File {
   private HashMap<String, Path> repositoryFiles = new HashMap();
   private HashMap<String, Path> woaFiles = new HashMap();
   private HashMap<String, Path> attachmentFiles = new HashMap();
+  private HashMap<String, Path> orphanFiles = new HashMap();
 
   public Set<String> getContentFiles() {
     if(!scanned) scan();
@@ -93,6 +95,10 @@ public class ContainerFile extends File {
     if(!scanned) scan();
     return attachmentFiles.keySet();
   }
+  public Set<String> getOrphanFiles() {
+    if(!scanned) scan();
+    return orphanFiles.keySet();
+  }
 
   public File getContentFile(String filename) {
     return getFile(contentFiles.get(filename));
@@ -106,6 +112,9 @@ public class ContainerFile extends File {
   public File getAttachmentFile(String filename) {
     return getFile(attachmentFiles.get(filename));
   }
+  public File getOrphanFile(String filename) {
+    return getFile(orphanFiles.get(filename));
+  }
 
   public Path getContentFilePath(String filename) {
     return contentFiles.get(filename);
@@ -118,6 +127,9 @@ public class ContainerFile extends File {
   }
   public Path getAttachmentFilePath(String filename) {
     return attachmentFiles.get(filename);
+  }
+  public Path getOrphanFilePath(String filename) {
+    return orphanFiles.get(filename);
   }
 
   private File getFile(Path zipPath) {
@@ -176,6 +188,8 @@ public class ContainerFile extends File {
       ZipInputStream zis = new ZipInputStream(new FileInputStream(this));
       ZipEntry ze = zis.getNextEntry();
 
+
+      boolean noFolderSeenYet = true;
       while(ze != null) {
 
         // Skip directories
@@ -196,42 +210,49 @@ public class ContainerFile extends File {
           normalizedPath = leadingPath.relativize(normalizedPath);
         }
 
+        log.info("scan "+normalizedPath);
+
         // bim
         if(normalizedPath.startsWith(bimPath)) {
           Path inside = bimPath.relativize(normalizedPath);
           if(!inside.startsWith(repositoryPath)) {
-            String filename = inside.getFileName().toString();
-            contentFiles.put(filename, zipPath);
+//            String filename = inside.getFileName().toString();
+            contentFiles.put(inside.toString(), zipPath);
 
           // bim/repository
           } else {
-            String filename = repositoryPath.relativize(inside).getFileName().toString();
-            repositoryFiles.put(filename, zipPath);
+            inside = repositoryPath.relativize(inside);
+//            String filename = repositoryPath.relativize(inside).getFileName().toString();
+            repositoryFiles.put(inside.toString(), zipPath);
           }
 
         // woa
         } else if(normalizedPath.startsWith(woaPath)) {
-
-          String filename = woaPath.relativize(normalizedPath).getFileName().toString();
-          woaFiles.put(filename, zipPath);
+          Path inside = woaPath.relativize(normalizedPath);
+//          String filename = woaPath.relativize(normalizedPath).getFileName().toString();
+          woaFiles.put(inside.toString(), zipPath);
 
         // doc
         } else if(normalizedPath.startsWith(attachmentPath)) {
-
-          String filename = attachmentPath.relativize(normalizedPath).getFileName().toString();
-          attachmentFiles.put(filename, zipPath);
+          Path inside = attachmentPath.relativize(normalizedPath);
+//          String filename = attachmentPath.relativize(normalizedPath).getFileName().toString();
+          attachmentFiles.put(inside.toString(), zipPath);
 
         // handle leading path
         } else {
-          if(leadingPath == null) {
+          if(leadingPath == null && normalizedPath.getNameCount() > 1 && noFolderSeenYet) {
             leadingPath = normalizedPath.subpath(0, 1);
             continue;
           } else {
-            leadingPath = null;
-            log.warn("Was not able to categorize this file in the container: " + zipPath);
+//            String filename = normalizedPath.getFileName().toString();
+            orphanFiles.put(normalizedPath.toString(), zipPath);
           }
         }
 
+        // Disable setting a leading folder
+        if(zipPath.getNameCount() > 1) {
+          noFolderSeenYet = false;
+        }
         ze = zis.getNextEntry();
       }
 

@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static com.sysunite.coinsweb.parser.config.Parser.isNotNull;
 
@@ -31,6 +32,20 @@ public class ConfigFile {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     try {
       return mapper.readValue(file, ConfigFile.class);
+    } catch (JsonMappingException e) {
+      e.printStackTrace();
+    } catch (JsonParseException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    throw new RuntimeException("Was not able to parse config file");
+  }
+
+  public static ConfigFile parse(InputStream inputStream) {
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    try {
+      return mapper.readValue(inputStream, ConfigFile.class);
     } catch (JsonMappingException e) {
       e.printStackTrace();
     } catch (JsonParseException e) {

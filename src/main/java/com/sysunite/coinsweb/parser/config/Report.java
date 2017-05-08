@@ -16,6 +16,7 @@ public class Report {
 
   public static final String XML = "xml";
   public static final String HTML = "html";
+  public static final String DEBUG = "debug";
 
   private String type;
   private Locator location;
@@ -28,7 +29,7 @@ public class Report {
   }
 
   public void setType(String type) {
-    validate(type, "xml", "html");
+    validate(type, "xml", "html", "debug");
     this.type = type;
   }
   public void setLocation(Locator location) {

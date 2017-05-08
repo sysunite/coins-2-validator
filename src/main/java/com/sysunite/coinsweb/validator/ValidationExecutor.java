@@ -48,6 +48,10 @@ public class ValidationExecutor {
   }
 
   public Map<String, Object> validate(ContainerGraphSet graphSet) {
+    Map<String, Object> reportItems = new HashMap();
+
+
+    reportItems.put("valid",      true);
 
 
 //
@@ -134,7 +138,6 @@ public class ValidationExecutor {
 
 
     // Prepare data to transfer to the template
-    Map<String, Object> data = new HashMap<>();
 //    data.put("filename", model.getCoinsContainer().getFileName());
 //    data.put("libraries", libraries);
 //    data.put("online", online);
@@ -158,7 +161,7 @@ public class ValidationExecutor {
 //    data.put("dataInferences", execution.getDataInferenceResults());
 //    data.put("validationRules", execution.getValidationRuleResults());
 
-    return data;
+    return reportItems;
   }
 
 

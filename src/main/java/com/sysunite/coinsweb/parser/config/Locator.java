@@ -56,7 +56,7 @@ class LocatorSanitizer extends StdConverter<Locator, Locator> {
   @Override
   public Locator convert(Locator obj) {
     if(obj.getType().equals("file")) {
-      isFile(obj.getPath());
+//      isFile(obj.getPath());
     }
     if(obj.getType().equals("online")) {
       isResolvable(obj.getUri());

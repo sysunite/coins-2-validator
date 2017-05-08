@@ -8,7 +8,8 @@ import com.sysunite.coinsweb.graphset.GraphSetFactory;
 import com.sysunite.coinsweb.parser.config.*;
 import com.sysunite.coinsweb.report.ReportFactory;
 import com.sysunite.coinsweb.steps.ValidationStep;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +19,7 @@ import java.util.Map;
  */
 public class Application {
 
-  private static final Logger log = Logger.getLogger(Application.class);
+  private static final Logger log = LoggerFactory.getLogger(Application.class);
 
   public static void main(String[] args) {
 
@@ -34,8 +35,31 @@ public class Application {
       return;
     }
 
+    if(options.writeLog()) {
+      // todo
+    }
+
     // Get config
-    ConfigFile configFile = ConfigFile.parse(options.getConfig().toFile());
+    ConfigFile configFile;
+    try {
+      if (options.hasConfig()) {
+        log.info("try to read config.yml from file");
+        configFile = ConfigFile.parse(options.getConfig().toFile());
+        log.info("read config.yml from file");
+      } else {
+        log.info("try to read config.yml from pipe");
+        configFile = ConfigFile.parse(System.in);
+        log.info("read config.yml from pipe");
+      }
+    } catch(RuntimeException e) {
+      CliOptions.printHeader();
+      System.out.println("(!) no valid config.yml supplied\n");
+      CliOptions.usage();
+      System.exit(1);
+      return;
+    }
+
+    // Setup environment
     Connector connector = ConnectorFactory.build(configFile.getEnvironment().getStore());
 
     // For each container file execute steps
@@ -45,13 +69,27 @@ public class Application {
       ContainerGraphSet graphSet = GraphSetFactory.loadContainer(container, connector, containerConfig);
 
       Map<String, Object> reportItems = new HashMap();
+      reportItems.put("steps", new HashMap<String, Boolean>());
 
       for(Step step : configFile.getRun().getSteps()) {
 
         ValidationStep validationStep = step.getValidationStep();
         Map<String, Object> items = validationStep.execute(container, graphSet);
+        if(!items.containsKey("valid")) {
+          throw new RuntimeException("Validator "+step.getType()+" dit not return the field \"valid\"");
+        }
+        boolean valid = (boolean) items.remove("valid");
+        ((Map<String, Boolean>) reportItems.get("steps")).put(step.getType(), valid);
         reportItems.putAll(items);
       }
+
+      // Postprocessing of reportItems
+      boolean valid = true;
+      Map<String, Boolean> steps = (Map<String, Boolean>) reportItems.get("steps");
+      for(Boolean stepValid : steps.values()) {
+        valid &= stepValid;
+      }
+      reportItems.put("valid", valid);
 
       // Generate the reports
       String xml = null;
@@ -70,6 +108,12 @@ public class Application {
           }
           payload = html;
         }
+        if(Report.DEBUG.equals(report.getType())) {
+          if(html == null) {
+            html = ReportFactory.buildDebug(reportItems);
+          }
+          payload = html;
+        }
 
         if(Locator.FILE.equals(report.getLocation().getType()) && payload != null) {
           ReportFactory.saveReport(payload, report.getLocation().getPath());
@@ -79,6 +123,8 @@ public class Application {
         }
       }
 
+      log.info("finished successfully, quitting");
+      System.exit(0);
     }
 
   }

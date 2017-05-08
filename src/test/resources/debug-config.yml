@@ -1,0 +1,67 @@
+#
+# coins-validator configuration
+#
+# for a full reference of this configuration go to:
+# http://coinsweb.nl/validator/conf.html
+#
+# tips:
+# - to test a config.yml file run:
+#   coins-validator validate -n -c config.yml
+# - to list the available graphs from a container run:
+#   coins-validator describe container.ccr
+# - to list the available validationsteps run:
+#   coins-validator info
+
+environment:
+
+  store:
+    type: graphdb
+    config:
+      endpoint: http://127.0.0.1:3030/ds/data
+      user: admin
+      password: pw123
+      custom: baaaaa
+
+run:
+
+  containers:
+
+    - type: container
+      location:
+        type: file
+#        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/emptyfolder.ccr
+#        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/singlefile.ccr
+#        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/orphanfiles.ccr
+#        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/orphanfiles-leading.ccr
+#        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/mix.ccr
+#        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/otl-2.1/01_NetwerkRuimteVoorbeeld_OTL21.ccr
+        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/otl-2.1/12_LifecycleOTLDocument_OTL21.ccr
+
+      graphs:
+
+
+
+        - graphname: http://default#
+          content: library
+          type: container
+
+
+
+  steps:
+
+    - type: FileSystemValidation
+
+#    - type: ProfileValidation
+#      profile:
+#        type: file
+#        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/profile.lite-9.60.xml
+#      maxResults: 50
+#
+    - type: DocumentReferenceValidation
+
+  reports:
+
+    - type: debug
+      location:
+        type: file
+        path: /tmp/report.xml

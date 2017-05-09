@@ -41,9 +41,9 @@ public class ProfileValidation implements ValidationStep {
 
     // Load the profile file
     ProfileFile profileFile = ProfileFile.parse(profile);
-    ValidationExecutor executor = new ValidationExecutor(profileFile);
+    ValidationExecutor executor = new ValidationExecutor(profileFile, graphSet);
 
     // Execute the validation
-    return executor.validate(graphSet);
+    return executor.validate();
   }
 }

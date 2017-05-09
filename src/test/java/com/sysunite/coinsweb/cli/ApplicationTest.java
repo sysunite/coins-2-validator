@@ -16,7 +16,7 @@ public class ApplicationTest {
 
   @Test
   public void debugRun() {
-    String[] args = {configPath};
+    String[] args = {"run", configPath};
     Application.main(args);
   }
   @Test

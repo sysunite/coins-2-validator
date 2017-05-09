@@ -1,8 +1,9 @@
 package com.sysunite.coinsweb.graphset;
 
-import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.connector.ConnectorFactory;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.parser.config.Container;
+import com.sysunite.coinsweb.parser.config.Store;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -25,8 +26,15 @@ import java.util.Optional;
  * @author bastbijl, Sysunite 2017
  */
 public class GraphSetFactory {
-  public static ContainerGraphSet loadContainer(ContainerFile container, Connector connector, Container containerConfig) {
-    return new ContainerGraphSet();
+
+
+
+
+  public static ContainerGraphSet lazyLoad(ContainerFile container, Store storeConfig, Container containerConfig) {
+    if("none".equals(storeConfig.getType())) {
+      return new ContainerGraphSet();
+    }
+    return new ContainerGraphSet(ConnectorFactory.build(storeConfig));
   }
 
   public static ArrayList<String> imports(File file) {

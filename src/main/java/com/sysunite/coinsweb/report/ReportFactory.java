@@ -1,15 +1,14 @@
 package com.sysunite.coinsweb.report;
 
+import freemarker.cache.StringTemplateLoader;
+import freemarker.core.InvalidReferenceException;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -93,5 +92,32 @@ public class ReportFactory {
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  public String formatResult(String resultFormat, Map<String, String> data) {
+
+    if(resultFormat == null) {
+      throw new RuntimeException("Please set a ResultFormat before the results can be returned in a formatted form.");
+    }
+
+    try {
+      StringTemplateLoader templateLoader = new StringTemplateLoader();
+      Configuration cfg = new Configuration();
+      cfg.setTemplateLoader(templateLoader);
+      templateLoader.putTemplate("resultFormat", resultFormat);
+      Template template = cfg.getTemplate("resultFormat");
+
+      Writer writer = new StringWriter();
+      template.process(data, writer);
+      return writer.toString();
+
+    } catch (IOException e) {
+      log.error(e.getMessage(), e);
+    } catch (InvalidReferenceException e) {
+      log.error(e.getMessage(), e);
+    } catch (TemplateException e) {
+      log.error(e.getMessage(), e);
+    }
+    throw new RuntimeException("Something went wrong formatting a result.");
   }
 }

@@ -31,7 +31,6 @@ class EnvironmentSanitizer extends StdConverter<Environment, Environment> {
 
   @Override
   public Environment convert(Environment obj) {
-    // todo: should be some form of checking the model definitions
     isNotNull(obj.getStore());
     return obj;
   }

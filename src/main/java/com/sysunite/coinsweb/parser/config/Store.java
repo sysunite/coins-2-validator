@@ -58,7 +58,7 @@ class StoreSanitizer extends StdConverter<Store, Store> {
   public Store convert(Store obj) {
 
     isNotNull(obj.getType());
-    if(!ConnectorFactory.exists(obj.getType())) {
+    if(!"none".equals(obj.getType()) && ConnectorFactory.exists(obj.getType())) {
       throw new RuntimeException("This value was not found as connector type: "+obj.getType());
     }
 

@@ -51,6 +51,11 @@ public class GraphDB implements Connector {
     log.info(config.getConfig().containsKey("password"));
 
 
+
+
+  }
+
+  private void init() {
     RepositoryManager manager = new RemoteRepositoryManager( "http://localhost:7200" );
     manager.initialize();
 
@@ -64,7 +69,6 @@ public class GraphDB implements Connector {
 //    repository = manager.getRepository(repositoryId);
 
     repository = manager.getRepository("otl21");
-
   }
 
 
@@ -72,7 +76,7 @@ public class GraphDB implements Connector {
 
   @Override
   public boolean testConnection() {
-
+    init();
     return false;
   }
 

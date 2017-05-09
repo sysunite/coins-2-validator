@@ -4,7 +4,17 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import com.sysunite.coinsweb.parser.Markdown;
+import freemarker.cache.StringTemplateLoader;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -28,6 +38,7 @@ public class Step {
 
   @JacksonXmlProperty(localName = "query")
   private Query query;
+
 
   public String getReference() {
     return reference;
@@ -53,7 +64,12 @@ public class Step {
     this.format = format;
   }
 
+  private String buildQueryResult = null;
   public String buildQuery() {
+
+    if(buildQueryResult != null) {
+      return buildQueryResult;
+    }
 
     // Build prefixes
     String prefixes = "";
@@ -80,8 +96,39 @@ public class Step {
       query += line.substring(count) + "\n";
     }
 
-    return prefixes + query;
+    return parseFreemarker(prefixes + query);
   }
+
+
+  private String parseFreemarker(String query) {
+    StringTemplateLoader templateLoader = new StringTemplateLoader();
+    Configuration cfg = new Configuration();
+    templateLoader.putTemplate("sparqlQuery", query);
+    try {
+      Template template = cfg.getTemplate("sparqlQuery");
+
+      Map<String, String> data = new HashMap<>();
+//      data.put("INSTANCE_GRAPH", "<"+ InMemGraphSet.INSTANCE_GRAPH +">");
+//      data.put("WOA_GRAPH", "<"+ InMemGraphSet.WOA_GRAPH +">");
+////      data.put("CORE_GRAPH", "<"+ InMemGraphSet.SCHEMA_GRAPH +">");
+////      data.put("SCHEMA_GRAPH", "<"+ InMemGraphSet.SCHEMA_GRAPH +">");
+//      data.put("SCHEMA_UNION_GRAPH", "<"+ InMemGraphSet.SCHEMA_UNION_GRAPH +">");
+//      data.put("FULL_UNION_GRAPH", "<"+ graphSet.getFullUnionNamespace() +">");
+
+      Writer writer = new StringWriter();
+      template.process(data, writer);
+      return writer.toString();
+
+
+    } catch (IOException e) {
+      log.error(e.getMessage(), e);
+    } catch (TemplateException e) {
+      log.error(e.getMessage(), e);
+    }
+
+    throw new RuntimeException("Something went wrong building query.");
+  }
+
 
   public Query getQuery() {
     return query;

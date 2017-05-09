@@ -18,13 +18,13 @@ public class CliOptions {
 
   private static final Logger log = Logger.getLogger(CliOptions.class);
 
+  public static final String DESCRIBE_MODE = "describe";
+  public static final String RUN_MODE = "run";
+
   public static boolean QUIET = false;
 
-  public static void printHeader() {
 
-    if(QUIET) {
-      return;
-    }
+  public static void printHeader() {
 
     // Load version from properties file
     Properties props = new Properties();
@@ -33,11 +33,19 @@ public class CliOptions {
       props.load(Application.class.getResourceAsStream("/coins-cli.properties"));
       version = props.get("version").toString();
     } catch (IOException e) {
-      System.out.println("(!) unable to read coins-cli.properties from jar");
+      printOutput("(!) unable to read coins-cli.properties from jar");
     }
 
     // Print header
-    System.out.println(")} \uD83D\uDC1A  COINS 2.0 validator\ncommand line interface (version "+version+")\n");
+    printOutput(")} \uD83D\uDC1A  COINS 2.0 validator\ncommand line interface (version " + version + ")\n");
+  }
+
+  public static void printOutput(String message) {
+
+    if(QUIET) {
+      return;
+    }
+    System.out.println(message);
   }
 
   public static Options getOptions() {
@@ -79,10 +87,13 @@ public class CliOptions {
     try {
       cmd = parser.parse( getOptions(), args);
       CliOptions.QUIET = quietMode();
+      if(!hasMode()) {
+        throw new RuntimeException("No run mode is specified");
+      }
 
-    } catch (ParseException e) {
+    } catch (Exception e) {
       CliOptions.printHeader();
-      System.out.println("(!) " + e.getMessage() + "\n");
+      printOutput("(!) " + e.getMessage() + "\n");
       CliOptions.usage();
       System.exit(1);
       return;
@@ -98,8 +109,29 @@ public class CliOptions {
 
 
 
-  public boolean hasConfig() { return cmd.getArgs().length > 0; }
-  public Path getConfig() { return (!hasConfig()) ? null : CliOptions.resolvePath(cmd.getArgs()[0]); }
+  public boolean hasMode() {
+    if(cmd.getArgs().length < 1) {
+      return false;
+    }
+    if(DESCRIBE_MODE.equals(cmd.getArgs()[0]) || RUN_MODE.equals(cmd.getArgs()[0])) {
+      return true;
+    }
+    return false;
+  }
+  public Path getMode() {
+    return (!hasMode()) ? null : CliOptions.resolvePath(cmd.getArgs()[0]);
+  }
+
+  public boolean hasConfig() {
+    if(cmd.getArgs().length < 2) {
+      return false;
+    }
+    Path path = CliOptions.resolvePath(cmd.getArgs()[1]);
+    return path.toFile().exists() && path.toFile().isFile();
+  }
+  public Path getConfig() {
+    return (!hasConfig()) ? null : CliOptions.resolvePath(cmd.getArgs()[1]);
+  }
 
 
 

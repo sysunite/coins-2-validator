@@ -27,9 +27,11 @@ package com.sysunite.coinsweb.validator;
 
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.parser.profile.ProfileFile;
+import com.sysunite.coinsweb.parser.profile.Step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,102 +44,61 @@ public class ValidationExecutor {
   private static final Logger log = LoggerFactory.getLogger(ValidationExecutor.class);
 
   private ProfileFile profile;
+  private ContainerGraphSet graphSet;
 
-  public ValidationExecutor(ProfileFile profile) {
+  public ValidationExecutor(ProfileFile profile, ContainerGraphSet graphSet) {
    this.profile = profile;
+   this.graphSet = graphSet;
   }
 
-  public Map<String, Object> validate(ContainerGraphSet graphSet) {
+  public Map<String, Object> validate() {
+
+
+    log.info("Execute profile.");
+    ProfileExecution execution = new ProfileExecution();
+
+    long start = new Date().getTime();
+
+
+
+
+    Runtime runtime = Runtime.getRuntime();
+
+    log.info("\uD83D\uDC1A Will perform profile checks.");
+    boolean profileChecks = executeQueries(profile.getRequirements(), execution.getProfileCheckResults());
+    execution.updateMemMaxUsage(runtime.totalMemory());
+
+    log.info("\uD83D\uDC1A Will add schema inferences.");
+    addInferences(profile.getSchemaInferences(), execution.getSchemaInferenceResults());
+    execution.updateMemMaxUsage(runtime.totalMemory());
+
+    log.info("\uD83D\uDC1A Will add data inferences.");
+    addInferences(profile.getDataInferences(), execution.getDataInferenceResults());
+    execution.updateMemMaxUsage(runtime.totalMemory());
+
+    log.info("\uD83D\uDC1A Will perform validation checks.");
+    boolean validationRules = executeQueries(profile.getRules(), execution.getValidationRuleResults());
+    execution.updateMemMaxUsage(runtime.totalMemory());
+
+    execution.setProfileChecksPassed(profileChecks);
+    execution.setValidationPassed(validationRules);
+    execution.setExecutionTime(new Date().getTime() - start);
+
+
+
+
+
+    log.info("Build report.");
+
+
+
+    boolean valid = profileChecks;
+
+    // Prepare data to transfer to the template
     Map<String, Object> reportItems = new HashMap();
 
 
-    reportItems.put("valid",      true);
-
-
-//
-//
-//    log.info("Execute profile.");
-//    ProfileExecution execution = new ProfileExecution();
-//
-//    long start = new Date().getTime();
-//
-//
-//
-//
-//    Runtime runtime = Runtime.getRuntime();
-//
-//    log.info("\uD83D\uDC1A Will perform profile checks.");
-//    boolean profileChecks = executeQueries(profile.getProfileChecks(), execution.getProfileCheckResults());
-//    execution.updateMemMaxUsage(runtime.totalMemory());
-//
-//    log.info("\uD83D\uDC1A Will add schema inferences.");
-//    addInferences(profile.getSchemaInferences(), execution.getSchemaInferenceResults());
-//    execution.updateMemMaxUsage(runtime.totalMemory());
-//
-//    log.info("\uD83D\uDC1A Will add data inferences.");
-//    addInferences(profile.getDataInferences(), execution.getDataInferenceResults());
-//    execution.updateMemMaxUsage(runtime.totalMemory());
-//
-//    log.info("\uD83D\uDC1A Will perform validation checks.");
-//    boolean validationRules = executeQueries(profile.getValidationRules(), execution.getValidationRuleResults());
-//    execution.updateMemMaxUsage(runtime.totalMemory());
-//
-//    execution.setProfileChecksPassed(profileChecks);
-//    execution.setValidationPassed(validationRules);
-//    execution.setExecutionTime(new Date().getTime() - start);
-//
-//
-//    log.info("Check ontology imports.");
-//    boolean allImportsAvailable = true;
-//
-//    List<String> libraries = new ArrayList<>();
-//    List<String> online = new ArrayList<>();
-//    List<String> graphs = new ArrayList<>();
-//    List<String> imports = new ArrayList<>();
-//    for(Namespace ns : ((JenaCoinsContainer) model.getCoinsContainer()).getAvailableLibraryFiles().keySet()) {
-//      graphs.add(ns.toString());
-//      libraries.add(((JenaCoinsContainer) model.getCoinsContainer()).getAvailableLibraryFiles().get(ns).getName());
-//    }
-//    Collections.sort(libraries);
-//
-//    OntModel instanceOntModel = model.getCoinsGraphSet().getInstanceOntModel();
-//    for(String importedUri : instanceOntModel.listImportedOntologyURIs()) {
-//      Namespace importedUriNs = new Namespace(importedUri);
-//      imports.add(importedUriNs.toString());
-//
-//      // Is it available from the ccr repository
-//      if(graphs.contains(importedUriNs)) {
-//
-//        allImportsAvailable &= true;
-//
-//      // Try to find it online
-//      } else {
-//        try {
-//          URL resourceAsUrl = new URL(importedUriNs.withoutHash());
-//          HttpURLConnection connection = (HttpURLConnection) resourceAsUrl.openConnection();
-//          connection.setRequestMethod("HEAD");
-//          int responseCode = connection.getResponseCode();
-//          if (responseCode == 200) {
-//            log.info("Found active link online: "+importedUri);
-//            allImportsAvailable &= true;
-//            online.add(importedUriNs.toString());
-//            continue;
-//          }
-//        } catch (MalformedURLException e) {
-//        } catch (ProtocolException e) {
-//        } catch (IOException e) {
-//        }
-//
-//        log.info("Tried, but did not find active link online for: "+importedUri);
-//        allImportsAvailable &= false;
-//      }
-//    }
-//
-//
-//    log.info("Build report.");
-
-
-    // Prepare data to transfer to the template
+    reportItems.put("valid",      valid);
 //    data.put("filename", model.getCoinsContainer().getFileName());
 //    data.put("libraries", libraries);
 //    data.put("online", online);
@@ -170,68 +131,53 @@ public class ValidationExecutor {
 
 
 
-  private boolean executeQueries(List<ValidationQuery> queries, List<ValidationQueryResult> resultCollection) {
+  private boolean executeQueries(List<Step> queries, List<ValidationQueryResult> resultCollection) {
 
     boolean allChecksPassed = true;
-//    for(ValidationQuery query : queries) {
-//      if(query.hasSparqlQuery()) {
-//
-//        ValidationQueryResult result = connector.select(query);
-//        allChecksPassed &= result.getPassed();
-//        resultCollection.add(result);
-//      }
-//    }
-//
+    for(Step query : queries) {
+
+      ValidationQueryResult result = graphSet.select(query);
+      allChecksPassed &= result.getPassed();
+      resultCollection.add(result);
+    }
+
     return allChecksPassed;
   }
 
-  private void addInferences(List<InferenceQuery> queries, InferenceExecution inferenceExecution) {
-//    addInferences(queries, inferenceExecution, true);
+  private void addInferences(List<Step> queries, InferenceExecution inferenceExecution) {
+    addInferences(queries, inferenceExecution, true);
   }
-  private void addInferences(List<InferenceQuery> queries, final InferenceExecution inferenceExecution, boolean recursive) {
-//
-//    // Build a map of all results in resultList
-//    HashMap<String, InferenceQueryResult> resultByReference = new HashMap<>();
-//
-//    long triplesAddedThisRun;
-//    long start = new Date().getTime();
-//
-//    int run = 1;
-//
-//    do {
-//
-//      // Prepare list of all queries to be executed this round
-//      ExecutorService executor = Executors.newSingleThreadExecutor();
-//
-//      List<Callable<Object>> todo = new ArrayList<>(queries.size());
-//
-//      for (InferenceQuery query : queries) {
-//        if (query.hasSparqlQuery()) {
-//
-//          // Prepare a resultCarrier
-//          if(!resultByReference.containsKey(query.getReference())) {
-//            InferenceQueryResult resultCarrier = new InferenceQueryResult(query.getReference(), query.getDescription(), query.getSparqlQuery(connector), null);
-//            resultByReference.put(query.getReference(), resultCarrier);
-//          }
-//          InferenceQueryResult resultCarrier = resultByReference.get(query.getReference());
-//
-//          Map<String, Long> before = connector.numTriples();
-//          connector.insert(query, resultCarrier);
-//          Map<String, Long> diff = InMemGraphSet.diffNumTriples(before, connector.numTriples());
-//
-//          inferenceExecution.addTriplesAdded(Integer.toString(run), query.getReference(), diff);
-//        }
-//      }
-//
-//      // Execute them, calculate the result
-//      try {
-//        executor.invokeAll(todo);
-//      } catch (CancellationException e) {
-//        log.error(e.getMessage(), e);
-//      } catch (InterruptedException e) {
-//        log.error(e.getMessage(), e);
-//      }
-//
+  private void addInferences(List<Step> queries, final InferenceExecution inferenceExecution, boolean recursive) {
+
+    // Build a map of all results in resultList
+    HashMap<String, InferenceQueryResult> resultByReference = new HashMap<>();
+
+    long triplesAddedThisRun = 0l;
+    long start = new Date().getTime();
+
+    int run = 1;
+
+    do {
+
+      for (Step step : queries) {
+
+
+        // Prepare a resultCarrier
+        if(!resultByReference.containsKey(step.getReference())) {
+          InferenceQueryResult resultCarrier = new InferenceQueryResult(step.getReference(), step.getDescription(), step.buildQuery(), null);
+          resultByReference.put(step.getReference(), resultCarrier);
+        }
+        InferenceQueryResult resultCarrier = resultByReference.get(step.getReference());
+
+        Map<String, Long> before = graphSet.numTriples();
+        graphSet.insert(step, resultCarrier);
+        Map<String, Long> diff = graphSet.diffNumTriples(before, graphSet.numTriples());
+
+        inferenceExecution.addTriplesAdded(Integer.toString(run), step.getReference(), diff);
+
+      }
+
+
 //      String lastRunNr = Integer.toString(inferenceExecution.getNumRuns());
 //      Map<String, Long> statistics = inferenceExecution.getTriplesAdded(lastRunNr);
 //      if(statistics.containsKey(connector.getFullUnionNamespace())) {
@@ -241,15 +187,15 @@ public class ValidationExecutor {
 //        triplesAddedThisRun = 0;
 //        log.warn("This round no triples were added to the full union graph, which might have unexpected reasons.");
 //      }
-//
-//      run++;
-//
-//    // Loop
-//    } while (recursive && triplesAddedThisRun > 0l);
-//
-//    // Store all resultCarriers in the allocated list
-//    long executionTime = new Date().getTime() - start;
-//    inferenceExecution.setExecutionTime(executionTime);
-////    inferenceExecution.getQueryResults().addAll(resultByReference.values()); // todo: this might be important
+
+      run++;
+
+    // Loop
+    } while (recursive && triplesAddedThisRun > 0l);
+
+    // Store all resultCarriers in the allocated list
+    long executionTime = new Date().getTime() - start;
+    inferenceExecution.setExecutionTime(executionTime);
+    inferenceExecution.getQueryResults().addAll(resultByReference.values());
   }
 }

@@ -28,7 +28,9 @@ package com.sysunite.coinsweb.validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,7 +46,7 @@ public class InferenceExecution {
   private Map<String, Map<String, Map<String, Long>>> triplesAdded = new HashMap();
 
 
-//  private List<InferenceQueryResult> inferences = new ArrayList<>();
+  private List<InferenceQueryResult> inferences = new ArrayList<>();
 
   public InferenceExecution() {
     this.triplesAdded = new HashMap<>();
@@ -59,9 +61,9 @@ public class InferenceExecution {
   }
 
 
-//  public List<InferenceQueryResult> getQueryResults() {
-//    return inferences;
-//  }
+  public List<InferenceQueryResult> getQueryResults() {
+    return inferences;
+  }
 
   public int getNumRuns() {
     int max = 0;

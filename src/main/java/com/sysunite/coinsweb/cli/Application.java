@@ -1,7 +1,5 @@
 package com.sysunite.coinsweb.cli;
 
-import com.sysunite.coinsweb.connector.Connector;
-import com.sysunite.coinsweb.connector.ConnectorFactory;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphSetFactory;
@@ -53,20 +51,19 @@ public class Application {
       }
     } catch(RuntimeException e) {
       CliOptions.printHeader();
-      System.out.println("(!) no valid config.yml supplied\n");
+      CliOptions.printOutput("(!) no valid config.yml supplied\n");
       CliOptions.usage();
       System.exit(1);
       return;
     }
 
-    // Setup environment
-    Connector connector = ConnectorFactory.build(configFile.getEnvironment().getStore());
+    Store storeConfig = configFile.getEnvironment().getStore();
 
     // For each container file execute steps
     for(Container containerConfig : configFile.getRun().getContainers()) {
 
       ContainerFile container = ContainerFile.parse(containerConfig.getLocation());
-      ContainerGraphSet graphSet = GraphSetFactory.loadContainer(container, connector, containerConfig);
+      ContainerGraphSet graphSet = GraphSetFactory.lazyLoad(container, storeConfig, containerConfig);
 
       Map<String, Object> reportItems = new HashMap();
       reportItems.put("steps", new HashMap<String, Boolean>());

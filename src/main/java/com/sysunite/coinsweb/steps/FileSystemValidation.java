@@ -13,7 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.sysunite.coinsweb.filemanager.ConfigGenerator.namespacesForFile;
+import static com.sysunite.coinsweb.filemanager.ContainerFile.namespacesForFile;
+
 
 /**
  * @author bastbijl, Sysunite 2017

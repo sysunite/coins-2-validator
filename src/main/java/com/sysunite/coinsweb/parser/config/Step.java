@@ -1,6 +1,8 @@
 package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,8 +22,9 @@ import static com.sysunite.coinsweb.parser.config.Parser.isNotNull;
 /**
  * @author bastbijl, Sysunite 2017
  */
-@JsonDeserialize(using=StepDeserializer.class, converter=StepSanitizer.class)
+@JsonInclude(Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(using=StepDeserializer.class, converter=StepSanitizer.class)
 public class Step {
 
   private static final Logger log = Logger.getLogger(Step.class);

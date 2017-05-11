@@ -4,23 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
 import com.sysunite.coinsweb.parser.config.*;
+import com.sysunite.coinsweb.steps.ProfileValidation;
 import org.apache.log4j.Logger;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Namespace;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RDFParser;
-import org.eclipse.rdf4j.rio.Rio;
-import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Optional;
 import java.util.Scanner;
+
+import static com.sysunite.coinsweb.filemanager.ContainerFile.namespacesForFile;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -31,129 +22,136 @@ public class ConfigGenerator {
 
   public static String run(ContainerFile containerFile) {
 
-    String result = "";
+    ObjectMapper mapper = new ObjectMapper(
+      new YAMLFactory()
+      .enable(Feature.MINIMIZE_QUOTES)
+      .disable(Feature.WRITE_DOC_START_MARKER)
+    );
 
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory().enable(Feature.MINIMIZE_QUOTES));
     try {
 
-      ArrayList<Graph> graphs = new ArrayList();
-      for(String contentFile : containerFile.getContentFiles()) {
+      // Environment
+      Store store = new Store();
+      store.setType("rdf4j-sail-memory");
 
-        File file = containerFile.getContentFile(contentFile);
-        for(String namespace : namespacesForFile(file)) {
+      Environment environment = new Environment();
+      environment.setStore(store);
 
-          Graph graph = new Graph();
-          graph.setGraphname(namespace);
-          graph.setType("container");
-          graph.setContent("instances");
-          graph.setPath(containerFile.getContentFilePath(contentFile).toString());
-          graphs.add(graph);
-        }
-      }
-      for(String repositoryFile : containerFile.getRepositoryFiles()) {
+      // Run
 
-        File file = containerFile.getRepositoryFile(repositoryFile);
-
-        for(String namespace : namespacesForFile(file)) {
-
-          Graph graph = new Graph();
-          graph.setGraphname(namespace);
-          graph.setType("container");
-          graph.setContent("library");
-          graph.setPath(containerFile.getRepositoryFilePath(repositoryFile).toString());
-          graphs.add(graph);
-        }
-      }
-
+      // - Container
       Locator locator = new Locator();
       locator.setType("file");
       locator.setPath(containerFile.toString());
+
+      ArrayList<Graph> graphs = graphsInContainer(containerFile);
 
       Container container = new Container();
       container.setType("container");
       container.setLocation(locator);
       container.setGraphs(graphs.toArray(new Graph[graphs.size()]));
 
+      // - Steps
+      ArrayList<Step> steps = new ArrayList();
+
+      Step fileSystemValidation = new Step();
+      fileSystemValidation.setType("FileSystemValidation");
+      steps.add(fileSystemValidation);
+
+      Locator validationLocator = new Locator();
+      validationLocator.setType("online");
+      validationLocator.setUri("http://www.coinsweb.nl/coins2/profiles/profile_XXX.xml");
+      ProfileValidation validation = new ProfileValidation();
+      validation.setProfile(validationLocator);
+      String validationSnippet = mapper.writeValueAsString(validation);
+
+      Step profileValidation = new Step();
+      profileValidation.setType("ProfileValidation");
+      steps.add(profileValidation);
+
+      Step documentReferenceValidation = new Step();
+      documentReferenceValidation.setType("DocumentReferenceValidation");
+      steps.add(documentReferenceValidation);
+
+      // - Reports
+      ArrayList<Report> reports = new ArrayList();
+
+      Locator reportLocator = new Locator();
+      reportLocator.setType("file");
+      reportLocator.setPath(containerFile.toPath().getParent().resolve("report.xml").toString());
+
+      Report report = new Report();
+      report.setType("xml");
+      report.setLocation(reportLocator);
+      reports.add(report);
+
       Run run = new Run();
       Container[] containers = {container};
       run.setContainers(containers);
+      run.setSteps(steps.toArray(new Step[0]));
+      run.setReports(reports.toArray(new Report[0]));
 
+      // Put it together
       ConfigFile configFile = new ConfigFile();
+      configFile.setEnvironment(environment);
       configFile.setRun(run);
 
-      String yml = mapper.writeValueAsString(configFile);
+      String yml =  mapper.writeValueAsString(configFile);
+      String result = "";
 
       Scanner scanner = new Scanner(yml);
 
-      boolean writing = false;
+
 
       while (scanner.hasNextLine()) {
         String line = scanner.nextLine();
 
-        // Skip the first lines
-        if(!writing) {
-          if(line.startsWith("run:")) {
-            writing = true;
-          }
-        }
-
-        if(writing) {
-          // Skip the last lines
-          if(line.startsWith("  steps: null")) {
-            break;
-          }
-          // Do the writing
+        if(line.trim().startsWith("- type: ProfileValidation")) {
+          result += line + System.lineSeparator();
+          result += "    "+validationSnippet.trim().replace("\n", "\n    ")+"\n";
+        } else {
           result += line + System.lineSeparator();
         }
       }
       scanner.close();
+      return result;
 
     } catch (Exception e) {
       log.error(e.getLocalizedMessage(), e);
     }
 
-    return result;
+    throw new RuntimeException("Was not able to generate config.yml");
   }
 
-  public static ArrayList<String> namespacesForFile(File file) {
+  private static ArrayList<Graph> graphsInContainer(ContainerFile containerFile) {
+    ArrayList<Graph> graphs = new ArrayList();
+    for(String contentFile : containerFile.getContentFiles()) {
 
-    ArrayList<String> namespaces = new ArrayList();
+      File file = containerFile.getContentFile(contentFile);
+      for(String namespace : namespacesForFile(file)) {
 
-    Optional<RDFFormat> format = Rio.getParserFormatForFileName(file.toString());
-    if(!format.isPresent()) {
-      throw new RuntimeException("Not able to determine format of file: " + file.getName());
-    }
-    Model model = new LinkedHashModel();
-    RDFParser rdfParser = Rio.createParser(format.get());
-    rdfParser.setRDFHandler(new StatementCollector(model));
-
-    try {
-      rdfParser.parse(new FileInputStream(file), "http://backup");
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    // If there are contexts, use these
-    for(Resource context : model.contexts()) {
-      if(context != null) {
-        namespaces.add(context.toString());
+        Graph graph = new Graph();
+        graph.setGraphname(namespace);
+        graph.setType("container");
+        graph.setContent("instances");
+        graph.setPath(containerFile.getContentFilePath(contentFile).toString());
+        graphs.add(graph);
       }
     }
+    for(String repositoryFile : containerFile.getRepositoryFiles()) {
 
-    // If no contexts, use the empty namespace
-    if(namespaces.size() < 1) {
-      Optional<Namespace> namespace = model.getNamespace("");
-      if (namespace.isPresent()) {
-        namespaces.add(namespace.get().getName());
+      File file = containerFile.getRepositoryFile(repositoryFile);
+
+      for(String namespace : namespacesForFile(file)) {
+
+        Graph graph = new Graph();
+        graph.setGraphname(namespace);
+        graph.setType("container");
+        graph.setContent("library");
+        graph.setPath(containerFile.getRepositoryFilePath(repositoryFile).toString());
+        graphs.add(graph);
       }
     }
-
-    // If still no namespace
-    if(namespaces.size() < 1) {
-      throw new RuntimeException("No namespace found to represent this file.");
-    }
-    return namespaces;
+    return graphs;
   }
 }

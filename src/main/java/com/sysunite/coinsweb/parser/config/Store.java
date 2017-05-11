@@ -1,5 +1,7 @@
 package com.sysunite.coinsweb.parser.config;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import com.sysunite.coinsweb.connector.ConnectorFactory;
@@ -9,13 +11,11 @@ import java.util.Map;
 
 import static com.sysunite.coinsweb.parser.config.Parser.isNotNull;
 
-//import org.apache.jena.query.DatasetAccessor;
-//import org.apache.jena.query.DatasetAccessorFactory;
-//import org.apache.jena.riot.web.HttpOp;
 
 /**
  * @author bastbijl, Sysunite 2017
  */
+@JsonInclude(Include.NON_NULL)
 @JsonDeserialize(converter=StoreSanitizer.class)
 public class Store {
 

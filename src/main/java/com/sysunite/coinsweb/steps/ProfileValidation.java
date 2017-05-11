@@ -16,24 +16,17 @@ import java.util.Map;
 public class ProfileValidation implements ValidationStep {
   private Locator profile;
   private int maxResults;
-  private int minResults;
   public Locator getProfile() {
     return profile;
   }
   public int getMaxResults() {
     return maxResults;
   }
-  public int getMinResults() {
-    return minResults;
-  }
   public void setProfile(Locator profile) {
     this.profile = profile;
   }
   public void setMaxResults(int maxResults) {
     this.maxResults = maxResults;
-  }
-  public void setMinResults(int minResults) {
-    this.minResults = minResults;
   }
 
   @Override

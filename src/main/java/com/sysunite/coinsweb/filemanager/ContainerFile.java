@@ -2,6 +2,14 @@ package com.sysunite.coinsweb.filemanager;
 
 import com.sysunite.coinsweb.parser.config.Locator;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFParser;
+import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +20,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -263,5 +273,49 @@ public class ContainerFile extends File {
       ex.printStackTrace();
     }
     scanned = true;
+  }
+
+
+
+  public static ArrayList<String> namespacesForFile(File file) {
+
+    ArrayList<String> namespaces = new ArrayList();
+
+    Optional<RDFFormat> format = Rio.getParserFormatForFileName(file.toString());
+    if(!format.isPresent()) {
+      throw new RuntimeException("Not able to determine format of file: " + file.getName());
+    }
+    Model model = new LinkedHashModel();
+    RDFParser rdfParser = Rio.createParser(format.get());
+    rdfParser.setRDFHandler(new StatementCollector(model));
+
+    try {
+      rdfParser.parse(new FileInputStream(file), "http://backup");
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    // If there are contexts, use these
+    for(Resource context : model.contexts()) {
+      if(context != null) {
+        namespaces.add(context.toString());
+      }
+    }
+
+    // If no contexts, use the empty namespace
+    if(namespaces.size() < 1) {
+      Optional<Namespace> namespace = model.getNamespace("");
+      if (namespace.isPresent()) {
+        namespaces.add(namespace.get().getName());
+      }
+    }
+
+    // If still no namespace
+    if(namespaces.size() < 1) {
+      throw new RuntimeException("No namespace found to represent this file.");
+    }
+    return namespaces;
   }
 }

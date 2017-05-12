@@ -29,8 +29,14 @@ public class ProfileFile {
   @JacksonXmlProperty(localName = "author")
   private String author;
 
-  @JacksonXmlProperty(localName = "requirements")
-  private ArrayList<Step> requirements;
+  @JacksonXmlProperty(localName = "queryLanguage")
+  private String queryLanguage;
+
+  @JacksonXmlProperty(localName = "queryConfiguration")
+  private QueryConfiguration queryConfiguration;
+
+  @JacksonXmlProperty(localName = "bundles")
+  private ArrayList<Bundle> bundles;
 
   public static ProfileFile parse(InputStream input) {
     ObjectMapper objectMapper = new XmlMapper();
@@ -42,11 +48,6 @@ public class ProfileFile {
     throw new RuntimeException("Profile file could not be loaded.");
   }
 
-
-  private ArrayList<Run> runs;
-  private ArrayList<Step> schemaInferences;
-  private ArrayList<Step> dataInferences;
-  private ArrayList<Step> rules;
 
 
   public String getName() {
@@ -70,38 +71,24 @@ public class ProfileFile {
     this.author = author;
   }
 
-  public ArrayList<Step> getRequirements() {
-    return requirements;
+  public String getQueryLanguage() {
+    return queryLanguage;
   }
-  public void setRequirements(ArrayList<Step> requirements) {
-    this.requirements = requirements;
-  }
-
-  public ArrayList<Run> getRuns() {
-    return runs;
-  }
-  public void setRuns(ArrayList<Run> runs) {
-    this.runs = runs;
+  public void setQueryLanguage(String queryLanguage) {
+    this.queryLanguage = queryLanguage;
   }
 
-  public ArrayList<Step> getSchemaInferences() {
-    return schemaInferences;
+  public QueryConfiguration getQueryConfiguration() {
+    return queryConfiguration;
   }
-  public void setSchemaInferences(ArrayList<Step> schemaInferences) {
-    this.schemaInferences = schemaInferences;
-  }
-
-  public ArrayList<Step> getDataInferences() {
-    return dataInferences;
-  }
-  public void setDataInferences(ArrayList<Step> dataInferences) {
-    this.dataInferences = dataInferences;
+  public void setQueryConfiguration(QueryConfiguration queryConfiguration) {
+    this.queryConfiguration = queryConfiguration;
   }
 
-  public ArrayList<Step> getRules() {
-    return rules;
+  public ArrayList<Bundle> getBundles() {
+    return bundles;
   }
-  public void setRules(ArrayList<Step> rules) {
-    this.rules = rules;
+  public void setBundles(ArrayList<Bundle> bundles) {
+    this.bundles = bundles;
   }
 }

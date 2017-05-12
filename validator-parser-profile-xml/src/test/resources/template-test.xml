@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profile>
+  <name>Template test</name>
+  <version>1.0.0</version>
+  <author>Bastiaan Bijl</author>
+  <queryLanguage>SPARQL-1.1</queryLanguage>
+  <queryConfiguration>
+    <graphs>
+      <graph>
+        <code>FULL_UNION_GRAPH</code>
+        <uri>http://full/union</uri>
+        <description>All triples.</description>
+      </graph>
+      <graph>
+        <code>SCHEMA_UNION_GRAPH</code>
+        <uri>http://schema/union</uri>
+        <description>Schema triples.</description>
+      </graph>
+    </graphs>
+    <defaultPrefixes>
+      <![CDATA[
+      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX owl: <http://www.w3.org/2002/07/owl#>
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX cbim: <http://www.coinsweb.nl/cbim-2.0.rdf#>
+      ]]>
+    </defaultPrefixes>
+  </queryConfiguration>
+  <bundles>
+    <bundle>
+      <reference>b-1</reference>
+      <description>Only one bundle</description>
+      <queries>
+        <query type="no-result">
+          <reference>COINS 2.0 Lite</reference>
+          <description>COINS 2.0 Lite profile check on predicate usage </description>
+          <format>
+            <![CDATA[
+            The subject ${a} uses an unsupported predicate ${b} to object ${c}, check [link to Google!](http://google.com) for more info
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?a ?b ?c
+            WHERE {Graph <http://content#> {
+              ?a ?b ?c
+              filter (STRSTARTS(STR(?b),"http://www.w3.org/2002/07/owl#")) .
+              filter (?b not in (owl:equivalentClass,owl:allValuesFrom,owl:oneOf,owl:cardinality,owl:disjointWith,owl:distinctMembers,owl:hasValue,owl:imports,owl:intersectionOf,owl:inverseOf,owl:maxCardinality,owl:maxQualifiedCardinality,owl:members,owl:minCardinality,owl:minQualifiedCardinality,owl:onClass,owl:onProperty,owl:qualifiedCardinality,owl:unionOf,owl:annotatedProperty,owl:annotatedSource,owl:annotatedTarget,owl:backwardCompatibleWith,owl:deprecated,owl:incompatibleWith,owl:priorVersion,owl:versionInfo,owl:versionIRI))}
+            }
+            ]]>
+          </query>
+        </query>
+      </queries>
+    </bundle>
+  </bundles>
+</profile>

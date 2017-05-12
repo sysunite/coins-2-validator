@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<#--
+
+Variables posted to this report page
+#####
+
+String                      : filename
+String                      : imports
+String                      : libraries
+String                      : graphs
+String                      : attachments
+String                      : date
+long                        : executionTime
+long                        : memLimit
+long                        : memMaxUsage
+int                         : queryThreads
+String                      : profileName
+String                      : profileVersion
+boolean                     : profileChecksPassed
+boolean                     : validationPassed
+List<ValidationQueryResult> : profileChecks
+InferenceExecution          : schemaInferences
+InferenceExecution          : dataInferences
+List<ValidationQueryResult> : validationRules
+
+-->
+<profileRun>
+  <profile>
+    <name>${profileName}</name>
+    <version>${profileVersion}</version>
+  </profile>
+  <configuration>
+    <graphSet>
+      <implementation>${graphSetImpl}</implementation>
+      <memoryLimit>${memLimit}</memoryLimit>
+    </graphSet>
+    <container>
+      <#if filename??><name>${filename}</name>
+      </#if><imports>
+        <#if imports?has_content>
+        <#list 0..imports?size-1 as i>
+        <import>
+          <namespace>${imports[i]}</namespace>
+        </import>
+        </#list>
+        </#if>
+      </imports>
+      <libraries>
+        <#if libraries?has_content>
+        <#list 0..libraries?size-1 as i>
+        <library>
+          <fileName>${libraries[i]}</fileName>
+          <namespace>${graphs[i]}</namespace>
+        </library>
+        </#list>
+        </#if>
+      </libraries>
+      <attachments>
+        <#if attachments?has_content>
+        <#list 0..attachments?size-1 as i>
+        <attachment>${attachments[i]}</attachment>
+        </#list>
+        </#if>
+      </attachments>
+    </container>
+  </configuration>
+  <execution>
+    <date>${date}</date>
+    <executionTime>${executionTime?c}</executionTime>
+    <maxMemoryUsage>${memMaxUsage}</maxMemoryUsage>
+    <fileStructureCheck>
+      <passed>
+        <#if fileStructureSanity>true<#else>false</#if>
+      </passed>
+      <message>
+        ${fileStructureMessage}
+      </message>
+    </fileStructureCheck>
+    <importsCheck>
+      <passed>
+        <#if allImportsAvailable>true<#else>false</#if>
+      </passed>
+    </importsCheck>
+    <profileChecks>
+      <#list profileChecks as query>
+      <profileCheck>
+        <reference>${query.reference}</reference>
+        <passed><#if query.passed>true<#else>false</#if></passed>
+        <executionTime>${query.executionTime?c}</executionTime>
+        <#if query.formattedResults?has_content>
+        <results>
+          <#list 0..query.formattedResults?size-1 as i>
+          <result>${query.formattedResults[i]}</result>
+          </#list>
+        </results>
+        </#if>
+      </profileCheck>
+      </#list>
+    </profileChecks>
+    <schemaInferences>
+      <runs>${schemaInferences.numRuns}</runs>
+      <executionTime>${schemaInferences.executionTime?c}</executionTime>
+      <statistics>
+        <#assign runMap = schemaInferences.triplesAddedDetailed>
+        <#list runMap?keys as run>
+        <run key="${run}">
+          <#assign queryMap = runMap[run]>
+          <#list queryMap?keys as query>
+          <query key="${query}">
+            <#assign graphMap = queryMap[query]>
+            <#list graphMap?keys as graph>
+            <graph key="${graph}">${graphMap[graph]?c}</graph>
+            </#list>
+          </query>
+          </#list>
+        </run>
+        </#list>
+      </statistics>
+    </schemaInferences>
+    <dataInferences>
+      <runs>${dataInferences.numRuns}</runs>
+      <executionTime>${dataInferences.executionTime?c}</executionTime>
+      <statistics>
+        <#assign runMap = dataInferences.triplesAddedDetailed>
+        <#list runMap?keys as run>
+        <run key="${run}">
+          <#assign queryMap = runMap[run]>
+          <#list queryMap?keys as query>
+          <query key="${query}">
+            <#assign graphMap = queryMap[query]>
+            <#list graphMap?keys as graph>
+            <graph key="${graph}">${graphMap[graph]?c}</graph>
+            </#list>
+          </query>
+          </#list>
+        </run>
+      </#list>
+      </statistics>
+    </dataInferences>
+    <validationRules>
+      <#list validationRules as query>
+      <validationRule>
+        <reference>${query.reference}</reference>
+        <passed><#if query.passed>true<#else>false</#if></passed>
+        <executionTime>${query.executionTime?c}</executionTime>
+        <#if query.errorMessage??>
+        <errorMessage>${query.errorMessage}</errorMessage>
+        </#if>
+        <#if query.formattedResults?has_content>
+        <results>
+          <#list 0..query.formattedResults?size-1 as i>
+          <result>${query.formattedResults[i]}</result>
+          </#list>
+        </results>
+        </#if>
+      </validationRule>
+      </#list>
+    </validationRules>
+  </execution>
+</profileRun>

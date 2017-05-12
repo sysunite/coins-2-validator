@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<rdf:RDF
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:ns="http://connection-test/ns#">
+
+  <rdf:Description rdf:about="http://connection-test/ns#test">
+    <ns:rel>test</ns:rel>
+  </rdf:Description>
+
+</rdf:RDF>

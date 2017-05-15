@@ -1,5 +1,7 @@
 package com.sysunite.coinsweb.parser.profile;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 /**
@@ -7,12 +9,15 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
  */
 public class Graph {
 
+  @JsonInclude(Include.NON_NULL)
   @JacksonXmlProperty(localName = "code")
   private String code;
 
   @JacksonXmlProperty(localName = "uri")
   private String uri;
 
+
+  @JsonInclude(Include.NON_NULL)
   @JacksonXmlProperty(localName = "description")
   private String description;
 

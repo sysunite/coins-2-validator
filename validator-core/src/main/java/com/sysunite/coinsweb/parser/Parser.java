@@ -6,6 +6,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -117,5 +118,30 @@ public class Parser {
         connection.disconnect();
       }
     }
+  }
+
+  public static String INDENT = "  ";
+  public static String indentText(String body, int level) {
+    String result = "";
+    String indent = String.join("", Collections.nCopies(level, INDENT));
+    String[] lines = body.split(System.lineSeparator());
+    int cutoff = -1;
+    boolean skipping = true;
+    for(String line : lines) {
+      if(skipping) {
+        if(line.trim().isEmpty()) {
+          continue;
+        } else {
+          skipping = false;
+        }
+      }
+      int count = line.indexOf(line.trim());
+      if(cutoff == -1) {
+        cutoff = count;
+      }
+      count = Math.min(count, cutoff);
+      result += indent + line.substring(count) + System.lineSeparator();
+    }
+    return result.substring(0, result.length()-1);
   }
 }

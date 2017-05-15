@@ -1,7 +1,11 @@
 package com.sysunite.coinsweb.parser.profile;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.sysunite.coinsweb.parser.Parser;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -31,9 +35,13 @@ public class Query {
   @JacksonXmlProperty(localName = "description")
   private String description;
 
+
+  @JsonInclude(Include.NON_NULL)
+  @JacksonXmlCData
   @JacksonXmlProperty(localName = "format")
   private String format;
 
+  @JacksonXmlCData
   @JacksonXmlProperty(localName = "query")
   private String query;
 
@@ -62,32 +70,22 @@ public class Query {
   public String getFormat() {
     return format;
   }
+  public String cleanFormat() {
+    return Parser.indentText(format, 0).trim();
+  }
   public void setFormat(String format) {
-    this.format = format.trim();
+    this.format = format;
   }
 
-  private String buildQueryResult;
+
   public String getQuery() {
-    if(buildQueryResult != null) {
-      return buildQueryResult;
-    }
-
-    buildQueryResult = "";
-    String[] lines = query.trim().split("\\n");
-    int cutoff = 0;
-    for(String line : lines) {
-      int count = line.indexOf(line.trim());
-      if(cutoff == 0) {
-        cutoff = count;
-      }
-      count = Math.min(count, cutoff);
-      buildQueryResult += line.substring(count) + "\n";
-    }
-
-    return buildQueryResult;
+    return Parser.indentText(query, 6);
+  }
+  public String cleanQuery() {
+    return Parser.indentText(query, 0).trim();
   }
   public void setQuery(String query) {
-    this.query = query.trim();
+    this.query = Parser.indentText(query, 6);
   }
 
 

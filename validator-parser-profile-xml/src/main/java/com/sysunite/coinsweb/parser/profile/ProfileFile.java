@@ -1,5 +1,7 @@
 package com.sysunite.coinsweb.parser.profile;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
@@ -29,9 +31,11 @@ public class ProfileFile {
   @JacksonXmlProperty(localName = "author")
   private String author;
 
+  @JsonInclude(Include.NON_NULL)
   @JacksonXmlProperty(localName = "queryLanguage")
   private String queryLanguage;
 
+  @JsonInclude(Include.NON_NULL)
   @JacksonXmlProperty(localName = "queryConfiguration")
   private QueryConfiguration queryConfiguration;
 

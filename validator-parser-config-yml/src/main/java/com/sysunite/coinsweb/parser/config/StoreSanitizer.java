@@ -2,7 +2,8 @@ package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.databind.util.StdConverter;
 import com.sysunite.coinsweb.connector.ConnectorFactory;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 
@@ -10,17 +11,23 @@ import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 /**
  * @author bastbijl, Sysunite 2017
  */
-class StoreSanitizer extends StdConverter<Store, Store> {
+public class StoreSanitizer extends StdConverter<Store, Store> {
 
-  private static final Logger log = Logger.getLogger(StoreSanitizer.class);
+  private static final Logger log = LoggerFactory.getLogger(StoreSanitizer.class);
 
-  public static ConnectorFactory factory; // todo: handle that this keeps unset
+  public static ConnectorFactory factory;
 
   @Override
   public Store convert(Store obj) {
 
+    if(factory == null) {
+      log.warn("Please set the static field com.sysunite.coinsweb.parser.config.StoreSanitizer.factory to some instance!");
+      throw new RuntimeException("Please set the static field com.sysunite.coinsweb.parser.config.StoreSanitizer.factory to some instance!");
+    }
+
     isNotNull(obj.getType());
-    if(!"none".equals(obj.getType()) && factory.exists(obj.getType())) {
+    if(!"none".equals(obj.getType()) && !factory.exists(obj.getType())) {
+      log.warn("This value was not found as connector type: " + obj.getType());
       throw new RuntimeException("This value was not found as connector type: "+obj.getType());
     }
 

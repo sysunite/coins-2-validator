@@ -1,7 +1,8 @@
 package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.databind.util.StdConverter;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.sysunite.coinsweb.parser.Parser.isResolvable;
 
@@ -10,7 +11,7 @@ import static com.sysunite.coinsweb.parser.Parser.isResolvable;
  */
 class LocatorSanitizer extends StdConverter<Locator, Locator> {
 
-  private static final Logger log = Logger.getLogger(LocatorSanitizer.class);
+  private static final Logger log = LoggerFactory.getLogger(LocatorSanitizer.class);
 
   @Override
   public Locator convert(Locator obj) {

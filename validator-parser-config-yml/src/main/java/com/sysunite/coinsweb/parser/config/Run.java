@@ -1,10 +1,8 @@
 package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.util.StdConverter;
-import org.apache.log4j.Logger;
-
-import static com.sysunite.coinsweb.parser.Parser.isNotEmpty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -12,7 +10,7 @@ import static com.sysunite.coinsweb.parser.Parser.isNotEmpty;
 @JsonDeserialize(converter=RunSanitizer.class)
 public class Run {
 
-  private static final Logger log = Logger.getLogger(Run.class);
+  private static final Logger log = LoggerFactory.getLogger(Run.class);
 
   private Container[] containers;
   private Step[] steps;

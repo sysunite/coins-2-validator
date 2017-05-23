@@ -2,7 +2,8 @@ package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.Test;
 
 import java.io.File;
@@ -13,7 +14,7 @@ import java.io.File;
  */
 public class ConfigFileTest {
 
-  Logger log = Logger.getLogger(ConfigFileTest.class);
+  Logger log = LoggerFactory.getLogger(ConfigFileTest.class);
 
   @Test
   public void test() {
@@ -25,7 +26,7 @@ public class ConfigFileTest {
       for(Step step : configFile.getRun().getSteps()) {
         log.warn(step.getValidationStep().getClass().toString());
       }
-      log.warn(configFile);
+      log.warn(configFile.toString());
     } catch (Exception e) {
       System.out.println(e.getLocalizedMessage());
     }

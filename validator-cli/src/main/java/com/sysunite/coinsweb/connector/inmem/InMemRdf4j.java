@@ -2,7 +2,8 @@ package com.sysunite.coinsweb.connector.inmem;
 
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.parser.config.Store;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -26,7 +27,7 @@ import java.util.Optional;
  */
 public class InMemRdf4j implements Connector {
 
-  private static final Logger log = Logger.getLogger(InMemRdf4j.class);
+  private static final Logger log = LoggerFactory.getLogger(InMemRdf4j.class);
   private Repository repository;
 
 

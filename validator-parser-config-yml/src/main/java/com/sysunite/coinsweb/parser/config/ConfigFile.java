@@ -2,15 +2,13 @@ package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -20,37 +18,31 @@ import java.io.InputStream;
 @JsonDeserialize(converter=ConfigFileSanitizer.class)
 public class ConfigFile {
 
-  private static final Logger log = Logger.getLogger(ConfigFile.class);
+  private static final Logger log = LoggerFactory.getLogger(ConfigFile.class);
 
   private Environment environment;
   private Run run;
 
   public static ConfigFile parse(File file) {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    String message = "";
     try {
       return mapper.readValue(file, ConfigFile.class);
-    } catch (JsonMappingException e) {
-      e.printStackTrace();
-    } catch (JsonParseException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      message = e.getMessage();
     }
-    throw new RuntimeException("Was not able to parse config file");
+    throw new RuntimeException("Was not able to parse config file: "+message);
   }
 
   public static ConfigFile parse(InputStream inputStream) {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    String message = "";
     try {
       return mapper.readValue(inputStream, ConfigFile.class);
-    } catch (JsonMappingException e) {
-      e.printStackTrace();
-    } catch (JsonParseException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      message = e.getMessage();
     }
-    throw new RuntimeException("Was not able to parse config file");
+    throw new RuntimeException("Was not able to parse config file: "+message);
   }
 
   public Run getRun() {

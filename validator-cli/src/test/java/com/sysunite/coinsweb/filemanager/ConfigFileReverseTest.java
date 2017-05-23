@@ -1,6 +1,7 @@
 package com.sysunite.coinsweb.filemanager;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.Test;
 
 
@@ -9,7 +10,7 @@ import org.junit.Test;
  */
 public class ConfigFileReverseTest {
 
-  Logger log = Logger.getLogger(ConfigFileReverseTest.class);
+  Logger log = LoggerFactory.getLogger(ConfigFileReverseTest.class);
 
   @Test
   public void test() {
@@ -17,7 +18,7 @@ public class ConfigFileReverseTest {
 
 //    ContainerFileImpl containerFile = new ContainerFileImpl("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-sdk/testsuite/target/test-classes/A2/sample.ccr");
 //    ContainerFileImpl containerFile = new ContainerFileImpl(getClass().getClassLoader().getResource("otl-2.1/01_NetwerkRuimteVoorbeeld_OTL21.ccr").getFile());
-    ContainerFileImpl containerFile = new ContainerFileImpl(getClass().getClassLoader().getResource("nquad.ccr").getFile());
+    ContainerFileImpl containerFile = new ContainerFileImpl(getClass().getClassLoader().getResource("mix.ccr").getFile());
 
     log.warn("\n"+ConfigGenerator.run(containerFile));
   }

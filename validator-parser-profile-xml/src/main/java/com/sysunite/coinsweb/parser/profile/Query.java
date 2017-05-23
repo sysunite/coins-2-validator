@@ -10,7 +10,8 @@ import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -24,7 +25,7 @@ import java.util.Map;
 @JacksonXmlRootElement(localName = "step")
 public class Query {
 
-  private static final Logger log = Logger.getLogger(Query.class);
+  private static final Logger log = LoggerFactory.getLogger(Query.class);
 
   @JacksonXmlProperty(localName = "type", isAttribute = true)
   private String type;
@@ -71,7 +72,11 @@ public class Query {
     return format;
   }
   public String cleanFormat() {
-    return Parser.indentText(format, 0).trim();
+    if(format == null) {
+      return "";
+    } else {
+      return Parser.indentText(format, 0).trim();
+    }
   }
   public void setFormat(String format) {
     this.format = format;

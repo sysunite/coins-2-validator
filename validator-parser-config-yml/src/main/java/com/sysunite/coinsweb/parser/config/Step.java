@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.sysunite.coinsweb.steps.ValidationStep;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -15,7 +16,7 @@ import org.apache.log4j.Logger;
 @JsonDeserialize(using=StepDeserializer.class, converter=StepSanitizer.class)
 public class Step {
 
-  private static final Logger log = Logger.getLogger(Step.class);
+  private static final Logger log = LoggerFactory.getLogger(Step.class);
 
   private String type;
   private ValidationStep validationStep;

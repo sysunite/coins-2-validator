@@ -3,7 +3,8 @@ package com.sysunite.coinsweb.parser.profile;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.sysunite.coinsweb.parser.Parser;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
@@ -12,7 +13,7 @@ import java.util.ArrayList;
  */
 public class QueryConfiguration {
 
-  private static final Logger log = Logger.getLogger(QueryConfiguration.class);
+  private static final Logger log = LoggerFactory.getLogger(QueryConfiguration.class);
 
   @JacksonXmlProperty(localName = "graphs")
   private ArrayList<Graph> graphs;

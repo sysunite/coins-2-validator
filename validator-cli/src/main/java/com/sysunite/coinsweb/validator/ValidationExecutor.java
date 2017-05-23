@@ -28,8 +28,9 @@ package com.sysunite.coinsweb.validator;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphSetFactory;
 import com.sysunite.coinsweb.parser.profile.ProfileFile;
-import com.sysunite.coinsweb.parser.profile.Step;
+import com.sysunite.coinsweb.parser.profile.Query;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
@@ -66,23 +67,23 @@ public class ValidationExecutor {
     Runtime runtime = Runtime.getRuntime();
 
     log.info("\uD83D\uDC1A Will perform profile checks.");
-    boolean profileChecks = executeQueries(profile.getRequirements(), execution.getProfileCheckResults());
+//    boolean profileChecks = executeQueries(profile.getRequirements(), execution.getProfileCheckResults());
     execution.updateMemMaxUsage(runtime.totalMemory());
 
     log.info("\uD83D\uDC1A Will add schema inferences.");
-    addInferences(profile.getSchemaInferences(), execution.getSchemaInferenceResults());
+//    addInferences(profile.getSchemaInferences(), execution.getSchemaInferenceResults());
     execution.updateMemMaxUsage(runtime.totalMemory());
 
     log.info("\uD83D\uDC1A Will add data inferences.");
-    addInferences(profile.getDataInferences(), execution.getDataInferenceResults());
+//    addInferences(profile.getDataInferences(), execution.getDataInferenceResults());
     execution.updateMemMaxUsage(runtime.totalMemory());
 
     log.info("\uD83D\uDC1A Will perform validation checks.");
-    boolean validationRules = executeQueries(profile.getRules(), execution.getValidationRuleResults());
+//    boolean validationRules = executeQueries(profile.getRules(), execution.getValidationRuleResults());
     execution.updateMemMaxUsage(runtime.totalMemory());
 
-    execution.setProfileChecksPassed(profileChecks);
-    execution.setValidationPassed(validationRules);
+//    execution.setProfileChecksPassed(profileChecks);
+//    execution.setValidationPassed(validationRules);
     execution.setExecutionTime(new Date().getTime() - start);
 
 
@@ -93,7 +94,7 @@ public class ValidationExecutor {
 
 
 
-    boolean valid = profileChecks;
+    boolean valid = true;
 
     // Prepare data to transfer to the template
     Map<String, Object> reportItems = new HashMap();
@@ -132,10 +133,10 @@ public class ValidationExecutor {
 
 
 
-  private boolean executeQueries(List<Step> queries, List<ValidationQueryResult> resultCollection) {
+  private boolean executeQueries(List<Query> queries, List<ValidationQueryResult> resultCollection) {
 
     boolean allChecksPassed = true;
-    for(Step query : queries) {
+    for(Query query : queries) {
 
       ValidationQueryResult result = (ValidationQueryResult)graphSet.select(query);
       allChecksPassed &= result.getPassed();
@@ -145,10 +146,10 @@ public class ValidationExecutor {
     return allChecksPassed;
   }
 
-  private void addInferences(List<Step> queries, InferenceExecution inferenceExecution) {
+  private void addInferences(List<Query> queries, InferenceExecution inferenceExecution) {
     addInferences(queries, inferenceExecution, true);
   }
-  private void addInferences(List<Step> queries, final InferenceExecution inferenceExecution, boolean recursive) {
+  private void addInferences(List<Query> queries, final InferenceExecution inferenceExecution, boolean recursive) {
 
     // Build a map of all results in resultList
     HashMap<String, InferenceQueryResult> resultByReference = new HashMap<>();
@@ -160,12 +161,12 @@ public class ValidationExecutor {
 
     do {
 
-      for (Step step : queries) {
+      for (Query step : queries) {
 
 
         // Prepare a resultCarrier
         if(!resultByReference.containsKey(step.getReference())) {
-          InferenceQueryResult resultCarrier = new InferenceQueryResult(step.getReference(), step.getDescription(), step.buildQuery(), null);
+          InferenceQueryResult resultCarrier = new InferenceQueryResult(step.getReference(), step.getDescription(), step.cleanQuery(), null);
           resultByReference.put(step.getReference(), resultCarrier);
         }
         InferenceQueryResult resultCarrier = resultByReference.get(step.getReference());

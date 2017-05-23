@@ -28,6 +28,7 @@ package com.sysunite.coinsweb.validator;
 import com.sysunite.coinsweb.steps.ValidationStepResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Bastiaan Bijl, Sysunite 2016

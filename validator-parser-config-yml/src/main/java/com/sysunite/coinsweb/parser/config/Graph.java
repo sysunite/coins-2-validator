@@ -3,7 +3,8 @@ package com.sysunite.coinsweb.parser.config;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.sysunite.coinsweb.parser.Parser.*;
 
@@ -14,7 +15,7 @@ import static com.sysunite.coinsweb.parser.Parser.*;
 @JsonDeserialize(converter=GraphSanitizer.class)
 public class Graph {
 
-  private static final Logger log = Logger.getLogger(Graph.class);
+  private static final Logger log = LoggerFactory.getLogger(Graph.class);
 
   private String graphname;
   private String content;

@@ -21,6 +21,7 @@ public interface ContainerFile {
   File getAttachmentFile(String filename);
   File getOrphanFile(String filename);
 
+  Path toPath();
   Path getContentFilePath(String filename);
   Path getRepositoryFilePath(String filename);
   Path getWoaFilePath(String filename);

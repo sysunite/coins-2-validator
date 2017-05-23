@@ -5,11 +5,9 @@ import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.parser.config.Container;
 import com.sysunite.coinsweb.parser.config.Store;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
@@ -44,10 +42,8 @@ public class GraphSetFactory {
 
     Model model = load(file);
 
-    for (Resource subject : model.filter(null, OWL.IMPORTS, null).subjects()) {
-      for(IRI object : Models.getPropertyIRIs(model, subject, OWL.IMPORTS)) {
-        namespaces.add(object.toString());
-      }
+    for (Value library : model.filter(null, OWL.IMPORTS, null).objects()) {
+      namespaces.add(library.toString());
     }
 
     return namespaces;

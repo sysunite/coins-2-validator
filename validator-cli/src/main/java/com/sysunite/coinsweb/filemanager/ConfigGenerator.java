@@ -5,11 +5,15 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
 import com.sysunite.coinsweb.parser.config.*;
 import com.sysunite.coinsweb.steps.ProfileValidation;
-import org.apache.log4j.Logger;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFParserRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Set;
 
 import static com.sysunite.coinsweb.filemanager.ContainerFileImpl.namespacesForFile;
 
@@ -18,9 +22,16 @@ import static com.sysunite.coinsweb.filemanager.ContainerFileImpl.namespacesForF
  */
 public class ConfigGenerator {
 
-  private static final Logger log = Logger.getLogger(ConfigGenerator.class);
+  private static final Logger log = LoggerFactory.getLogger(ConfigGenerator.class);
 
-  public static String run(ContainerFileImpl containerFile) {
+  public static String run(ContainerFile containerFile) {
+
+
+    log.info("supported file formats:");
+    Set<RDFFormat> formats = RDFParserRegistry.getInstance().getKeys();
+    for(RDFFormat format : formats) {
+      log.info("this is there one: " + format.getDefaultFileExtension());
+    }
 
     ObjectMapper mapper = new ObjectMapper(
       new YAMLFactory()
@@ -59,8 +70,8 @@ public class ConfigGenerator {
       steps.add(fileSystemValidation);
 
       Locator validationLocator = new Locator();
-      validationLocator.setType("online");
-      validationLocator.setUri("http://www.coinsweb.nl/coins2/profiles/profile_XXX.xml");
+      validationLocator.setType("file");
+      validationLocator.setPath("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-parser-profile-xml/src/test/resources/profile.lite-9.60.xml");
       ProfileValidation validation = new ProfileValidation();
       validation.setProfile(validationLocator);
       String validationSnippet = mapper.writeValueAsString(validation);
@@ -101,8 +112,6 @@ public class ConfigGenerator {
 
       Scanner scanner = new Scanner(yml);
 
-
-
       while (scanner.hasNextLine()) {
         String line = scanner.nextLine();
 
@@ -123,33 +132,40 @@ public class ConfigGenerator {
     throw new RuntimeException("Was not able to generate config.yml");
   }
 
-  private static ArrayList<Graph> graphsInContainer(ContainerFileImpl containerFile) {
+  private static ArrayList<Graph> graphsInContainer(ContainerFile containerFile) {
     ArrayList<Graph> graphs = new ArrayList();
     for(String contentFile : containerFile.getContentFiles()) {
 
       File file = containerFile.getContentFile(contentFile);
-      for(String namespace : namespacesForFile(file)) {
+      try {
+        for (String namespace : namespacesForFile(file)) {
 
-        Graph graph = new Graph();
-        graph.setGraphname(namespace);
-        graph.setType("container");
-        graph.setContent("instances");
-        graph.setPath(containerFile.getContentFilePath(contentFile).toString());
-        graphs.add(graph);
+          Graph graph = new Graph();
+          graph.setGraphname(namespace);
+          graph.setType("container");
+          graph.setContent("instances");
+          graph.setPath(containerFile.getContentFilePath(contentFile).toString());
+          graphs.add(graph);
+        }
+      } catch (RuntimeException e) {
+        log.warn(e.getMessage());
       }
     }
     for(String repositoryFile : containerFile.getRepositoryFiles()) {
 
       File file = containerFile.getRepositoryFile(repositoryFile);
+      try {
+        for(String namespace : namespacesForFile(file)) {
 
-      for(String namespace : namespacesForFile(file)) {
-
-        Graph graph = new Graph();
-        graph.setGraphname(namespace);
-        graph.setType("container");
-        graph.setContent("library");
-        graph.setPath(containerFile.getRepositoryFilePath(repositoryFile).toString());
-        graphs.add(graph);
+          Graph graph = new Graph();
+          graph.setGraphname(namespace);
+          graph.setType("container");
+          graph.setContent("library");
+          graph.setPath(containerFile.getRepositoryFilePath(repositoryFile).toString());
+          graphs.add(graph);
+        }
+      } catch (RuntimeException e) {
+        log.warn(e.getMessage());
       }
     }
     return graphs;

@@ -1,7 +1,8 @@
 package com.sysunite.coinsweb.cli;
 
 import org.apache.commons.cli.*;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +17,7 @@ import java.util.Properties;
  */
 public class CliOptions {
 
-  private static final Logger log = Logger.getLogger(CliOptions.class);
+  private static final Logger log = LoggerFactory.getLogger(CliOptions.class);
 
   public static final String DESCRIBE_MODE = "describe";
   public static final String RUN_MODE = "run";
@@ -52,6 +53,7 @@ public class CliOptions {
 
     Options options = new Options();
     options.addOption("h", "help", false, "print help");
+    options.addOption("l", "log", false, "write log file");
     options.addOption("q", false, "quiet, no output to the console");
 
     return options;
@@ -61,9 +63,12 @@ public class CliOptions {
       HelpFormatter formatter = new HelpFormatter();
       formatter.printHelp(
       "\n" +
-      "\ncoins-validator describe [args] container.ccr" +
-      "\ncoins-validator run [args] config.yml" +
-      "\ncat config.yml | coins-validator run [args]" +
+      "\n coins-validator describe [args] container.ccr" +
+      "\n coins-validator run [args] config.yml" +
+      "\n" +
+      "\nor pipe into run:" +
+      "\n" +
+      "\n cat config.yml | coins-validator run [args]" +
       "\n" +
       "\nargs:"
       , getOptions());
@@ -79,7 +84,7 @@ public class CliOptions {
 
 
   // Instance variables
-  private CommandLineParser parser = new DefaultParser();
+  private CommandLineParser parser = new BasicParser();
   private CommandLine cmd;
 
   // Constructor
@@ -118,19 +123,22 @@ public class CliOptions {
     }
     return false;
   }
-  public Path getMode() {
-    return (!hasMode()) ? null : CliOptions.resolvePath(cmd.getArgs()[0]);
+  public boolean describeMode() {
+    return hasMode() && DESCRIBE_MODE.equals(cmd.getArgs()[0].trim());
+  }
+  public boolean runMode() {
+    return hasMode() && RUN_MODE.equals(cmd.getArgs()[0].trim());
   }
 
-  public boolean hasConfig() {
+  public boolean hasFile() {
     if(cmd.getArgs().length < 2) {
       return false;
     }
     Path path = CliOptions.resolvePath(cmd.getArgs()[1]);
     return path.toFile().exists() && path.toFile().isFile();
   }
-  public Path getConfig() {
-    return (!hasConfig()) ? null : CliOptions.resolvePath(cmd.getArgs()[1]);
+  public Path getFile() {
+    return (!hasFile()) ? null : CliOptions.resolvePath(cmd.getArgs()[1]);
   }
 
 

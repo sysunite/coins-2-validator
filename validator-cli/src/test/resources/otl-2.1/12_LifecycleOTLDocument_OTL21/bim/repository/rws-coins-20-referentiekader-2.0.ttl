@@ -1,0 +1,363 @@
+@base          <http://otl.rws.nl/coins2/rws-referentiekader.rdf#> .
+@prefix :      <http://otl.rws.nl/coins2/rws-referentiekader.rdf#> .
+@prefix coins: <http://www.coinsweb.nl/cbim-2.0.rdf#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix otl:   <http://otl.rws.nl/otl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+
+<>      a                   owl:Ontology ;
+        rdfs:comment        "Binnen dit referentiekader wordt COINS 2.0 uitgebreid om te voorzien in de informatiebehoefte van Rijkswaterstaat"@nl-nl ;
+        rdfs:label          "Referentiekader voor OTL 2.1 in COINS 2.0"@nl-nl ;
+        coins:creationDate  "Tue Jan 31 17:06:02 CET 2017" ;
+        coins:creator       :Rijkswaterstaat ;
+        owl:imports         <http://otl.rws.nl/> , <http://www.coinsweb.nl/cbim-2.0.rdf> ;
+        owl:versionInfo     "Referentiekader 2.0 / COINS 2.0 / OTL 2.1" .
+
+:B-     a           :StrookType ;
+        rdfs:label  "Busstrook"@nl-nl .
+
+:SP-R   a           :StrookPositie ;
+        rdfs:label  "Strookpositie Rechts"@nl-nl .
+
+:FP     a           :BaanType ;
+        rdfs:label  "Fietspad"@nl-nl .
+
+:X-     a           :StrookType ;
+        rdfs:label  "Overige strook"@nl-nl .
+
+:TN     a           :BaanType ;
+        rdfs:label  "Tussenbaan"@nl-nl .
+
+:RB     a           :BaanType ;
+        rdfs:label  "Rotondebaan"@nl-nl .
+
+:Specification  a                owl:Class ;
+        rdfs:comment             "Relationship between two concepts for which one is a Role and the other an Entity"@en-gb , "Relatie tussen twee concepten, waarvan het ene van het type role is en het tweede van het type Entity"@nl-nl ;
+        rdfs:label               "Specification"@en-gb , "Specificatie"@nl-nl ;
+        rdfs:subClassOf          coins:Entity ;
+        coins:classCreator       :Rijkswaterstaat ;
+        coins:isClassAbstract    true ;
+        coins:isClassExtendable  true .
+
+:SP-L   a           :StrookPositie ;
+        rdfs:label  "Strookpositie Links"@nl-nl .
+
+:D-     a           :StrookType ;
+        rdfs:label  "Deelstreep"@nl-nl .
+
+:rwsLocatorHeeftStrookType
+        a            owl:ObjectProperty ;
+        rdfs:domain  :RwsLocator ;
+        rdfs:range   :StrookType .
+
+:StrookType  a                   owl:Class ;
+        coins:classCreator       :Rijkswaterstaat ;
+        coins:isClassAbstract    false ;
+        coins:isClassExtendable  false .
+
+:MeterProperty  a                owl:Class ;
+        rdfs:comment             "Een Float property waarbij de unit uitgedrukt moet worden in meters"@nl-nl ;
+        rdfs:label               "MeterProperty"@nl-nl ;
+        rdfs:seeAlso             <http://data.nasa.gov/qudt/owl/unit#Meter> ;
+        rdfs:subClassOf          coins:FloatProperty ;
+        rdfs:subClassOf          [ a               owl:Restriction ;
+                                   owl:hasValue    <http://data.nasa.gov/qudt/owl/unit#Meter> ;
+                                   owl:onProperty  coins:unit
+                                 ] ;
+        coins:classCreator       :Rijkswaterstaat ;
+        coins:isClassAbstract    false ;
+        coins:isClassExtendable  false .
+
+:WW     a           :WegType ;
+        rdfs:label  "Waterschapsweg: Een weg, grotendeels in beheer bij een Waterschap"@nl-nl .
+
+:KilometerProperty  a            owl:Class ;
+        rdfs:comment             "Een float property, waarbij de unit uitgedruk moet worden in Kilometers"@nl-nl ;
+        rdfs:label               "KilometerProperty"@nl-nl ;
+        rdfs:seeAlso             <http://data.nasa.gov/qudt/owl/unit#Kilometer> ;
+        rdfs:subClassOf          coins:FloatProperty ;
+        rdfs:subClassOf          [ a               owl:Restriction ;
+                                   owl:hasValue    <http://data.nasa.gov/qudt/owl/unit#Kilometer> ;
+                                   owl:onProperty  coins:unit
+                                 ] ;
+        coins:classCreator       :Rijkswaterstaat ;
+        coins:isClassAbstract    false ;
+        coins:isClassExtendable  false .
+
+:O-     a           :StrookType ;
+        rdfs:label  "Kantopsluiting"@nl-nl .
+
+:RwsLocator  a                   owl:Class ;
+        rdfs:comment             "Voegt eigenschappen toe om in te vullen voor een OTL BPS Streklocatie. Deze zijn gebaseerd op het oude referentiekader."@nl-nl , "Naast X-Y coördinaten volgens het Rijksdriehoeksstelsel en een Z coördinaat voor hoogte NAP\nhanteert Rijkswaterstaat BPS om locaties gerelateerd aan de weg te specificeren. Het referentiekader\nRijkswaterstaat heeft daarom objecttype RWS Locator toegevoegd als een subtype van de al\nbestaande COINS Locator.\nDe X/Y coördinaten van een RwsLocator worden geïnterpreteerd als RD coördinaten en\nrepresenteren dus een absolute positie (in tegenstelling tot de oorspronkelijke relatieve\nrepresentatie). Een eventuele Z coördinaat wordt geïnterpreteerd als hoogte t.o.v. NAP. Alle\ncoördinaten zijn in meters"@nl-nl ;
+        rdfs:label               "BPS Locatie"@nl-nl , "RwsLocator"@nl-nl ;
+        rdfs:subClassOf          otl:DAT01125 ;
+        rdfs:subClassOf          [ a                  owl:Restriction ;
+                                   owl:allValuesFrom  :StrookPositie ;
+                                   owl:onProperty     :rwsLocatorHeeftStrookPositie
+                                 ] ;
+        rdfs:subClassOf          [ a                owl:Restriction ;
+                                   owl:cardinality  "1"^^xsd:int ;
+                                   owl:onProperty   :rwsLocatorHeeftStrookPositie
+                                 ] ;
+        rdfs:subClassOf          [ a                  owl:Restriction ;
+                                   owl:allValuesFrom  :WegType ;
+                                   owl:onProperty     :rwsLocatorHeeftWegType
+                                 ] ;
+        rdfs:subClassOf          [ a                owl:Restriction ;
+                                   owl:cardinality  "1"^^xsd:int ;
+                                   owl:onProperty   :rwsLocatorHeeftBaannummer
+                                 ] ;
+        rdfs:subClassOf          [ a                  owl:Restriction ;
+                                   owl:allValuesFrom  :BaanType ;
+                                   owl:onProperty     :rwsLocatorHeeftBaantype
+                                 ] ;
+        rdfs:subClassOf          [ a                owl:Restriction ;
+                                   owl:cardinality  "1"^^xsd:int ;
+                                   owl:onProperty   :rwsLocatorHeeftBaanPositie
+                                 ] ;
+        rdfs:subClassOf          [ a                owl:Restriction ;
+                                   owl:cardinality  "1"^^xsd:int ;
+                                   owl:onProperty   :rwsLocatorHeeftAfstand
+                                 ] ;
+        rdfs:subClassOf          [ a                  owl:Restriction ;
+                                   owl:allValuesFrom  :BaanPositie ;
+                                   owl:onProperty     :rwsLocatorHeeftBaanPositie
+                                 ] ;
+        rdfs:subClassOf          [ a                owl:Restriction ;
+                                   owl:cardinality  "1"^^xsd:int ;
+                                   owl:onProperty   :rwsLocatorHeeftStrookType
+                                 ] ;
+        rdfs:subClassOf          [ a                owl:Restriction ;
+                                   owl:cardinality  "1"^^xsd:int ;
+                                   owl:onProperty   :rwsLocatorHeeftStrooknummer
+                                 ] ;
+        rdfs:subClassOf          [ a                owl:Restriction ;
+                                   owl:cardinality  "1"^^xsd:int ;
+                                   owl:onProperty   :rwsLocatorHeeftWegType
+                                 ] ;
+        rdfs:subClassOf          [ a                owl:Restriction ;
+                                   owl:cardinality  "1"^^xsd:int ;
+                                   owl:onProperty   :rwsLocatorHeeftBaantype
+                                 ] ;
+        rdfs:subClassOf          [ a                  owl:Restriction ;
+                                   owl:allValuesFrom  :StrookType ;
+                                   owl:onProperty     :rwsLocatorHeeftStrookType
+                                 ] ;
+        rdfs:subClassOf          [ a                owl:Restriction ;
+                                   owl:cardinality  "1"^^xsd:int ;
+                                   owl:onProperty   :rwsLocatorHeeftHectometerBord
+                                 ] ;
+        rdfs:subClassOf          [ a                owl:Restriction ;
+                                   owl:cardinality  "1"^^xsd:int ;
+                                   owl:onProperty   :rwsLocatorHeeftWegnummer
+                                 ] ;
+        coins:classCreator       :Rijkswaterstaat ;
+        coins:isClassAbstract    false ;
+        coins:isClassExtendable  false .
+
+:IB     a           :BaanType ;
+        rdfs:label  "Ingesloten berm"@nl-nl .
+
+:PA     a           :WegType ;
+        rdfs:label  "Particuliere weg: Een weg, grotendeels in beheer bij een particulier lichaam of persoon"@nl-nl .
+
+:StrookPositie  a                owl:Class ;
+        coins:classCreator       :Rijkswaterstaat ;
+        coins:isClassAbstract    false ;
+        coins:isClassExtendable  false .
+
+:hasSpecifications  a  owl:ObjectProperty ;
+        rdfs:domain  coins:Entity ;
+        rdfs:label   "Has specificiations"@en-gb , "Heeft specificaties"@nl-nl ;
+        rdfs:range   :Specification .
+
+:TB     a           :BaanType ;
+        rdfs:label  "Tussenberm"@nl-nl .
+
+:Role   a                        owl:Class ;
+        rdfs:label               "Role"@en-gb , "Rol"@nl-nl ;
+        rdfs:subClassOf          coins:Entity ;
+        coins:classCreator       :Rijkswaterstaat ;
+        coins:isClassAbstract    true ;
+        coins:isClassExtendable  true .
+
+:rwsLocatorHeeftHectometerBord
+        a             owl:ObjectProperty ;
+        rdfs:comment  "Reëel getal uitgedrukt in Kilometers"@nl-nl ;
+        rdfs:domain   :RwsLocator ;
+        rdfs:range    :KilometerProperty .
+
+:F-     a           :StrookType ;
+        rdfs:label  "Fietsstrook"@nl-nl .
+
+:BaanType  a                     owl:Class ;
+        rdfs:label               "Baantype"@nl-nl ;
+        coins:classCreator       :Rijkswaterstaat ;
+        coins:isClassAbstract    false ;
+        coins:isClassExtendable  false .
+
+:VB     a           :BaanType ;
+        rdfs:label  "Verzorgingsbaan"@nl-nl .
+
+:Strooknummer  a  owl:Thing .
+
+:PW     a           :BaanType , :WegType ;
+        rdfs:label  "Parallelweg"@nl-nl , "Provinciale weg: een weg, grotendeels in beheer bij de provincie"@nl-nl .
+
+:BB     a           :StrookType , :BaanType ;
+        rdfs:label  "Bovenberm"@nl-nl , "Buitenberm"@nl-nl .
+
+:MB     a           :BaanType ;
+        rdfs:label  "Middenberm"@nl-nl .
+
+:TA     a           :StrookType ;
+        rdfs:label  "Talud"@nl-nl .
+
+:GW     a           :WegType ;
+        rdfs:label  "Gemeenteweg: Een weg, grotendeels in beheer bij de Gemeente"@nl-nl .
+
+:RW     a           :WegType ;
+        rdfs:label  "Rijksweg: een weg, grotendeels in beheer bij het Rijk"@nl-nl .
+
+:U-     a           :StrookType ;
+        rdfs:label  "Uitrijstrook"@nl-nl .
+
+:OB     a           :StrookType ;
+        rdfs:label  "Onderberm"@nl-nl .
+
+:BG     a           :StrookType ;
+        rdfs:label  "Berm tussen watergang en weggrens"@nl-nl .
+
+:BaannummerProperty  a   owl:Class ;
+        rdfs:comment     "Een Integer property waarvan de unit een Baannummer moet zijn"@nl-nl ;
+        rdfs:label       "Baannummer property"@nl-nl ;
+        rdfs:subClassOf  coins:IntegerProperty ;
+        rdfs:subClassOf  [ a               owl:Restriction ;
+                           owl:hasValue    :Baannummer ;
+                           owl:onProperty  coins:unit
+                         ] .
+
+:A-     a           :StrookType ;
+        rdfs:label  "Asstreep"@nl-nl .
+
+:L-     a           :StrookType ;
+        rdfs:label  "Kruipstrook"@nl-nl .
+
+:W-     a           :StrookType ;
+        rdfs:label  "Weefstrook"@nl-nl .
+
+:rwsLocatorHeeftBaannummer
+        a             owl:ObjectProperty ;
+        rdfs:comment  "Geheel getal, gebruik als Unit de Baannummer"@nl-nl ;
+        rdfs:domain   :RwsLocator ;
+        rdfs:range    :BaannummerProperty .
+
+:hasRealisation  a   owl:ObjectProperty ;
+        rdfs:domain  :Specification ;
+        rdfs:label   "Has realisations"@en-gb , "Heeft realisaties"@nl-nl ;
+        rdfs:range   :Role .
+
+:C-     a           :StrookType ;
+        rdfs:label  "Correctiestrook"@nl-nl .
+
+:VW     a           :BaanType ;
+        rdfs:label  "Verbindingsweg"@nl-nl .
+
+:P-     a           :StrookType ;
+        rdfs:label  "Parkeerstrook"@nl-nl .
+
+:rwsLocatorHeeftWegnummer
+        a            owl:ObjectProperty ;
+        rdfs:domain  :RwsLocator ;
+        rdfs:range   coins:StringProperty .
+
+:G-     a           :StrookType ;
+        rdfs:label  "Gootstrook"@nl-nl .
+
+:BaanPositie  a  owl:Class .
+
+:R-     a           :StrookType ;
+        rdfs:label  "Rijstrook"@nl-nl .
+
+:Baannummer  a  owl:Thing .
+
+:HR     a           :BaanType ;
+        rdfs:label  "Hoofdrijbaan"@nl-nl .
+
+:VP     a           :BaanType ;
+        rdfs:label  "Voetpad"@nl-nl .
+
+:rwsLocatorHeeftStrooknummer
+        a             owl:ObjectProperty ;
+        rdfs:comment  "Geheel getal, gebruik als Unit de Strooknummer"@nl-nl ;
+        rdfs:domain   :RwsLocator ;
+        rdfs:range    :StrooknummerProperty .
+
+:I-     a           :StrookType ;
+        rdfs:label  "Invoegstrook"@nl-nl .
+
+:rwsLocatorHeeftBaanPositie
+        a            owl:ObjectProperty ;
+        rdfs:domain  :RwsLocator ;
+        rdfs:range   :StrookPositie .
+
+:YY     a           :BaanType ;
+        rdfs:label  "Overige baan"@nl-nl .
+
+:T-     a           :StrookType ;
+        rdfs:label  "Voetstrook"@nl-nl .
+
+:rwsLocatorHeeftBaantype
+        a            owl:ObjectProperty ;
+        rdfs:domain  :RwsLocator ;
+        rdfs:range   :BaanType .
+
+:rwsLocatorHeeftAfstand
+        a             owl:ObjectProperty ;
+        rdfs:comment  "Reëel getal uitgedrukt in meters"@nl-nl ;
+        rdfs:domain   :RwsLocator ;
+        rdfs:range    :MeterProperty .
+
+:SP-M   a           :StrookPositie ;
+        rdfs:label  "Strookpositie Midden"@nl-nl .
+
+:WG     a           :StrookType ;
+        rdfs:label  "Watergang"@nl-nl .
+
+:rwsLocatorHeeftWegType
+        a            owl:ObjectProperty ;
+        rdfs:domain  :RwsLocator ;
+        rdfs:range   :WegType .
+
+:K-     a           :StrookType ;
+        rdfs:label  "Kantstreep"@nl-nl .
+
+:StrooknummerProperty
+        a                owl:Class ;
+        rdfs:comment     "Een integer property waarbij de unit een Strooknummer moet zijn."@nl-nl ;
+        rdfs:label       "Strooknummer Property"@nl-nl ;
+        rdfs:subClassOf  coins:IntegerProperty ;
+        rdfs:subClassOf  [ a               owl:Restriction ;
+                           owl:hasValue    :Strooknummer ;
+                           owl:onProperty  coins:unit
+                         ] .
+
+:V-     a           :StrookType ;
+        rdfs:label  "Vluchtstrook"@nl-nl .
+
+:Rijkswaterstaat  a   coins:Organisation ;
+        rdfs:label    "Ministry of Infrastructure and Environment"@en-gb , "Ministerie van Infrastructuur en Milieu"@nl-nl ;
+        coins:userID  "Rijkswaterstaat" .
+
+:WegType  a                      owl:Class ;
+        rdfs:label               "Wegtype"@nl-nl ;
+        coins:classCreator       :Rijkswaterstaat ;
+        coins:isClassAbstract    false ;
+        coins:isClassExtendable  false .
+
+:rwsLocatorHeeftStrookPositie
+        a            owl:ObjectProperty ;
+        rdfs:domain  :RwsLocator ;
+        rdfs:range   :StrookPositie .

@@ -1,11 +1,12 @@
 package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.connector.Connector;
-import com.sysunite.coinsweb.parser.profile.Step;
+import com.sysunite.coinsweb.parser.profile.Query;
 import com.sysunite.coinsweb.steps.ValidationStepResult;
 import com.sysunite.coinsweb.validator.InferenceQueryResult;
 import com.sysunite.coinsweb.validator.ValidationQueryResult;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
@@ -30,14 +31,14 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   }
 
   public ValidationQueryResult select(Object obj) {
-    if(!(obj instanceof Step)) {
+    if(!(obj instanceof Query)) {
       throw new RuntimeException("No Step element was injected");
     }
-    Step step = (Step) obj;
+    Query step = (Query) obj;
     String errorMessage = null;
     boolean passed = false;
     long start = new Date().getTime();
-    String queryString = step.buildQuery();
+    String queryString = step.cleanQuery();
     Iterator<Map<String, String>> resultSet = null;
     ArrayList<String> formattedResults = new ArrayList<>();
 
@@ -131,10 +132,10 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
 
   public void insert(Object obj, ValidationStepResult validationStepResult) {
-    if(!(obj instanceof Step)) {
+    if(!(obj instanceof Query)) {
       throw new RuntimeException("No Step element was injected");
     }
-    Step step = (Step) obj;
+    Query step = (Query) obj;
     if(!(obj instanceof InferenceQueryResult)) {
       throw new RuntimeException("No InferenceQueryResult element was injected");
     }

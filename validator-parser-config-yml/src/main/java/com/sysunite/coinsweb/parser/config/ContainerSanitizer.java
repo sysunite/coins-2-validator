@@ -1,7 +1,8 @@
 package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.databind.util.StdConverter;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 import static com.sysunite.coinsweb.parser.Parser.isNull;
@@ -11,7 +12,7 @@ import static com.sysunite.coinsweb.parser.Parser.isNull;
  */
 class ContainerSanitizer extends StdConverter<Container, Container> {
 
-  private static final Logger log = Logger.getLogger(ContainerSanitizer.class);
+  private static final Logger log = LoggerFactory.getLogger(ContainerSanitizer.class);
 
   @Override
   public Container convert(Container obj) {

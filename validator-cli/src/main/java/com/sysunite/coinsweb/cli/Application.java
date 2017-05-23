@@ -1,16 +1,29 @@
 package com.sysunite.coinsweb.cli;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.FileAppender;
+import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
+import com.sysunite.coinsweb.filemanager.ConfigGenerator;
+import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.graphset.ContainerGraphSetImpl;
 import com.sysunite.coinsweb.graphset.GraphSetFactory;
 import com.sysunite.coinsweb.parser.config.*;
 import com.sysunite.coinsweb.report.ReportFactory;
+import com.sysunite.coinsweb.steps.StepFactoryImpl;
 import com.sysunite.coinsweb.steps.ValidationStep;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFParserRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -19,39 +32,97 @@ public class Application {
 
   private static final Logger log = LoggerFactory.getLogger(Application.class);
 
+
+  private static CliOptions options;
+
   public static void main(String[] args) {
 
-    CliOptions options = new CliOptions(args);
+    options = new CliOptions(args);
 
     // Print header
     CliOptions.printHeader();
 
     // Asked for help
-    if(options.printHelpOption()) {
+    if (options.printHelpOption()) {
       CliOptions.usage();
       System.exit(1);
       return;
     }
 
-    if(options.writeLog()) {
-      // todo
+    if (options.writeLog()) {
+      setLoggers("log.txt");
+    } else {
+      setLoggers(null);
     }
+
+    if(options.runMode()) {
+      try {
+        run();
+      } catch (RuntimeException e) {
+        log.error(e.getMessage(), e);
+      }
+    }
+    if(options.describeMode()) {
+      try {
+        describe();
+      } catch (RuntimeException e) {
+        log.error(e.getMessage(), e);
+      }
+    }
+  }
+
+  public static void describe() {
+
+    // Get config
+    ContainerFile containerFile;
+    try {
+      if (options.hasFile()) {
+        log.info("try to read container file");
+        containerFile = new ContainerFileImpl(options.getFile().toFile().toString());
+        log.info("done reading container file");
+      } else {
+        throw new RuntimeException();
+      }
+    } catch(RuntimeException e) {
+      CliOptions.printOutput("(!) problem reading container file\n");
+      CliOptions.usage();
+      System.exit(1);
+      return;
+    }
+
+    String yml = ConfigGenerator.run(containerFile);
+    System.out.println(yml);
+    System.exit(1);
+    return;
+  }
+
+  public static void run() {
+
+    StoreSanitizer.factory = new ConnectorFactoryImpl();
+    StepDeserializer.factory = new StepFactoryImpl();
+
+    log.info("supported file formats:");
+    Set<RDFFormat> formats = RDFParserRegistry.getInstance().getKeys();
+    for(RDFFormat format : formats) {
+      log.info("this is there one: " + format.getDefaultFileExtension());
+    }
+
 
     // Get config
     ConfigFile configFile;
     try {
-      if (options.hasConfig()) {
+      if (options.hasFile()) {
         log.info("try to read config.yml from file");
-        configFile = ConfigFile.parse(options.getConfig().toFile());
-        log.info("read config.yml from file");
+        configFile = ConfigFile.parse(options.getFile().toFile());
+        log.info("done reading config.yml from file");
       } else {
         log.info("try to read config.yml from pipe");
         configFile = ConfigFile.parse(System.in);
-        log.info("read config.yml from pipe");
+        log.info("done reading config.yml from pipe");
       }
-    } catch(RuntimeException e) {
-      CliOptions.printHeader();
-      CliOptions.printOutput("(!) no valid config.yml supplied\n");
+    } catch(Exception e) {
+      log.error(e.getMessage(), e);
+      CliOptions.printOutput("(!) problem reading config.yml\n");
       CliOptions.usage();
       System.exit(1);
       return;
@@ -124,6 +195,38 @@ public class Application {
       System.exit(0);
     }
 
+  }
+
+  private static void setLoggers(String filePath) {
+
+    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+    ch.qos.logback.classic.Logger root = lc.getLogger(Logger.ROOT_LOGGER_NAME);
+    root.detachAppender("console");
+
+    if(filePath != null) {
+
+      File file = new File(filePath);
+      if(file.exists()) {
+        file.delete();
+      }
+
+      PatternLayoutEncoder ple = new PatternLayoutEncoder();
+      ple.setPattern("%date %level [%thread] %logger{10} [%file:%line] %msg%n");
+      ple.setContext(lc);
+      ple.start();
+
+      FileAppender<ILoggingEvent> fileAppender = new FileAppender();
+      fileAppender.setFile(filePath);
+      fileAppender.setEncoder(ple);
+      fileAppender.setContext(lc);
+      fileAppender.start();
+      fileAppender.setAppend(false);
+
+
+      root.addAppender(fileAppender);
+      root.setLevel(Level.ALL);
+    }
   }
 
 

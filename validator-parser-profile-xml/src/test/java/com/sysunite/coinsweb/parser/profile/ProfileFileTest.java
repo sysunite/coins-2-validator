@@ -20,67 +20,39 @@ public class ProfileFileTest {
 
 
 
-//  @Test
-//  public void test() {
-//
-//    ObjectMapper objectMapper = new XmlMapper();
-//    try {
-//      InputStream file = getClass().getClassLoader().getResource("profile.lite-9.60.xml").openStream();
-//      ProfileFile profileFile = objectMapper.readValue(file, ProfileFile.class);
-//
-//      System.out.println();
-//      System.out.println("name: " + profileFile.getName());
-//      System.out.println("version: " + profileFile.getVersion());
-//      System.out.println("author: " + profileFile.getAuthor());
-//
-//      for(Query requirement : profileFile.getRequirements()) {
-//        System.out.println("requirement: " + requirement.getReference());
-//        System.out.println("requirement: " + requirement.buildQuery());
-//      }
-//
-//      for(Bundle runs : profileFile.getBundles()) {
-//        System.out.println("run name: " + runs.getName());
-//        for(Query step : runs.getSteps()) {
-//          System.out.println("step: " + step.getReference());
-//          System.out.println("step: " + step.getDescription());
-//          System.out.println("step: " + step.getFormat());
-//          System.out.println("step: " + step.buildQuery());
-//        }
-//      }
-//
-//
-//
-//
-//
-//      profileFile.getRequirements();
-//    } catch (Exception e) {
-//      System.out.println(e.getLocalizedMessage());
-//    }
-//  }
+
 
   @Test
-  public void testTemplate() {
+  public void testSmall() {
+    testTemplate("template-test.xml");
+  }
+  @Test
+  public void test960() {
+    testTemplate("profile.lite-9.60.xml");
+  }
+  public void testTemplate(String resourceFile) {
 
     XmlMapper objectMapper = new XmlMapper();
     try {
-      InputStream file = getClass().getClassLoader().getResource("template-test.xml").openStream();
+      InputStream file = getClass().getClassLoader().getResource(resourceFile).openStream();
       ProfileFile profileFile = objectMapper.readValue(file, ProfileFile.class);
 
       System.out.println();
       System.out.println("name: " + profileFile.getName());
       System.out.println("version: " + profileFile.getVersion());
-      System.out.println("author: " + profileFile.getAuthor());
+      System.out.println("author: " + profileFile.getAuthor() + "\n");
 
-      System.out.println("prefixes:\n" + profileFile.getQueryConfiguration().cleanDefaultPrefixes());
+      System.out.println("prefixes:\n" + profileFile.getQueryConfiguration().cleanDefaultPrefixes() + "\n");
 
       for(Bundle bundle : profileFile.getBundles()) {
         System.out.println("requirement: " + bundle.getReference());
+        System.out.println("requirement: " + bundle.getDescription());
 
         for(Query query : bundle.getQueries()) {
           System.out.println("query type: " + query.getType());
           System.out.println("query reference: " + query.getDescription());
           System.out.println("query format:\n" + query.cleanFormat());
-          System.out.println("query body:\n" + query.cleanQuery());
+          System.out.println("query body:\n" + query.cleanQuery() + "\n");
 
         }
       }

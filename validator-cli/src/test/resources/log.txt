@@ -1,0 +1,38 @@
+2017-05-23 14:43:28,792 INFO [main] c.s.c.c.CliOptions [CliOptions.java:150] Resolving path mix.ccr to user dir: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources
+2017-05-23 14:43:28,802 INFO [main] c.s.c.c.Application [Application.java:80] try to read container file
+2017-05-23 14:43:28,805 INFO [main] c.s.c.c.CliOptions [CliOptions.java:150] Resolving path mix.ccr to user dir: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources
+2017-05-23 14:43:28,806 INFO [main] c.s.c.c.CliOptions [CliOptions.java:150] Resolving path mix.ccr to user dir: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources
+2017-05-23 14:43:28,806 INFO [main] c.s.c.c.Application [Application.java:82] done reading container file
+2017-05-23 14:43:28,809 INFO [main] c.s.c.f.ConfigGenerator [ConfigGenerator.java:30] supported file formats:
+2017-05-23 14:43:28,833 DEBUG [main] o.e.r.r.RDFParserRegistry [ServiceRegistry.java:52] Registered service class org.eclipse.rdf4j.rio.ntriples.NTriplesParserFactory
+2017-05-23 14:43:28,836 INFO [main] c.s.c.f.ConfigGenerator [ConfigGenerator.java:33] this is there one: nt
+2017-05-23 14:43:29,013 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan log4j.xml
+2017-05-23 14:43:29,014 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan orphanfiles/bim/content.rdf
+2017-05-23 14:43:29,014 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan bim/content.rdf
+2017-05-23 14:43:29,014 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan bim/illegal/ba.txt
+2017-05-23 14:43:29,014 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan bim/repository/BranchVersioning.rdf
+2017-05-23 14:43:29,015 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan bim/repository/cbim-2.0.rdf
+2017-05-23 14:43:29,016 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan bim/repository/COINSWOA.rdf
+2017-05-23 14:43:29,016 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan bim/repository/otl-2.1.ttl
+2017-05-23 14:43:29,143 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan bim/repository/rws-coins-20-referentiekader-2.0.ttl
+2017-05-23 14:43:29,143 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan bim/repository/units-2.0.rdf
+2017-05-23 14:43:29,147 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan log4j.xml
+2017-05-23 14:43:29,147 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan rong/file in wrong folder.rdf
+2017-05-23 14:43:29,147 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan woa/woa.rdf
+2017-05-23 14:43:29,147 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:223] scan ../x.xml
+2017-05-23 14:43:29,150 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:284] Determine file type for file: /tmp/zuFKPEwD-content.rdf
+2017-05-23 14:43:29,152 WARN [main] c.s.c.f.ConfigGenerator [ConfigGenerator.java:151] Not able to determine format of file: zuFKPEwD-content.rdf
+2017-05-23 14:43:29,153 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:284] Determine file type for file: /tmp/GdtzUuHN-ba.txt
+2017-05-23 14:43:29,153 WARN [main] c.s.c.f.ConfigGenerator [ConfigGenerator.java:151] Not able to determine format of file: GdtzUuHN-ba.txt
+2017-05-23 14:43:29,283 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:284] Determine file type for file: /tmp/XlsQkqPh-units-2.0.rdf
+2017-05-23 14:43:29,283 WARN [main] c.s.c.f.ConfigGenerator [ConfigGenerator.java:168] Not able to determine format of file: XlsQkqPh-units-2.0.rdf
+2017-05-23 14:43:29,284 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:284] Determine file type for file: /tmp/TpIFTzyp-BranchVersioning.rdf
+2017-05-23 14:43:29,285 WARN [main] c.s.c.f.ConfigGenerator [ConfigGenerator.java:168] Not able to determine format of file: TpIFTzyp-BranchVersioning.rdf
+2017-05-23 14:43:29,287 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:284] Determine file type for file: /tmp/L2bsdXY9-cbim-2.0.rdf
+2017-05-23 14:43:29,287 WARN [main] c.s.c.f.ConfigGenerator [ConfigGenerator.java:168] Not able to determine format of file: L2bsdXY9-cbim-2.0.rdf
+2017-05-23 14:43:29,289 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:284] Determine file type for file: /tmp/YnKEL8v9-COINSWOA.rdf
+2017-05-23 14:43:29,289 WARN [main] c.s.c.f.ConfigGenerator [ConfigGenerator.java:168] Not able to determine format of file: YnKEL8v9-COINSWOA.rdf
+2017-05-23 14:43:29,575 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:284] Determine file type for file: /tmp/LZwUS783-otl-2.1.ttl
+2017-05-23 14:43:29,576 WARN [main] c.s.c.f.ConfigGenerator [ConfigGenerator.java:168] Not able to determine format of file: LZwUS783-otl-2.1.ttl
+2017-05-23 14:43:29,699 INFO [main] c.s.c.f.ContainerFileImpl [ContainerFileImpl.java:284] Determine file type for file: /tmp/ajFL7wfK-rws-coins-20-referentiekader-2.0.ttl
+2017-05-23 14:43:29,699 WARN [main] c.s.c.f.ConfigGenerator [ConfigGenerator.java:168] Not able to determine format of file: ajFL7wfK-rws-coins-20-referentiekader-2.0.ttl

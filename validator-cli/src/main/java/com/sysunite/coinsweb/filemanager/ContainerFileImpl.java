@@ -56,7 +56,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
           output.write(buffer, 0, n);
         }
         output.close();
-        file.deleteOnExit();
+//        file.deleteOnExit();
 
         return new ContainerFileImpl(file.getPath());
       } catch (MalformedURLException e) {
@@ -172,7 +172,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
           zis.closeEntry();
           zis.close();
 
-          file.deleteOnExit();
+//          file.deleteOnExit();
           return file;
         }
 
@@ -281,6 +281,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
 
     ArrayList<String> namespaces = new ArrayList();
 
+    log.info("Determine file type for file: "+file.toString());
     Optional<RDFFormat> format = Rio.getParserFormatForFileName(file.toString());
     if(!format.isPresent()) {
       throw new RuntimeException("Not able to determine format of file: " + file.getName());
@@ -291,10 +292,8 @@ public class ContainerFileImpl extends File implements ContainerFile {
 
     try {
       rdfParser.parse(new FileInputStream(file), "http://backup");
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage());
     }
 
     // If there are contexts, use these

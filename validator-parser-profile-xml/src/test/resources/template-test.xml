@@ -23,7 +23,7 @@
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX owl: <http://www.w3.org/2002/07/owl#>
       PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-      PREFIX cbim: <http://www.coinsweb.nl/cbim-2.0.rdf#>
+      PREFIX coins-base: <http://www.coinsweb.nl/cbim-2.0.rdf#>
       ]]>
     </defaultPrefixes>
   </queryConfiguration>
@@ -37,7 +37,7 @@
           <description>COINS 2.0 Lite profile check on predicate usage </description>
           <format>
             <![CDATA[
-            The subject ${a} uses an unsupported predicate ${b} to object ${c}, check [link to Google!](http://google.com) for more info
+            The subject ${a} uses an unsupported predicate ${b} to object ${c}, check <a href="http://google.com">link to Google!</a> for more info
             ]]>
           </format>
           <query>

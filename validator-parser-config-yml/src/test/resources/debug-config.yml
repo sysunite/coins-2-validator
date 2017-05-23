@@ -30,7 +30,7 @@ run:
 #        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/orphanfiles-leading.ccr
 #        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/mix.ccr
 #        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/otl-2.1/01_NetwerkRuimteVoorbeeld_OTL21.ccr
-        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/otl-2.1/12_LifecycleOTLDocument_OTL21.ccr
+        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/otl-2.1/12_LifecycleOTLDocument_OTL21.ccr
 
       graphs:
 

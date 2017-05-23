@@ -1,7 +1,8 @@
 package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.databind.util.StdConverter;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 
@@ -10,7 +11,7 @@ import static com.sysunite.coinsweb.parser.Parser.isNotNull;
  */
 class ConfigFileSanitizer extends StdConverter<ConfigFile, ConfigFile> {
 
-  private static final Logger log = Logger.getLogger(ConfigFileSanitizer.class);
+  private static final Logger log = LoggerFactory.getLogger(ConfigFileSanitizer.class);
   
   @Override
   public ConfigFile convert(ConfigFile obj) {

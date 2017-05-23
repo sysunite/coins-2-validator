@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 @JacksonXmlRootElement(localName = "profile")
 public class ProfileFile {
 
-  private static final Logger log = Logger.getLogger(ProfileFile.class);
+  private static final Logger log = LoggerFactory.getLogger(ProfileFile.class);
 
   @JacksonXmlProperty(localName = "name")
   private String name;

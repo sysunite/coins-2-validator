@@ -49,7 +49,7 @@ run:
     - type: ProfileValidation
       profile:
         type: file
-        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/profile.lite-9.60.xml
+        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-parser-profile-xml/src/test/resources/profile.lite-9.60.xml
       maxResults: 50
 
     - type: DocumentReferenceValidation

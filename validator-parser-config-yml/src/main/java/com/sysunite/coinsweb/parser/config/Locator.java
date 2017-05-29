@@ -1,12 +1,16 @@
 package com.sysunite.coinsweb.parser.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.*;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.sysunite.coinsweb.parser.Parser.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static com.sysunite.coinsweb.parser.Parser.validate;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -24,11 +28,17 @@ public class Locator {
   private String path;
   private String uri;
 
+  @JsonIgnore
+  private Path localizeTo;
+
   public String getType() {
     return type;
   }
   public String getPath() {
-    return path;
+    if(localizeTo == null) {
+      return path;
+    }
+    return localizeTo.relativize(Paths.get(path)).toString();
   }
   public String getUri() {
     return uri;
@@ -45,5 +55,9 @@ public class Locator {
 
   public void setUri(String uri) {
     this.uri = uri;
+  }
+
+  public void localizeTo(Path path) {
+    this.localizeTo = path;
   }
 }

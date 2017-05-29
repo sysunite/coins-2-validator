@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Set;
@@ -25,6 +27,9 @@ public class ConfigGenerator {
   private static final Logger log = LoggerFactory.getLogger(ConfigGenerator.class);
 
   public static String run(ContainerFile containerFile) {
+    return run(containerFile, Paths.get("/"));
+  }
+  public static String run(ContainerFile containerFile, Path localizeTo) {
 
 
     log.info("supported file formats:");
@@ -52,6 +57,7 @@ public class ConfigGenerator {
 
       // - Container
       Locator locator = new Locator();
+      locator.localizeTo(localizeTo);
       locator.setType("file");
       locator.setPath(containerFile.toString());
 
@@ -70,6 +76,7 @@ public class ConfigGenerator {
       steps.add(fileSystemValidation);
 
       Locator validationLocator = new Locator();
+      validationLocator.localizeTo(localizeTo);
       validationLocator.setType("file");
       validationLocator.setPath("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-parser-profile-xml/src/test/resources/profile.lite-9.60.xml");
       ProfileValidation validation = new ProfileValidation();
@@ -88,6 +95,7 @@ public class ConfigGenerator {
       ArrayList<Report> reports = new ArrayList();
 
       Locator reportLocator = new Locator();
+      reportLocator.localizeTo(localizeTo);
       reportLocator.setType("file");
       reportLocator.setPath(containerFile.toPath().getParent().resolve("report.xml").toString());
 

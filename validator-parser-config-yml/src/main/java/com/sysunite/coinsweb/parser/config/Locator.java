@@ -45,7 +45,7 @@ public class Locator {
   }
 
   public void setType(String type) {
-    validate(type, "file", "online");
+    validate(type, FILE, ONLINE);
     this.type = type;
   }
 

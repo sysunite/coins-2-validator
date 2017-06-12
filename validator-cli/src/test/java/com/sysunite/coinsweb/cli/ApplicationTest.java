@@ -12,11 +12,12 @@ import java.io.InputStream;
  */
 public class ApplicationTest {
 
-  public static String configPath = "/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-parser-config-yml/src/test/resources/debug-config.yml";
+  public static String configPath = "/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/config-generated.yml";
+//  public static String configPath = "/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-parser-config-yml/src/test/resources/debug-config.yml";
 
   @Test
   public void debugRun() {
-    String[] args = {"run", configPath};
+    String[] args = {"run", configPath, "-l"};
     Application.main(args);
   }
   @Test

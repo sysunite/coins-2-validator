@@ -1,12 +1,15 @@
 package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.connector.Connector;
-import com.sysunite.coinsweb.parser.profile.Query;
+import com.sysunite.coinsweb.filemanager.ContainerFile;
+import com.sysunite.coinsweb.filemanager.FileFactory;
+import com.sysunite.coinsweb.parser.config.ConfigFile;
+import com.sysunite.coinsweb.parser.config.Container;
+import com.sysunite.coinsweb.parser.config.Graph;
 import com.sysunite.coinsweb.steps.ValidationStepResult;
 import com.sysunite.coinsweb.validator.InferenceQueryResult;
 import com.sysunite.coinsweb.validator.ValidationQueryResult;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
@@ -20,27 +23,57 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
   private boolean disabled;
   private Connector connector;
+  private ContainerFile container;
+  private Container containerConfig;
+  private ConfigFile configFile;
+  private HashMap<String, String> graphs;
+
+
 
   public ContainerGraphSetImpl() {
     this.disabled = true;
   }
 
-  public ContainerGraphSetImpl(Connector connector) {
+  public ContainerGraphSetImpl(Connector connector, HashMap<String, String> graphs) {
     this.disabled = false;
     this.connector = connector;
+    this.graphs = graphs;
   }
 
-  public ValidationQueryResult select(Object obj) {
-    if(!(obj instanceof Query)) {
-      throw new RuntimeException("No Step element was injected");
+  private void load() {
+
+    if(disabled) {
+      return;
     }
-    Query step = (Query) obj;
+
+    for(Graph graph : containerConfig.getGraphs()) {
+
+      String[] graphNames = new String[graph.getContent().size()];
+      for(int i = 0; i < graph.getContent().size(); i++) {
+        graphNames[i] = graphs.get(graph.getContent().get(i));
+      }
+      String fileName = graph.getPath();
+      if(fileName == null) {
+        fileName = graph.getUri();
+      }
+      connector.uploadFile(FileFactory.toInputStream(graph, container, configFile), fileName, graph.getGraphname(), graphNames);
+    }
+    this.connector.setAllLoaded();
+  }
+
+  public ValidationQueryResult select(String query) {
+
     String errorMessage = null;
     boolean passed = false;
     long start = new Date().getTime();
-    String queryString = step.cleanQuery();
+
     Iterator<Map<String, String>> resultSet = null;
     ArrayList<String> formattedResults = new ArrayList<>();
+
+    if(connector.requiresLoad()) {
+      load();
+    }
+    connector.query(query);
 
 //    try {
 //
@@ -115,7 +148,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 //    }
 
     long executionTime = new Date().getTime() - start;
-    return new ValidationQueryResult(step.getReference(), step.getDescription(), queryString, resultSet, formattedResults, passed, errorMessage, executionTime);
+    return new ValidationQueryResult("ref", "desc", query, resultSet, formattedResults, passed, errorMessage, executionTime);
   }
 
   public Map<String, Long> numTriples() {
@@ -131,14 +164,8 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
 
 
-  public void insert(Object obj, ValidationStepResult validationStepResult) {
-    if(!(obj instanceof Query)) {
-      throw new RuntimeException("No Step element was injected");
-    }
-    Query step = (Query) obj;
-    if(!(obj instanceof InferenceQueryResult)) {
-      throw new RuntimeException("No InferenceQueryResult element was injected");
-    }
+  public void update(String query, ValidationStepResult validationStepResult) {
+
     InferenceQueryResult result = (InferenceQueryResult) validationStepResult;
 
 //    validationDataset = getValidationDataset();
@@ -159,4 +186,28 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     long executionTime = new Date().getTime() - start;
     result.addExecutionTime(executionTime);
   }
+
+  @Override
+  public void setContainerFile(ContainerFile container) {
+    this.container = container;
+  }
+
+  @Override
+  public void setContainerConfig(Object config) {
+    if(config instanceof Container) {
+      this.containerConfig = (Container) config;
+      return;
+    }
+    throw new RuntimeException("The object is not an instance of a Container configuration");
+  }
+
+  @Override
+  public void setConfigFile(Object configFile) {
+    if(configFile instanceof ConfigFile) {
+      this.configFile = (ConfigFile) configFile;
+      return;
+    }
+    throw new RuntimeException("The object is not an instance of a ConfigFile ");
+  }
+
 }

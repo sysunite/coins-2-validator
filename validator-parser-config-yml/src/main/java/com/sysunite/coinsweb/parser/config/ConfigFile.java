@@ -77,11 +77,11 @@ public class ConfigFile {
   public void localizeTo(Path path) {
     this.localizeTo = path;
   }
-  public Path resolve(Locator locator) {
+  public Path resolve(String path) {
     if(this.localizeTo == null) {
-      return Paths.get(locator.getPath());
+      return Paths.get(path);
     } else {
-      return this.localizeTo.resolve(Paths.get(locator.getPath()));
+      return this.localizeTo.resolve(Paths.get(path));
     }
   }
 }

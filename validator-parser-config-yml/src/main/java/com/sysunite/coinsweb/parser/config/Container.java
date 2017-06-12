@@ -36,11 +36,11 @@ public class Container {
     validate(type, "container", "virtual");
     this.type = type;
   }
-  public void setGraphs(Graph[] graphs) {
-    this.graphs = graphs;
-  }
   public void setLocation(Locator location) {
     this.location = location;
+  }
+  public void setGraphs(Graph[] graphs) {
+    this.graphs = graphs;
   }
 
 }

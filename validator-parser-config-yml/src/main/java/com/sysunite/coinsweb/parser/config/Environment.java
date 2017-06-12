@@ -13,12 +13,19 @@ public class Environment {
   private static final Logger log = LoggerFactory.getLogger(Environment.class);
 
   private Store store;
+  private Mapping[] graphs;
 
   public Store getStore() {
     return store;
   }
+  public Mapping[] getGraphs() {
+    return graphs;
+  }
 
   public void setStore(Store store) {
     this.store = store;
+  }
+  public void setGraphs(Mapping[] graphs) {
+    this.graphs = graphs;
   }
 }

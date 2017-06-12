@@ -6,24 +6,17 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.sysunite.coinsweb.parser.Parser;
-import freemarker.cache.StringTemplateLoader;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author bastbijl, Sysunite 2017
  */
 @JacksonXmlRootElement(localName = "step")
 public class Query {
+
+  public static final String NO_RESULT = "no-result";
+  public static final String UPDATE = "update";
 
   private static final Logger log = LoggerFactory.getLogger(Query.class);
 
@@ -94,51 +87,5 @@ public class Query {
   }
 
 
-//  public String buildQuery() {
-//
 
-//
-//    // Build prefixes
-//    String prefixes = "";
-//
-//    String[] parts = getQuery().getPrefixes().trim().split("\\s+");
-//    if((parts.length& 1) != 0 ) {
-//      throw new RuntimeException("The prefixes attribute should contain an even number of items in order to parse it, found "+parts.length+" with: "+getQuery().getPrefixes());
-//    }
-//    for(int i = 0; i < parts.length-2; i+=2) {
-//      prefixes += "PREFIX "+parts[i]+": <"+parts[i+1]+">\n";
-//    }
-//
-//
-//    return parseFreemarker(prefixes + query);
-//  }
-
-
-  private String parseFreemarker(String query) {
-    StringTemplateLoader templateLoader = new StringTemplateLoader();
-    Configuration cfg = new Configuration();
-    templateLoader.putTemplate("sparqlQuery", query);
-    try {
-      Template template = cfg.getTemplate("sparqlQuery");
-
-      Map<String, String> data = new HashMap<>();
-//      data.put("INSTANCE_GRAPH", "<"+ InMemGraphSet.INSTANCE_GRAPH +">");
-//      data.put("WOA_GRAPH", "<"+ InMemGraphSet.WOA_GRAPH +">");
-////      data.put("CORE_GRAPH", "<"+ InMemGraphSet.SCHEMA_GRAPH +">");
-////      data.put("SCHEMA_GRAPH", "<"+ InMemGraphSet.SCHEMA_GRAPH +">");
-//      data.put("SCHEMA_UNION_GRAPH", "<"+ InMemGraphSet.SCHEMA_UNION_GRAPH +">");
-//      data.put("FULL_UNION_GRAPH", "<"+ graphSet.getFullUnionNamespace() +">");
-
-      Writer writer = new StringWriter();
-      template.process(data, writer);
-      return writer.toString();
-
-    } catch (IOException e) {
-      log.error(e.getMessage(), e);
-    } catch (TemplateException e) {
-      log.error(e.getMessage(), e);
-    }
-
-    throw new RuntimeException("Something went wrong building query.");
-  }
 }

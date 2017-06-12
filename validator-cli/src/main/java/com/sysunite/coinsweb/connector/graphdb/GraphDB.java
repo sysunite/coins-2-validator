@@ -2,8 +2,6 @@ package com.sysunite.coinsweb.connector.graphdb;
 
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.parser.config.Store;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -16,7 +14,6 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
 import org.eclipse.rdf4j.repository.manager.RemoteRepositoryManager;
@@ -25,6 +22,8 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -116,7 +115,7 @@ public class GraphDB implements Connector {
   }
 
   @Override
-  public boolean uploadFile(File file, String namespace) {
+  public void uploadFile(File file, String[] contexts) {
 
     ValueFactory factory = repository.getValueFactory();
     try (RepositoryConnection con = repository.getConnection()) {
@@ -126,15 +125,29 @@ public class GraphDB implements Connector {
       }
       con.add(file, null, format.get());
 
-      log.warn("listing context ids:");
-      RepositoryResult<Resource> contexts = con.getContextIDs();
-      while(contexts.hasNext()) {
-        log.warn(contexts.next().stringValue());
-      }
+//      log.warn("listing context ids:");
+//      RepositoryResult<Resource> contexts = con.getContextIDs();
+//      while(contexts.hasNext()) {
+//        log.warn(contexts.next().stringValue());
+//      }
     } catch (IOException e) {
       log.error(e.getMessage(), e);
     }
+  }
+
+  @Override
+  public void uploadFile(InputStream inputStream, String fileName, String baseUri, String[] contexts) {
+
+  }
+
+  @Override
+  public boolean requiresLoad() {
     return false;
+  }
+
+  @Override
+  public void setAllLoaded() {
+
   }
 
   private RepositoryConfig createRepositoryConfig(String repositoryId) throws IOException {

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import static com.sysunite.coinsweb.filemanager.ContainerFileImpl.namespacesForFile;
@@ -44,6 +45,24 @@ public class ConfigGenerator {
 
       Environment environment = new Environment();
       environment.setStore(store);
+
+
+      Mapping fullMapping = new Mapping();
+      fullMapping.setContent("full");
+      fullMapping.setGraphname("http://full/union");
+
+      Mapping instancesMapping = new Mapping();
+      instancesMapping.setContent("instances");
+      instancesMapping.setGraphname("http://instances/union");
+
+      Mapping libraryMapping = new Mapping();
+      libraryMapping.setContent("library");
+      libraryMapping.setGraphname("http://library/union");
+
+      Mapping[] mappings = {fullMapping, instancesMapping, libraryMapping};
+
+      environment.setGraphs(mappings);
+
 
       // Run
 
@@ -156,7 +175,7 @@ public class ConfigGenerator {
           Graph graph = new Graph();
           graph.setGraphname(namespace);
           graph.setType("container");
-          graph.setContent("instances");
+          graph.setContent(new ArrayList<>(Arrays.asList("instances", "full")));
           graph.setPath(containerFile.getContentFilePath(contentFile).toString());
           graphs.add(graph);
         }
@@ -173,7 +192,7 @@ public class ConfigGenerator {
           Graph graph = new Graph();
           graph.setGraphname(namespace);
           graph.setType("container");
-          graph.setContent("library");
+          graph.setContent(new ArrayList<>(Arrays.asList("library", "full")));
           graph.setPath(containerFile.getRepositoryFilePath(repositoryFile).toString());
           graphs.add(graph);
         }

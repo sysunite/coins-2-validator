@@ -2,24 +2,25 @@ package com.sysunite.coinsweb.connector.inmem;
 
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.parser.config.Store;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 
 /**
@@ -29,6 +30,8 @@ public class InMemRdf4j implements Connector {
 
   private static final Logger log = LoggerFactory.getLogger(InMemRdf4j.class);
   private Repository repository;
+
+  private boolean initialized = false;
 
 
 
@@ -91,25 +94,52 @@ public class InMemRdf4j implements Connector {
   }
 
   @Override
-  public boolean uploadFile(File file, String namespace) {
+  public void uploadFile(File file, String[] contexts) {
 
-//    ValueFactory factory = repository.getValueFactory();
+    ValueFactory factory = repository.getValueFactory();
+    Resource[] contextsIRI = new Resource[contexts.length];
+    for(int i = 0; i < contexts.length; i++) {
+      contextsIRI[i] = factory.createIRI(contexts[i]);
+    }
+
     try (RepositoryConnection con = repository.getConnection()) {
       Optional<RDFFormat> format = Rio.getParserFormatForFileName(file.toString());
       if(!format.isPresent()) {
         throw new RuntimeException("Could not determine the type of file this is: " + file.getName());
       }
-      con.add(file, null, format.get());
+      con.add(file, null, format.get(), contextsIRI);
 
-      log.warn("listing context ids:");
-      RepositoryResult<Resource> contexts = con.getContextIDs();
-      while(contexts.hasNext()) {
-        log.warn(contexts.next().stringValue());
-      }
     } catch (IOException e) {
       log.error(e.getMessage(), e);
     }
-    return false;
   }
 
+  @Override
+  public void uploadFile(InputStream inputStream, String fileName, String baseUri, String[] contexts) {
+
+    ValueFactory factory = repository.getValueFactory();
+    Resource[] contextsIRI = new Resource[contexts.length];
+    for(int i = 0; i < contexts.length; i++) {
+      contextsIRI[i] = factory.createIRI(contexts[i]);
+    }
+
+    try (RepositoryConnection con = repository.getConnection()) {
+      Optional<RDFFormat> format = Rio.getParserFormatForFileName(fileName);
+      if(!format.isPresent()) {
+        throw new RuntimeException("Could not determine the type of file this is: " + fileName);
+      }
+      con.add(inputStream, baseUri, format.get(), contextsIRI);
+
+    } catch (IOException e) {
+      log.error(e.getMessage(), e);
+    }
+
+  }
+
+  public boolean requiresLoad() {
+    return !initialized;
+  }
+  public void setAllLoaded() {
+    initialized = true;
+  }
 }

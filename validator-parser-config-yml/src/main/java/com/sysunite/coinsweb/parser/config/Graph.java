@@ -1,12 +1,14 @@
 package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.*;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.sysunite.coinsweb.parser.Parser.*;
+import java.util.ArrayList;
+
+import static com.sysunite.coinsweb.parser.Parser.validate;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -17,8 +19,13 @@ public class Graph {
 
   private static final Logger log = LoggerFactory.getLogger(Graph.class);
 
+  public static final String FILE = "file";
+  public static final String ONLINE = "online";
+  public static final String CONTAINER = "container";
+  public static final String STORE = "store";
+
   private String graphname;
-  private String content;
+  private ArrayList<String> content;
   private String type;
   private String uri;
   private String path;
@@ -28,7 +35,7 @@ public class Graph {
   public String getGraphname() {
     return graphname;
   }
-  public String getContent() {
+  public ArrayList<String> getContent() {
     return content;
   }
   public String getType() {
@@ -48,13 +55,13 @@ public class Graph {
     this.graphname = graphname;
   }
 
-  public void setContent(String content) {
-    validate(content, "instances", "library");
+  public void setContent(ArrayList<String> content) {
+//    validate(content, "instances", "library");
     this.content = content;
   }
 
   public void setType(String type) {
-    validate(type, "file", "online", "container", "store");
+    validate(type, FILE, ONLINE, CONTAINER, STORE);
     this.type = type;
   }
 

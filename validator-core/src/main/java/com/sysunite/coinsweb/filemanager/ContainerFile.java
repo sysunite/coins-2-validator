@@ -15,6 +15,7 @@ public interface ContainerFile {
   Set<String> getAttachmentFiles();
   Set<String> getOrphanFiles();
 
+  File getFile(Path zipPath);
   File getContentFile(String filename);
   File getRepositoryFile(String filename);
   File getWoaFile(String filename);

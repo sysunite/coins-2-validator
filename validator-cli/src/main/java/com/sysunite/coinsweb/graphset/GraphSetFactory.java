@@ -3,7 +3,9 @@ package com.sysunite.coinsweb.graphset;
 import com.sysunite.coinsweb.connector.ConnectorFactory;
 import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
+import com.sysunite.coinsweb.parser.config.ConfigFile;
 import com.sysunite.coinsweb.parser.config.Container;
+import com.sysunite.coinsweb.parser.config.Mapping;
 import com.sysunite.coinsweb.parser.config.Store;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
@@ -29,15 +31,23 @@ public class GraphSetFactory {
 
   private static final Logger log = LoggerFactory.getLogger(GraphSetFactory.class);
 
-
-
-
-  public static ContainerGraphSetImpl lazyLoad(ContainerFileImpl container, Store storeConfig, Container containerConfig) {
+  public static ContainerGraphSet lazyLoad(ContainerFileImpl container, Container containerConfig, ConfigFile configFile) {
+    Store storeConfig = configFile.getEnvironment().getStore();
     if("none".equals(storeConfig.getType())) {
       return new ContainerGraphSetImpl();
     }
+
+    HashMap<String, String> graphs = new HashMap();
+    for(Mapping mapping :configFile.getEnvironment().getGraphs()) {
+      graphs.put(mapping.getContent(), mapping.getGraphname());
+    }
+
     ConnectorFactory factory = new ConnectorFactoryImpl();
-    return new ContainerGraphSetImpl(factory.build(storeConfig));
+    ContainerGraphSet graphSet = new ContainerGraphSetImpl(factory.build(storeConfig), graphs);
+    graphSet.setContainerFile(container);
+    graphSet.setContainerConfig(containerConfig);
+    graphSet.setConfigFile(configFile);
+    return graphSet;
   }
 
   public static ArrayList<String> imports(File file) {
@@ -53,6 +63,7 @@ public class GraphSetFactory {
     return namespaces;
   }
 
+  @Deprecated
   public static Model load(File file) {
 
     Optional<RDFFormat> format = Rio.getParserFormatForFileName(file.toString());

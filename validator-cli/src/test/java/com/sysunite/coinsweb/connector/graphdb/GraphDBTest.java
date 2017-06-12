@@ -30,7 +30,7 @@ public class GraphDBTest {
       log.info(""+connector.testConnection());
 
       File otl = new File(getClass().getClassLoader().getResource("otl-2.1/otl-2.1.ttl").getFile());
-      log.info(""+connector.uploadFile(otl, "http://ns"));
+//      log.info(""+connector.uploadFile(otl, new String[]{"http://ns"}));
 
 //      log.info(connector.cleanup());
 

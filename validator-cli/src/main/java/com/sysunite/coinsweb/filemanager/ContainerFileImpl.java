@@ -40,7 +40,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
   public static ContainerFileImpl parse(Locator locator, ConfigFile configFile) {
 
     if(Locator.FILE.equals(locator.getType())) {
-      return new ContainerFileImpl(configFile.resolve(locator).toString());
+      return new ContainerFileImpl(configFile.resolve(locator.getPath()).toString());
     }
     if(Locator.ONLINE.equals(locator.getType())) {
       try {
@@ -142,7 +142,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
     return orphanFiles.get(filename);
   }
 
-  private File getFile(Path zipPath) {
+  public File getFile(Path zipPath) {
 
     byte[] buffer = new byte[1024];
 

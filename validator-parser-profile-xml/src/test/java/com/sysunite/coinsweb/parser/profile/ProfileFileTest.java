@@ -100,7 +100,7 @@ public class ProfileFileTest {
       Bundle bundle = new Bundle();
 
       Query query = new Query();
-      query.setType("no-result");
+      query.setType(Query.NO_RESULT);
       query.setQuery("\n\n\n\n ba\n da\n     dddddd");
 
       ArrayList<Query> queries = new ArrayList<>();

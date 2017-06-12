@@ -9,7 +9,7 @@ import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ConfigGenerator;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
-import com.sysunite.coinsweb.graphset.ContainerGraphSetImpl;
+import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphSetFactory;
 import com.sysunite.coinsweb.parser.config.*;
 import com.sysunite.coinsweb.report.ReportFactory;
@@ -138,13 +138,13 @@ public class Application {
       return;
     }
 
-    Store storeConfig = configFile.getEnvironment().getStore();
+
 
     // For each container file execute steps
     for(Container containerConfig : configFile.getRun().getContainers()) {
 
       ContainerFileImpl container = ContainerFileImpl.parse(containerConfig.getLocation(), configFile);
-      ContainerGraphSetImpl graphSet = GraphSetFactory.lazyLoad(container, storeConfig, containerConfig);
+      ContainerGraphSet graphSet = GraphSetFactory.lazyLoad(container, containerConfig, configFile);
 
       Map<String, Object> reportItems = new HashMap();
       reportItems.put("steps", new HashMap<String, Boolean>());
@@ -194,7 +194,7 @@ public class Application {
         }
 
         if(Locator.FILE.equals(report.getLocation().getType()) && payload != null) {
-          ReportFactory.saveReport(payload, configFile.resolve(report.getLocation()));
+          ReportFactory.saveReport(payload, configFile.resolve(report.getLocation().getPath()));
         }
         if(Locator.ONLINE.equals(report.getLocation().getType()) && payload != null) {
           ReportFactory.postReport(payload, report.getLocation().getUri());

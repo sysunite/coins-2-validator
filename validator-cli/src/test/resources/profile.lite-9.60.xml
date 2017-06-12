@@ -1,0 +1,1032 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profile>
+  <name>COINS 2.0 Lite</name>
+  <version>0.9.60-Original</version>
+  <author>Hans Schevers</author>
+  <queryLanguage>SPARQL-1.1</queryLanguage>
+  <queryConfiguration>
+    <graphs>
+      <graph>
+        <code>FULL_UNION_GRAPH</code>
+        <uri>http://full/union</uri>
+        <description>All triples.</description>
+      </graph>
+      <graph>
+        <code>SCHEMA_UNION_GRAPH</code>
+        <uri>http://schema/union</uri>
+        <description>Schema triples.</description>
+      </graph>
+    </graphs>
+    <defaultPrefixes>
+      <![CDATA[
+      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX owl: <http://www.w3.org/2002/07/owl#>
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX coins-base: <http://www.coinsweb.nl/cbim-2.0.rdf#>
+      ]]>
+    </defaultPrefixes>
+  </queryConfiguration>
+  <bundles>
+    <bundle>
+      <reference>struc</reference>
+      <description>Structural checks</description>
+      <queries>
+        <query type="no-result">
+          <reference>COINS 2.0 Lite</reference>
+          <description>COINS 2.0 Lite profile check on predicate usage </description>
+          <format>
+            <![CDATA[
+            The subject ${a} uses an unsupported predicate ${b} to object ${c}, check <a href="http://google.com">link to Google!</a> for more info
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?a ?b ?c
+            WHERE {Graph <http://content#> {
+            ?a ?b ?c
+            filter (STRSTARTS(STR(?b),"http://www.w3.org/2002/07/owl#")) .
+            filter (?b not in (owl:equivalentClass,owl:allValuesFrom,owl:oneOf,owl:cardinality,owl:disjointWith,owl:distinctMembers,owl:hasValue,owl:imports,owl:intersectionOf,owl:inverseOf,owl:maxCardinality,owl:maxQualifiedCardinality,owl:members,owl:minCardinality,owl:minQualifiedCardinality,owl:onClass,owl:onProperty,owl:qualifiedCardinality,owl:unionOf,owl:annotatedProperty,owl:annotatedSource,owl:annotatedTarget,owl:backwardCompatibleWith,owl:deprecated,owl:incompatibleWith,owl:priorVersion,owl:versionInfo,owl:versionIRI))}}
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS 2.0 Lite</reference>
+          <description>COINS 2.0 Lite profile check on object usage</description>
+          <format>
+            <![CDATA[
+            The subject ${a} has a predicate ${b} to an unsupported object ${c}
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?a ?b ?c
+            WHERE {Graph ${SCHEMA_UNION_GRAPH}{
+            ?a ?b ?c   filter (STRSTARTS(STR(?c),"http://www.w3.org/2002/07/owl#")).
+            filter (?c not in (owl:AllDisjointClasses,owl:Annotation,owl:AnnotationProperty,owl:Class,owl:DatatypeProperty,owl:FunctionalProperty,owl:NamedIndividual,owl:ObjectProperty,owl:Ontology,owl:Restriction,owl:TransitiveProperty,owl:Thing,owl:topDataProperty,owl:topObjectProperty)) }}
+            ]]>
+          </query>
+        </query>
+      </queries>
+    </bundle>
+    <bundle>
+      <reference>schema-inf</reference>
+      <description>Schema inferences</description>
+      <queries>
+        <query type="update">
+          <reference>Scm-otp</reference>
+          <description>defining object Properties</description>
+          <query>
+            <![CDATA[
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            PREFIX owl: <http://www.w3.org/2002/07/owl#>
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            PREFIX cbim: <http://www.coinsweb.nl/cbim-2.0.rdf#>
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?prop a owl:ObjectProperty
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?prop rdfs:range ?class.
+            ?class a owl:Class.
+            filter (?class!=rdfs:Resource).
+            filter not exists{?prop a owl:ObjectProperty}
+            }
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>scm-avf1 (49)</reference>
+          <description>Entailment of restriction subclasses via the allvaluesfrom construct part 1</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?c1 rdfs:subClassOf ?c2
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?c1 owl:allValuesFrom ?y1 .
+            ?y1 rdfs:subClassOf ?y2.
+            ?c2 owl:allValuesFrom ?y2 .
+            ?c1 owl:onProperty ?p .
+            ?c2 owl:onProperty ?p
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>scm-avf2 (50)</reference>
+          <description>Entailment of restriction subclasses via the allvaluesfrom construct part 2</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?c2 rdfs:subClassOf ?c1
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?c1 owl:allValuesFrom ?y .
+            ?c1 owl:onProperty ?p1 .
+            ?c2 owl:allValuesFrom ?y .
+            ?c2 owl:onProperty ?p2 .
+            ?p1 rdfs:subPropertyOf ?p2
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>scm-dom2 (53)</reference>
+          <description>entailment of domains for subproperties</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?p1 rdfs:domain ?c
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?p2 rdfs:domain ?c .
+            ?p1 rdfs:subPropertyOf ?p2
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>scm-hv (59)</reference>
+          <description>Entailment of restriction subclasses via the hasValue construct</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?c1 rdfs:subClassOf ?c2
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?c1 owl:hasValue ?i .
+            ?c1 owl:onProperty ?p1 .
+            ?c2 owl:hasValue ?i .
+            ?c2 owl:onProperty ?p2 .
+            ?p1 rdfs:subPropertyOf ?p2
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>scm-int (60) (member:list replaced)</reference>
+          <description>Restriction subclassing for hasValue restrictions. dependency on list:member removed</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?c rdfs:subClassOf ?cl
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?c owl:intersectionOf /rdf:rest*/rdf:first ?cl
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>Scm-rng1 (62)</reference>
+          <description>entailment of ranges for subclasses</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?p rdfs:range ?c2
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?p rdfs:range ?c1 .
+            ?c1 rdfs:subClassOf ?c2
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>Scm-rng2 (63)</reference>
+          <description>entailment of ranges for subproperties</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?p1 rdfs:range ?c
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?p2 rdfs:range ?c .
+            ?p1 rdfs:subPropertyOf ?p2
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>Scm-sco (64)</reference>
+          <description>entailment of the subclass hierarchy</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?c1 rdfs:subClassOf ?c3
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?c1 rdfs:subClassOf ?c2 .
+            ?c2 rdfs:subClassOf ?c3
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>Scm-spo (65)</reference>
+          <description>entailment of the subproperty hierarchy</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?p1 rdfs:subPropertyOf ?p3
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?p1 rdfs:subPropertyOf ?p2 .
+            ?p2 rdfs:subPropertyOf ?p3
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>scm-svf1 (66)</reference>
+          <description>Restriction subclassing based upon someValuesFrom</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?c1 rdfs:subClassOf ?c2
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?c1 owl:someValuesFrom ?y1 .
+            ?c1 owl:onProperty ?p .
+            ?c2 owl:someValuesFrom ?y2 .
+            ?c2 owl:onProperty ?p .
+            ?y1 rdfs:subClassOf ?y2
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>scm-svf2 (67)</reference>
+          <description>Restriction subclassing based upon someValuesFrom</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?c1 rdfs:subClassOf ?c2
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?c1 owl:someValuesFrom ?y .
+            ?c1 owl:onProperty ?p1 .
+            ?c2 owl:someValuesFrom ?y .
+            ?c2 owl:onProperty ?p2 .
+            ?p1 rdfs:subPropertyOf ?p2
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="udpate">
+          <reference>scm-uni (68)</reference>
+          <description>UnionClass subtyping entailment. Removed list:member dependency</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?cl rdfs:subClassOf ?c
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?c owl:unionOf  /rdf:rest*/rdf:first  ?cl
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+      </queries>
+    </bundle>
+    <bundle>
+      <reference>data-inf</reference>
+      <description>Data inferences</description>
+      <queries>
+        <query type="update">
+          <reference>CAXSCO (18)</reference>
+          <description>Entailment of superclass typing</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?x a ?c2
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?x a ?c1
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?c1 rdfs:subClassOf ?c2
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>Prp-spo1 (45)</reference>
+          <description>Entailment of subproperty values</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?x ?p2 ?y
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?p1 rdfs:subPropertyOf ?p2
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?x ?p1 ?y .
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>Prp-trp (48)</reference>
+          <description>Entailment of transitive property values</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?x ?p ?z
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?p a owl:TransitiveProperty
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?x ?p ?y .
+            ?y ?p ?z
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>cls-hv1 (20)</reference>
+          <description>Default values entailment via the hasValue constraint</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?u a ?x
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?x owl:hasValue ?y .
+            ?x owl:onProperty ?p .
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?u ?p ?y
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>Prp-inv (41)</reference>
+          <description>Entailment of inverseOf values part 1</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?y ?p2 ?x
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?p1 owl:inverseOf ?p2 .
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?x ?p1 ?y .
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="update">
+          <reference>Prp-inv2 (42)</reference>
+          <description>Entailment of inverse values part 2</description>
+          <query>
+            <![CDATA[
+            insert {Graph ${FULL_UNION_GRAPH}{
+            ?y ?p1 ?x
+            }}
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?p1 owl:inverseOf ?p2
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?x ?p2 ?y .
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+      </queries>
+    </bundle>
+    <bundle>
+      <reference>rules</reference>
+      <description>Validation rules</description>
+      <queries>
+        <query type="no-result">
+          <reference>COINS-minCar</reference>
+          <description>minimal constraint validation</description>
+          <format>
+            <![CDATA[
+              ${this} has ${aantal} <b onclick="alert('you won the lottery')">properties</b> of ${property}. The minimum is ${min},
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?class ?this  ?min ?aantal ?property
+
+            WHERE {{
+            select distinct ?this ?class ?min (count(distinct ?value) as ?aantal) ?property
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?class a owl:Restriction .
+            ?class owl:minCardinality ?min .
+            ?class owl:onProperty ?property
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            {?this a ?class .
+            filter not exists {?this a cbim:ExpiredEntity} }
+            union
+            { ?this a ?class .
+            filter not exists {?this a cbim:ExpiredEntity }
+            optional{ ?this ?property ?value.
+            filter not exists {?value a cbim:ExpiredEntity} } }
+            }
+
+            }group by ?this ?class ?min ?property
+            }
+            filter(xsd:integer(?aantal) &lt; xsd:integer(?min))
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-CAREX</reference>
+          <description>Exactly cardinality validatie</description>
+          <format>
+            <![CDATA[
+              ${this} has ${aantal} properties of ${property}.  Exactly ${min} is necessary.
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?this  ?min ?aantal ?property
+
+            WHERE {{
+            select distinct ?this ?class ?min (count(distinct ?value) as ?aantal) ?property
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?class a owl:Restriction .
+            ?class owl:cardinality ?min .
+            ?class owl:onProperty ?property
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            {?this a ?class .
+            filter not exists {?this a cbim:ExpiredEntity} }
+            union
+            { ?this a ?class .
+            filter not exists {?this a cbim:ExpiredEntity }
+            optional{ ?this ?property ?value.
+            filter not exists {?value a cbim:ExpiredEntity} } }
+            }
+
+            }group by ?this ?class ?min ?property
+            }
+            filter((xsd:integer(?aantal) &lt; xsd:integer(?min)) || (xsd:integer(?aantal)>xsd:integer(?min)) )
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-maxCar</reference>
+          <description>maximum cardinality constraint validation</description>
+          <format>
+            <![CDATA[
+              ${this} has ${aantal} properties of ${property}.  The maximum is ${min}.
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?this ?class ?min ?aantal ?property
+
+            WHERE {{
+            select distinct ?this  ?min (count(distinct ?value) as ?aantal) ?property
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?class a owl:Restriction .
+            ?class owl:maxCardinality ?min .
+            ?class owl:onProperty ?property
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            #fuseki bugfix
+            ?this a ?class .
+            filter not exists {?this a cbim:ExpiredEntity}
+            ?this ?property ?value.
+            filter not exists {?value a cbim:ExpiredEntity}
+            }
+
+            }group by ?this ?class ?min ?property
+            }
+            filter(xsd:integer(?aantal)>xsd:integer(?min))
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-QCREx</reference>
+          <description>Exactly Qualitative Cardinality restriction validatie</description>
+          <format>
+            <![CDATA[
+              ${this} has ${aantal} qualified properties of ${property} of type ${onClass}.  ${min} values is necessary.
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?this  ?min ?aantal ?property  ?onClass
+
+            WHERE {{
+            select distinct ?this ?class ?min (count(distinct ?value) as ?aantal) ?property ?onClass
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?class a owl:Restriction .
+            ?class owl:onClass ?onClass .
+            ?class owl:qualifiedCardinality ?min .
+            ?class owl:onProperty ?property .
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            {   ?this a ?class .
+            filter not exists {?this a cbim:ExpiredEntity} }union {?this a ?class .
+            filter not exists {?this a cbim:ExpiredEntity}
+            optional{   ?this ?property ?value.	filter not exists {?value a cbim:ExpiredEntity}
+            ?value a ?onClass } }
+            }
+
+            }  group by ?this ?class ?min  ?property  ?onClass
+            }
+            filter((?aantal &lt; ?min) || (?aantal &gt; ?min) )
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-QCRMax</reference>
+          <description>Maximum Qualitative Cardinality restriction validatie</description>
+          <format>
+            <![CDATA[
+              ${this} has ${aantal} qualified properties of ${property} .  the maximum is ${min}.
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?this ?class ?min ?aantal ?property
+
+            WHERE {{
+            select distinct ?this ?class ?min  (count(distinct ?value) as ?aantal)	 ?property
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?class a owl:Restriction .
+            ?class owl:onClass ?onClass.
+            ?class owl:maxQualifiedCardinality ?min .
+            ?class owl:onProperty ?property .
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?this a ?class .
+            filter not exists {?this a cbim:ExpiredEntity}
+            optional{ ?this ?property ?value. filter not exists {?value a cbim:ExpiredEntity}.?value a ?onClass}
+            }
+
+            }  group by  ?this ?class ?min  ?property
+            }
+            filter((xsd:integer(?aantal)>xsd:integer(?min)) )
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-QCRMin</reference>
+          <description>Minimal Qualitative Cardinality restriction validatie</description>
+          <format>
+            <![CDATA[
+              ${this} has ${aantal} qualified properties of ${property} .  the minimum is ${min}.
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?this  ?min ?aantal ?property
+
+            WHERE {{
+            select distinct ?this ?class ?min (count(distinct ?value) as ?aantal)  ?property
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?class a owl:Restriction .
+            ?class owl:onClass ?onClass.
+            ?class owl:minQualifiedCardinality ?min .
+            ?class owl:onProperty ?property .
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            {  ?this a ?class .
+            filter not exists {?this a cbim:ExpiredEntity}  }union { ?this a ?class .
+            filter not exists {?this a cbim:ExpiredEntity}
+            optional{   ?this ?property ?value.
+            ?value a ?onClass.
+            filter not exists {?value a cbim:ExpiredEntity} }	}
+            }
+
+            }  group by ?this ?class ?min  ?property
+            }
+            filter((xsd:integer(?aantal) &lt; xsd:integer(?min)) )
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-FUP</reference>
+          <description>functional property as a restriction validation</description>
+          <format>
+            <![CDATA[
+              ${this} has ${aantal} properties of ${property}.  Only 1 is allowed (functional property).
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?this  ?property ?aantal
+
+            WHERE {{
+            select distinct ?this ?property  (count(distinct ?value) as ?aantal)
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?property a owl:FunctionalProperty
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?this ?property ?value.
+            filter not exists {?this a cbim:ExpiredEntity}
+            filter not exists {?value a cbim:ExpiredEntity}
+            }
+
+            } group by  ?this ?property
+            }
+            filter(xsd:integer(?aantal)>1)
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-DTVC</reference>
+          <description>Datatype check</description>
+          <format>
+            <![CDATA[
+              ${value} is of the type ${dat} which is not valid for ${prop} for individual ${a}. It should be a ${range}.
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?a ?prop ?range ?value (Datatype(?value) as ?dat)
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?prop  a owl:DatatypeProperty .
+            ?prop rdfs:range ?range.
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?a ?prop ?value
+            }
+            filter (Datatype(?value) !=?range)
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-DPVL</reference>
+          <description>Datatype waarde check</description>
+          <format>
+            <![CDATA[
+              ${value} is not a valid value for datatype property ${prop} for individual ${a}
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?a ?prop ?value
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?prop  a owl:DatatypeProperty
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?a ?prop ?value.
+            filter(!isLiteral(?value))
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-OPVU</reference>
+          <description>ObjectProperty waarde check</description>
+          <format>
+            <![CDATA[
+              ${value} is not a valid value for object property ${prop} for individual ${a}
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?a ?prop ?value
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?prop  a owl:ObjectProperty
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?a ?prop ?value.
+            filter(!isIRI(?value))
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-dom</reference>
+          <description>Domain als een restrictie</description>
+          <format>
+            <![CDATA[
+              individual ${a} has a property ${prop} with value ${b}. ${a} is not of the correct type
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?a ?prop ?b
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?prop a owl:ObjectProperty. ?prop rdfs:domain ?domain.
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?a ?prop ?b
+            }
+            filter not exists {{Graph ${FULL_UNION_GRAPH}{
+            ?a a ?domain
+            }}  union { Graph ${FULL_UNION_GRAPH}{
+            ?a a ?domain}
+            }}
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-rng</reference>
+          <description>Range als een restrictie</description>
+          <format>
+            <![CDATA[
+              individual ${a} has a property ${prop} with value ${b}. ${b} is not of the correct type
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?a ?prop ?b
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?prop a owl:ObjectProperty. ?prop rdfs:range  ?range.
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?a ?prop ?b
+            }
+            filter not exists {{Graph ${FULL_UNION_GRAPH}{
+            ?b a ?range
+            }}  union { Graph ${FULL_UNION_GRAPH}{
+            ?b a ?range}
+            }}
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-HVC</reference>
+          <description>hasValue check</description>
+          <format>
+            <![CDATA[
+              ${value} is not set for object property ${prop} for individual ${a}
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?res ?a ?prop ?value
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?res  a owl:Restriction. ?res owl:hasValue ?value. ?res owl:onProperty ?prop
+            }
+            {
+            Graph ${FULL_UNION_GRAPH}{
+            ?a a ?res
+            }
+            } minus {
+            Graph ${FULL_UNION_GRAPH}{
+            ?a a ?res. ?a ?prop ?value
+            }
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-AVFOneOf</reference>
+          <description>owl:allValuesFrom oneOf value check</description>
+          <format>
+            <![CDATA[
+              ${a} is not correct for property ${prop}
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?res ?a ?prop
+
+            WHERE {{
+            {
+            select distinct ?res ?a ?prop
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?res  a owl:Restriction. ?res owl:allValuesFrom/owl:oneOf/rdf:rest*/rdf:first ?value. ?res owl:onProperty ?prop
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?a a ?res
+            }
+
+            }}
+            } minus {
+            {
+            select distinct ?res ?a ?prop
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?res  a owl:Restriction. ?res owl:allValuesFrom/owl:oneOf/rdf:rest*/rdf:first ?value. ?res owl:onProperty ?prop
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?a a ?res. ?a ?prop ?value
+            }
+
+            }}
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-UO</reference>
+          <description>UnionOf as a restriction validation</description>
+          <format>
+            <![CDATA[
+              ${a} does not fulfill all UnionOf restrictions
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?a ?first
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?restriction owl:unionOf  ?list.
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?a a ?restriction.
+            }
+            filter not exists{Graph ${FULL_UNION_GRAPH}{
+            ?a a ?first .
+            }Graph ${FULL_UNION_GRAPH}{
+            ?list rdf:rest*/rdf:first ?first
+            }}
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>COINS-IS</reference>
+          <description>Intersection as a restriction validation</description>
+          <format>
+            <![CDATA[
+              ${a} does not fulfill the Intersection restriction ${restriction}
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?restriction ?a
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?restriction owl:intersectionOf  ?list.
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?a a ?restriction.
+            }
+            filter not exists{Graph ${FULL_UNION_GRAPH}{
+            ?a a ?first
+            }Graph ${FULL_UNION_GRAPH}{
+            ?list rdf:rest*/rdf:first ?first
+            }}
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>Cax-adx (listmod)</reference>
+          <description>Disjoint via owl:allDisjointClasses</description>
+          <format>
+            <![CDATA[
+              instance ${x} is a member of ${c1} and of ${c2}. ${c1} and ${c2} are disjoint so instance ${x} cannot be a member of both classes
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            select distinct ?x ?c1 ?c2
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?y a owl:AllDisjointClasses .
+            ?y owl:members ?members .
+            ?members rdf:rest*/rdf:first ?c1 .
+            ?members rdf:rest*/rdf:first ?c2 .
+            FILTER (?c1 != ?c2) .
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?x a ?c1 .
+            ?x a ?c2
+            }
+
+            }
+            ]]>
+          </query>
+        </query>
+        <query type="no-result">
+          <reference>cax-dw</reference>
+          <description>Disjoint via owl:disjointWith</description>
+          <format>
+            <![CDATA[
+            instance ${x} is a member of ${c1} and of ${c2}. ${c1} and ${c2} are disjoint so instance ${x} cannot be a member of both <a href="http://www.google.com/?query=classes">classes</a>.
+            ]]>
+          </format>
+          <query>
+            <![CDATA[
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            PREFIX owl: <http://www.w3.org/2002/07/owl#>
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            PREFIX cbim: <http://www.coinsweb.nl/cbim-2.0.rdf#>
+            select distinct ?x ?c1 ?c2
+
+            WHERE {Graph ${FULL_UNION_GRAPH}{
+            ?c1 owl:disjointWith ?c2
+            }
+            Graph ${FULL_UNION_GRAPH}{
+            ?x a ?c1 .
+            ?x a ?c2 .
+            }
+            }
+            ]]>
+          </query>
+        </query>
+      </queries>
+    </bundle>
+  </bundles>
+</profile>

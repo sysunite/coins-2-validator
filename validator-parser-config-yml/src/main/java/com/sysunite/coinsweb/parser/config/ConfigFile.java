@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.parser.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -23,11 +26,21 @@ public class ConfigFile {
   private Environment environment;
   private Run run;
 
+  @JsonIgnore
+  private Path localizeTo;
+
   public static ConfigFile parse(File file) {
+    return parse(file, null);
+  }
+  public static ConfigFile parse(File file, Path basePath) {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     String message = "";
     try {
-      return mapper.readValue(file, ConfigFile.class);
+      ConfigFile configFile = mapper.readValue(file, ConfigFile.class);
+      if(basePath != null) {
+        configFile.localizeTo(basePath);
+      }
+      return configFile;
     } catch (Exception e) {
       message = e.getMessage();
     }
@@ -58,5 +71,17 @@ public class ConfigFile {
 
   public void setEnvironment(Environment environment) {
     this.environment = environment;
+  }
+
+
+  public void localizeTo(Path path) {
+    this.localizeTo = path;
+  }
+  public Path resolve(Locator locator) {
+    if(this.localizeTo == null) {
+      return Paths.get(locator.getPath());
+    } else {
+      return this.localizeTo.resolve(Paths.get(locator.getPath()));
+    }
   }
 }

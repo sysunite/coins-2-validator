@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.util.StdConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.sysunite.coinsweb.parser.Parser.canCreateFile;
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 
 /**
@@ -18,9 +17,6 @@ class ReportSanitizer extends StdConverter<Report, Report> {
   public Report convert(Report obj) {
 
     isNotNull(obj.getType());
-    if(obj.getLocation() != null && "file".equals(obj.getLocation().getType())) {
-      canCreateFile(obj.getLocation().getPath());
-    }
 
     return obj;
   }

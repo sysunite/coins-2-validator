@@ -5,17 +5,13 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
 import com.sysunite.coinsweb.parser.config.*;
 import com.sysunite.coinsweb.steps.ProfileValidation;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RDFParserRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.Set;
 
 import static com.sysunite.coinsweb.filemanager.ContainerFileImpl.namespacesForFile;
 
@@ -27,16 +23,9 @@ public class ConfigGenerator {
   private static final Logger log = LoggerFactory.getLogger(ConfigGenerator.class);
 
   public static String run(ContainerFile containerFile) {
-    return run(containerFile, Paths.get("/"));
+    return run(containerFile, null);
   }
   public static String run(ContainerFile containerFile, Path localizeTo) {
-
-
-    log.info("supported file formats:");
-    Set<RDFFormat> formats = RDFParserRegistry.getInstance().getKeys();
-    for(RDFFormat format : formats) {
-      log.info("this is there one: " + format.getDefaultFileExtension());
-    }
 
     ObjectMapper mapper = new ObjectMapper(
       new YAMLFactory()
@@ -45,6 +34,9 @@ public class ConfigGenerator {
     );
 
     try {
+
+
+      ConfigFile configFile = new ConfigFile();
 
       // Environment
       Store store = new Store();
@@ -75,11 +67,19 @@ public class ConfigGenerator {
       fileSystemValidation.setType("FileSystemValidation");
       steps.add(fileSystemValidation);
 
+
+      Path profileLocation;
+      if(localizeTo != null) {
+        profileLocation = localizeTo.resolve("profile.lite-9.60.xml");
+      } else {
+        profileLocation = containerFile.toPath().getParent().resolve("profile.lite-9.60.xml");
+      }
       Locator validationLocator = new Locator();
       validationLocator.localizeTo(localizeTo);
       validationLocator.setType("file");
-      validationLocator.setPath("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-parser-profile-xml/src/test/resources/profile.lite-9.60.xml");
+      validationLocator.setPath(profileLocation.toString());
       ProfileValidation validation = new ProfileValidation();
+      validation.setConfigFile(configFile);
       validation.setProfile(validationLocator);
       String validationSnippet = mapper.writeValueAsString(validation);
 
@@ -94,13 +94,19 @@ public class ConfigGenerator {
       // - Reports
       ArrayList<Report> reports = new ArrayList();
 
+      Path reportLocation;
+      if(localizeTo != null) {
+        reportLocation = localizeTo.resolve("report.xml");
+      } else {
+        reportLocation = containerFile.toPath().getParent().resolve("report.xml");
+      }
       Locator reportLocator = new Locator();
       reportLocator.localizeTo(localizeTo);
       reportLocator.setType("file");
-      reportLocator.setPath(containerFile.toPath().getParent().resolve("report.xml").toString());
+      reportLocator.setPath(reportLocation.toString());
 
       Report report = new Report();
-      report.setType("xml");
+      report.setType("debug");
       report.setLocation(reportLocator);
       reports.add(report);
 
@@ -111,7 +117,6 @@ public class ConfigGenerator {
       run.setReports(reports.toArray(new Report[0]));
 
       // Put it together
-      ConfigFile configFile = new ConfigFile();
       configFile.setEnvironment(environment);
       configFile.setRun(run);
 

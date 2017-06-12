@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.filemanager;
 
+import com.sysunite.coinsweb.parser.config.ConfigFile;
 import com.sysunite.coinsweb.parser.config.Locator;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.eclipse.rdf4j.model.Model;
@@ -34,17 +35,17 @@ public class ContainerFileImpl extends File implements ContainerFile {
 
   private static final Logger log = LoggerFactory.getLogger(ContainerFileImpl.class);
 
-  public static String tempLocation = "/tmp";
   private boolean scanned = false;
 
-  public static ContainerFileImpl parse(Locator locator) {
+  public static ContainerFileImpl parse(Locator locator, ConfigFile configFile) {
 
     if(Locator.FILE.equals(locator.getType())) {
-      return new ContainerFileImpl(locator.getPath());
+      return new ContainerFileImpl(configFile.resolve(locator).toString());
     }
     if(Locator.ONLINE.equals(locator.getType())) {
       try {
-        File file = new File(tempLocation + "/" + RandomStringUtils.random(8, true, true) + ".ccr");
+        File file = File.createTempFile(RandomStringUtils.random(8, true, true),".ccr");
+        file.deleteOnExit();
         URL url = new URL(locator.getUri());
         URLConnection connection = url.openConnection();
         InputStream input = connection.getInputStream();
@@ -56,15 +57,14 @@ public class ContainerFileImpl extends File implements ContainerFile {
           output.write(buffer, 0, n);
         }
         output.close();
-//        file.deleteOnExit();
 
         return new ContainerFileImpl(file.getPath());
       } catch (MalformedURLException e) {
-        e.printStackTrace();
+        log.error(e.getMessage(), e);
       } catch (FileNotFoundException e) {
-        e.printStackTrace();
+        log.error(e.getMessage(), e);
       } catch (IOException e) {
-        e.printStackTrace();
+        log.error(e.getMessage(), e);
       }
     }
     throw new RuntimeException("Profile file could not be loaded.");
@@ -151,16 +151,19 @@ public class ContainerFileImpl extends File implements ContainerFile {
       // Get the zip file content
       ZipInputStream zis = new ZipInputStream(new FileInputStream(this));
       ZipEntry ze = zis.getNextEntry();
+      Path zePath = Paths.get(ze.getName());
 
       while(ze != null) {
 
         if(ze.isDirectory()) {
           ze = zis.getNextEntry();
+          zePath = Paths.get(ze.getName());
           continue;
         }
 
-        if(ze.getName().equals(zipPath.toString())) {
-          File file = new File(tempLocation + "/" + RandomStringUtils.random(8, true, true) + "-" + zipPath.getFileName());
+        if(zePath.equals(zipPath)) {
+          File file = File.createTempFile(RandomStringUtils.random(8, true, true), zipPath.getFileName().toString());
+          file.deleteOnExit();
           FileOutputStream fos = new FileOutputStream(file);
 
           int len;
@@ -172,18 +175,19 @@ public class ContainerFileImpl extends File implements ContainerFile {
           zis.closeEntry();
           zis.close();
 
-//          file.deleteOnExit();
+
           return file;
         }
 
         ze = zis.getNextEntry();
+        zePath = Paths.get(ze.getName());
       }
 
       zis.closeEntry();
       zis.close();
 
-    } catch(IOException ex) {
-      ex.printStackTrace();
+    } catch(IOException e) {
+      log.error(e.getMessage(), e);
     }
     throw new RuntimeException("File not found in container: " + zipPath);
   }
@@ -269,8 +273,8 @@ public class ContainerFileImpl extends File implements ContainerFile {
       zis.closeEntry();
       zis.close();
 
-    } catch(IOException ex) {
-      ex.printStackTrace();
+    } catch(IOException e) {
+      log.error(e.getMessage(), e);
     }
     scanned = true;
   }

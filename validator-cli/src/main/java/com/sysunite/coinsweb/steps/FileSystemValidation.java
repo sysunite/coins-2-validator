@@ -48,9 +48,12 @@ public class FileSystemValidation implements ValidationStep {
       availableGraphs.addAll(namespacesForFile(repoFile));
     }
 
-    ArrayList<String> imports = GraphSetFactory.imports(container.getContentFile(container.getContentFiles().iterator().next()));
-    for(String namespace : imports) {
-      allImportsImportable &= availableGraphs.contains(namespace);
+    ArrayList<String> imports = new ArrayList();
+    if(!container.getContentFiles().isEmpty()) {
+      imports = GraphSetFactory.imports(container.getContentFile(container.getContentFiles().iterator().next()));
+      for (String namespace : imports) {
+        allImportsImportable &= availableGraphs.contains(namespace);
+      }
     }
 
     boolean valid = oneRepoFile && noSubsInBim && noOrphans && allImportsImportable;

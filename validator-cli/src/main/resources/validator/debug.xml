@@ -3,13 +3,17 @@
   <valid>${valid?c}</valid>
   <steps>
 <#list steps?keys as key>
-    <step>${key}</step>
-    <valid>${steps[key]?c}</valid>
+    <step>
+      <name>${key}</name>
+      <valid>${steps[key]?c}</valid>
+    </step>
 </#list>
   </steps>
   <variables>
 <#list .data_model?keys as key>
-    <variable>${key}</variable>
+    <variable>
+      <key>${key}</key>
+    </variable>
 </#list>
   </variables>
 </debug>

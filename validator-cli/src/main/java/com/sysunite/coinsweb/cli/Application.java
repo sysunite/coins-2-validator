@@ -15,15 +15,15 @@ import com.sysunite.coinsweb.parser.config.*;
 import com.sysunite.coinsweb.report.ReportFactory;
 import com.sysunite.coinsweb.steps.StepFactoryImpl;
 import com.sysunite.coinsweb.steps.ValidationStep;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RDFParserRegistry;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -55,28 +55,39 @@ public class Application {
       setLoggers(null);
     }
 
-    if(options.runMode()) {
+
+    if(options.describeMode()) {
       try {
-        run();
+        System.out.println(describe());
+        System.exit(0);
       } catch (RuntimeException e) {
         log.error(e.getMessage(), e);
       }
     }
-    if(options.describeMode()) {
+    if(options.runMode()) {
       try {
-        describe();
+        File configFile = null;
+        if (options.hasFile() && options.isContainerFile(options.getFile())) {
+          configFile = CliOptions.resolvePath("config-generated.yml").toFile();
+          FileUtils.writeStringToFile(configFile, describe(), "UTF-8");
+        } else if (options.hasFile() && options.isConfigFile(options.getFile())) {
+          configFile = options.getFile().toFile();
+        }
+        run(configFile);
       } catch (RuntimeException e) {
+        log.error(e.getMessage(), e);
+      } catch (IOException e) {
         log.error(e.getMessage(), e);
       }
     }
   }
 
-  public static void describe() {
+  public static String describe() {
 
     // Get config
     ContainerFile containerFile;
     try {
-      if (options.hasFile()) {
+      if (options.hasFile() && options.isContainerFile(options.getFile())) {
         log.info("try to read container file");
         containerFile = new ContainerFileImpl(options.getFile().toFile().toString());
         log.info("done reading container file");
@@ -87,33 +98,32 @@ public class Application {
       CliOptions.printOutput("(!) problem reading container file\n");
       CliOptions.usage();
       System.exit(1);
-      return;
+      return null;
     }
 
-    String yml = ConfigGenerator.run(containerFile);
-    System.out.println(yml);
-    System.exit(1);
-    return;
+    Path localizeTo = null;
+    if(!options.absolutePaths()) {
+      localizeTo = CliOptions.resolvePath("");
+    }
+
+    String yml = ConfigGenerator.run(containerFile, localizeTo);
+    return yml;
   }
 
-  public static void run() {
+  /**
+   * @param inputFile if null read from System.in
+   */
+  public static void run(File inputFile) {
 
     StoreSanitizer.factory = new ConnectorFactoryImpl();
     StepDeserializer.factory = new StepFactoryImpl();
 
-    log.info("supported file formats:");
-    Set<RDFFormat> formats = RDFParserRegistry.getInstance().getKeys();
-    for(RDFFormat format : formats) {
-      log.info("this is there one: " + format.getDefaultFileExtension());
-    }
-
-
     // Get config
     ConfigFile configFile;
     try {
-      if (options.hasFile()) {
+      if (inputFile != null) {
         log.info("try to read config.yml from file");
-        configFile = ConfigFile.parse(options.getFile().toFile());
+        configFile = ConfigFile.parse(inputFile);
         log.info("done reading config.yml from file");
       } else {
         log.info("try to read config.yml from pipe");
@@ -133,7 +143,7 @@ public class Application {
     // For each container file execute steps
     for(Container containerConfig : configFile.getRun().getContainers()) {
 
-      ContainerFileImpl container = ContainerFileImpl.parse(containerConfig.getLocation());
+      ContainerFileImpl container = ContainerFileImpl.parse(containerConfig.getLocation(), configFile);
       ContainerGraphSetImpl graphSet = GraphSetFactory.lazyLoad(container, storeConfig, containerConfig);
 
       Map<String, Object> reportItems = new HashMap();
@@ -184,7 +194,7 @@ public class Application {
         }
 
         if(Locator.FILE.equals(report.getLocation().getType()) && payload != null) {
-          ReportFactory.saveReport(payload, report.getLocation().getPath());
+          ReportFactory.saveReport(payload, configFile.resolve(report.getLocation()));
         }
         if(Locator.ONLINE.equals(report.getLocation().getType()) && payload != null) {
           ReportFactory.postReport(payload, report.getLocation().getUri());
@@ -206,7 +216,7 @@ public class Application {
 
     if(filePath != null) {
 
-      File file = new File(filePath);
+      File file = CliOptions.resolvePath(filePath).toFile();
       if(file.exists()) {
         file.delete();
       }

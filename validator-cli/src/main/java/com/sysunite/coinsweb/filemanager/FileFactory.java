@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.filemanager;
 
+import com.sysunite.coinsweb.parser.config.ConfigFile;
 import com.sysunite.coinsweb.parser.config.Locator;
 
 import java.io.File;
@@ -14,10 +15,16 @@ import java.net.URL;
  */
 public class FileFactory {
 
-  public static InputStream toInputStream(Locator locator) {
+
+  public static InputStream toInputStream(Locator locator, ConfigFile configFile) {
     if(Locator.FILE.equals(locator.getType())) {
       try {
-        File file = new File(locator.getPath());
+        File file;
+        if(configFile != null) {
+          file = configFile.resolve(locator).toFile();
+        } else {
+          file =  new File(locator.getPath());
+        }
         return new FileInputStream(file);
       } catch (IOException e) {
         e.printStackTrace();

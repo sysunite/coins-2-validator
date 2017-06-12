@@ -9,11 +9,15 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Map;
 
@@ -47,9 +51,9 @@ public class ReportFactory {
       return writer.toString();
 
     } catch (TemplateException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     }
     throw new RuntimeException("Was not able to build the report from template.");
   }
@@ -75,11 +79,11 @@ public class ReportFactory {
 
       code = con.getResponseCode();
     } catch (MalformedURLException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     } catch (ProtocolException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     }
 
     if(code != 200) {
@@ -87,11 +91,11 @@ public class ReportFactory {
     }
   }
 
-  public static void saveReport(String payload, String path) {
+  public static void saveReport(String payload, Path path) {
     try {
-      FileUtils.writeStringToFile(new File(path), payload);
+      FileUtils.writeStringToFile(path.toFile(), payload, "UTF-8");
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     }
   }
 

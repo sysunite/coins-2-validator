@@ -2,6 +2,8 @@ package com.sysunite.coinsweb.filemanager;
 
 import com.sysunite.coinsweb.parser.config.ConfigFile;
 import com.sysunite.coinsweb.parser.config.Locator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,6 +17,7 @@ import java.net.URL;
  */
 public class FileFactory {
 
+  private static final Logger log = LoggerFactory.getLogger(ConfigGenerator.class);
 
   public static InputStream toInputStream(Locator locator, ConfigFile configFile) {
     if(Locator.FILE.equals(locator.getType())) {
@@ -27,7 +30,7 @@ public class FileFactory {
         }
         return new FileInputStream(file);
       } catch (IOException e) {
-        e.printStackTrace();
+        log.error(e.getMessage(), e);
       }
     }
     if(Locator.ONLINE.equals(locator.getType())) {
@@ -35,9 +38,9 @@ public class FileFactory {
         URL url = new URL(locator.getUri());
         return url.openStream();
       } catch (MalformedURLException e) {
-        e.printStackTrace();
+        log.error(e.getMessage(), e);
       } catch (IOException e) {
-        e.printStackTrace();
+        log.error(e.getMessage(), e);
       }
     }
 

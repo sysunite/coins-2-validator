@@ -3,6 +3,8 @@ package com.sysunite.coinsweb.connector;
 import com.sysunite.coinsweb.connector.graphdb.GraphDB;
 import com.sysunite.coinsweb.connector.inmem.InMemRdf4j;
 import com.sysunite.coinsweb.parser.config.Store;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -12,6 +14,8 @@ import java.util.Map;
  * @author bastbijl, Sysunite 2017
  */
 public class ConnectorFactoryImpl implements ConnectorFactory {
+
+  private static final Logger log = LoggerFactory.getLogger(ConnectorFactoryImpl.class);
 
   private static final Map<String, Class<? extends Connector>> register;
   static
@@ -36,13 +40,13 @@ public class ConnectorFactoryImpl implements ConnectorFactory {
     try {
       return clazz.getConstructor(Store.class).newInstance(config);
     } catch (InstantiationException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     } catch (IllegalAccessException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     } catch (InvocationTargetException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     } catch (NoSuchMethodException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     }
     throw new RuntimeException("Was not able to construct connector");
   }

@@ -13,6 +13,8 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +26,8 @@ import java.util.*;
  * @author bastbijl, Sysunite 2017
  */
 public class GraphSetFactory {
+
+  private static final Logger log = LoggerFactory.getLogger(GraphSetFactory.class);
 
 
 
@@ -63,9 +67,9 @@ public class GraphSetFactory {
       rdfParser.parse(new FileInputStream(file), "http://backup");
       return model;
     } catch (FileNotFoundException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     }
     throw new RuntimeException("Not able to load model from file");
   }

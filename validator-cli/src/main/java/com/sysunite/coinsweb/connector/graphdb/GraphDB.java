@@ -65,7 +65,7 @@ public class GraphDB implements Connector {
 //    try {
 //      manager.addRepositoryConfig(createRepositoryConfig(repositoryId));
 //    } catch (IOException e) {
-//      e.printStackTrace();
+//    log.error(e.getMessage(), e);
 //    }
 //    repository = manager.getRepository(repositoryId);
 
@@ -99,10 +99,10 @@ public class GraphDB implements Connector {
           log.info( s+"-"+p+"->"+o);
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        log.error(e.getMessage(), e);
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     }
     return true;
   }
@@ -132,7 +132,7 @@ public class GraphDB implements Connector {
         log.warn(contexts.next().stringValue());
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     }
     return false;
   }

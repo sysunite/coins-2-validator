@@ -145,4 +145,9 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     throw new RuntimeException("The object is not an instance of a ConfigFile ");
   }
 
+  @Override
+  public void close() {
+    connector.cleanup();
+  }
+
 }

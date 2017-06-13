@@ -13,7 +13,7 @@ public interface Connector {
   boolean testConnection();
   Object query(String queryString);
   void update(String queryString);
-  boolean cleanup();
+  void cleanup();
   void uploadFile(File file, String[] contexts);
   void uploadFile(InputStream inputStream, String fileName, String baseUri, String[] contexts);
 

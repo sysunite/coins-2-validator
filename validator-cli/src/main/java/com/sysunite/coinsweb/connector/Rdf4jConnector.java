@@ -76,11 +76,10 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   @Override
-  public boolean cleanup() {
+  public void cleanup() {
     try (RepositoryConnection con = repository.getConnection()) {
       con.clear();
     }
-    return false;
   }
 
   @Override

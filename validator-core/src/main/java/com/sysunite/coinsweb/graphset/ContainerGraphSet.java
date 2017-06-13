@@ -17,4 +17,6 @@ public interface ContainerGraphSet {
   void setConfigFile(Object configFile);
   Map<String, Long> quadCount();
 
+  void close();
+
 }

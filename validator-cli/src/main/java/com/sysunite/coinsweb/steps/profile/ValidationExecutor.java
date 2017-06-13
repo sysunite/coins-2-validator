@@ -134,7 +134,7 @@ public class ValidationExecutor {
 
       bundleResults.put(bundle.getReference(), resultMap);
     }
-    
+
 
     // Prepare data to transfer to the template
     Map<String, Object> reportItems = new HashMap();

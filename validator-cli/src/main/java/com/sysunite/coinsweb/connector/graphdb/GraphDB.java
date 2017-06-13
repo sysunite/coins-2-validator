@@ -2,10 +2,12 @@ package com.sysunite.coinsweb.connector.graphdb;
 
 import com.sysunite.coinsweb.connector.Rdf4jConnector;
 import com.sysunite.coinsweb.parser.config.Store;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.GraphUtil;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
 import org.eclipse.rdf4j.repository.manager.RemoteRepositoryManager;
@@ -30,12 +32,15 @@ public class GraphDB extends Rdf4jConnector {
   private static final Logger log = LoggerFactory.getLogger(GraphDB.class);
 
   private String url;
+  RepositoryManager manager;
+  String repositoryId;
+
+  boolean disableCleanUp = false;
 
 
 
   public GraphDB(Store config) {
 
-//    log.info(""+config.getConfig().containsKey("custom"));
     if(config.getConfig() == null || !config.getConfig().containsKey("endpoint")) {
       throw new RuntimeException("No endpoint url specified");
     }
@@ -44,6 +49,10 @@ public class GraphDB extends Rdf4jConnector {
 //    log.info(""+config.getConfig().containsKey("user"));
 //    log.info(""+config.getConfig().containsKey("password"));
 
+    if(config.getConfig().containsKey("disableCleanUp")) {
+      disableCleanUp = Boolean.parseBoolean(config.getConfig().get("disableCleanUp"));
+    }
+
 
 
 
@@ -51,10 +60,10 @@ public class GraphDB extends Rdf4jConnector {
 
   public void init() {
 
-    RepositoryManager manager = new RemoteRepositoryManager(url);
+    manager = new RemoteRepositoryManager(url);
     manager.initialize();
 
-    String repositoryId = "otl21-generated";
+    repositoryId = "validator-generated-" + RandomStringUtils.random(8, true, true);
 
     try {
       manager.addRepositoryConfig(createRepositoryConfig(repositoryId));
@@ -62,11 +71,27 @@ public class GraphDB extends Rdf4jConnector {
     log.error(e.getMessage(), e);
     }
     repository = manager.getRepository(repositoryId);
-
-//    repository = manager.getRepository("otl21");
   }
 
 
+
+  @Override
+  public void cleanup() {
+    if(repository != null) {
+      if(!disableCleanUp) {
+        try (RepositoryConnection con = repository.getConnection()) {
+          con.clear();
+        }
+      }
+      repository.shutDown();
+    }
+
+    if(!disableCleanUp) {
+      if (manager != null && repositoryId != null) {
+        manager.removeRepository(repositoryId);
+      }
+    }
+  }
 
 
 

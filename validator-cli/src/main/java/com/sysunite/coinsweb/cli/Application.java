@@ -161,6 +161,9 @@ public class Application {
         reportItems.putAll(items);
       }
 
+      // Close graphSet
+      graphSet.close();
+
       // Postprocessing of reportItems
       boolean valid = true;
       Map<String, Boolean> steps = (Map<String, Boolean>) reportItems.get("steps");

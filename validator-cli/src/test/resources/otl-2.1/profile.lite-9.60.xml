@@ -37,6 +37,7 @@
       PREFIX owl: <http://www.w3.org/2002/07/owl#>
       PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
       PREFIX coins-base: <http://www.coinsweb.nl/cbim-2.0.rdf#>
+      PREFIX cbim: <http://www.coinsweb.nl/cbim-2.0.rdf#>
       ]]>
     </defaultPrefixes>
   </queryConfiguration>
@@ -91,11 +92,6 @@
           <description>defining object Properties</description>
           <query>
             <![CDATA[
-            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX owl: <http://www.w3.org/2002/07/owl#>
-            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-            PREFIX cbim: <http://www.coinsweb.nl/cbim-2.0.rdf#>
             insert {Graph ${FULL_UNION_GRAPH}{
             ?prop a owl:ObjectProperty
             }}

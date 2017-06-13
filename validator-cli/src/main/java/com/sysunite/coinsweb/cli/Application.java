@@ -88,9 +88,9 @@ public class Application {
     ContainerFile containerFile;
     try {
       if (options.hasFile() && options.isContainerFile(options.getFile())) {
-        log.info("try to read container file");
+        log.info("Try to read container file");
         containerFile = new ContainerFileImpl(options.getFile().toFile().toString());
-        log.info("done reading container file");
+        log.info("Done reading container file");
       } else {
         throw new RuntimeException();
       }
@@ -122,13 +122,13 @@ public class Application {
     ConfigFile configFile;
     try {
       if (inputFile != null) {
-        log.info("try to read config.yml from file");
+        log.info("Try to read config.yml from file");
         configFile = ConfigFile.parse(inputFile);
-        log.info("done reading config.yml from file");
+        log.info("Done reading config.yml from file");
       } else {
-        log.info("try to read config.yml from pipe");
+        log.info("Try to read config.yml from pipe");
         configFile = ConfigFile.parse(System.in);
-        log.info("done reading config.yml from pipe");
+        log.info("Done reading config.yml from pipe");
       }
     } catch(Exception e) {
       log.error(e.getMessage(), e);
@@ -201,7 +201,7 @@ public class Application {
         }
       }
 
-      log.info("finished successfully, quitting");
+      log.info("Finished successfully, quitting");
       System.exit(0);
     }
 
@@ -222,7 +222,7 @@ public class Application {
       }
 
       PatternLayoutEncoder ple = new PatternLayoutEncoder();
-      ple.setPattern("%date %level [%thread] %logger{10} [%file:%line] %msg%n");
+      ple.setPattern("%date{yyyy-MM-dd HH:mm:ss} %level [%file:%line] %msg%n");
       ple.setContext(lc);
       ple.start();
 
@@ -235,7 +235,7 @@ public class Application {
 
 
       root.addAppender(fileAppender);
-      root.setLevel(Level.ALL);
+      root.setLevel(Level.INFO);
     }
   }
 

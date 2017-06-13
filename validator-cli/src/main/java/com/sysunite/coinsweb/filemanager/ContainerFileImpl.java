@@ -224,7 +224,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
           normalizedPath = leadingPath.relativize(normalizedPath);
         }
 
-        log.info("scan "+normalizedPath);
+        log.info("Scan "+normalizedPath);
 
         // bim
         if(normalizedPath.startsWith(bimPath)) {

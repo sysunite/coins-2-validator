@@ -150,7 +150,6 @@ public class CliOptions {
 
     try {
       String userDir = System.getProperty("user.dir");
-      log.info("Resolving path "+path.toString()+" to user dir: "+userDir);
       Path currentPath = Paths.get(new File(userDir).getCanonicalPath());
       return currentPath.resolve(path);
     } catch (IOException e) {

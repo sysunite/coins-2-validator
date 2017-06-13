@@ -4,3 +4,4 @@ services/oracle/oracledb
 src/test/resources/otl-2.1
 services/performance-registry/node_modules
 profile-xml-parser/lib
+graphdb-free-8.1.1-dist.zip

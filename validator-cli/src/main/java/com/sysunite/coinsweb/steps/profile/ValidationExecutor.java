@@ -61,24 +61,28 @@ public class ValidationExecutor {
 
 
     long start = new Date().getTime();
+    boolean valid = true;
 
 
 
 
 //    Runtime runtime = Runtime.getRuntime();
 
+    HashMap<String, HashMap<String, ValidationQueryResult>> bundleResults = new HashMap();
+
     // Execute bundles in order of appearance
     for(Bundle bundle : profile.getBundles()) {
       boolean containsUpdate = false;
       boolean someTripleWasAdded = false;
 
+      Map<String, Long> previous = null;
       HashMap<String, ValidationQueryResult> resultMap = new HashMap();
 
       log.info("\uD83D\uDC1A Will perform bundle \""+bundle.getReference()+"\"");
 
       int run = 1;
       do {
-
+        someTripleWasAdded = false;
         if(run > MAX_RUNS) {
           throw new RuntimeException("Break running, max number of repeated runs reached for bundle: "+bundle.getReference());
         }
@@ -99,8 +103,14 @@ public class ValidationExecutor {
 
             String queryString = QueryFactory.buildQuery(query, profile.getQueryConfiguration());
             graphSet.update(queryString, resultCarrier);
-            resultCarrier.addRunStatistics(graphSet.quadCount());
-            if(resultCarrier.quadsAddedLastRun() > 0) {
+
+            Map<String, Long> current = graphSet.quadCount();
+            resultCarrier.addRunStatistics(current);
+            long quadsAdded = quadsAdded(previous, current);
+            previous = current;
+
+            log.info("Finished run "+resultCarrier.getRunStatistics().size()+" for query \""+query.getReference()+"\", this total amount of quads was added: "+quadsAdded);
+            if(quadsAdded > 0) {
               someTripleWasAdded = true;
             }
 
@@ -109,7 +119,11 @@ public class ValidationExecutor {
           if (Query.NO_RESULT.equals(query.getType())) {
 
             String queryString = QueryFactory.buildQuery(query, profile.getQueryConfiguration());
-//            graphSet.select(queryString, resultCarrier);
+            graphSet.select(queryString, query.getFormatTemplate(), resultCarrier);
+            boolean hasNoResults = resultCarrier.getFormattedResults().isEmpty();
+            resultCarrier.setPassed(hasNoResults);
+
+            valid &= hasNoResults;
 
           }
 
@@ -117,56 +131,41 @@ public class ValidationExecutor {
 
         run++;
       } while(containsUpdate && someTripleWasAdded);
+
+      bundleResults.put(bundle.getReference(), resultMap);
     }
-
-
-//    boolean profileChecks = executeQueries(profile.getRequirements(), execution.getProfileCheckResults());
-//    execution.updateMemMaxUsage(runtime.totalMemory());
-
-
-
-//    execution.setProfileChecksPassed(profileChecks);
-//    execution.setValidationPassed(validationRules);
-//    execution.setExecutionTime(new Date().getTime() - start);
-
-
-
-
-
-    log.info("Built report");
-
-
-
-    boolean valid = true;
+    
 
     // Prepare data to transfer to the template
     Map<String, Object> reportItems = new HashMap();
 
-
-    reportItems.put("valid",      valid);
-//    data.put("filename", model.getCoinsContainer().getFileName());
-//    data.put("libraries", libraries);
-//    data.put("online", online);
-//    data.put("imports", imports);
-//    data.put("graphs", graphs);
-//    data.put("attachments", model.getCoinsContainer().getAttachments());
-//    data.put("date", new Date().toString());
-//    data.put("executionTime", execution.getExecutionTime());
-//    data.put("memLimit", execution.getMemLimit());
-//    data.put("memMaxUsage", execution.getMemMaxUsage());
-//    data.put("graphSetImpl", connector.getClass().getCanonicalName());
-//    data.put("profileName", this.profile.getName());
-//    data.put("profileVersion", this.profile.getVersion());
-//    data.put("profileChecksPassed", execution.profileChecksPassed());
-//    data.put("fileStructureSanity", fileStructureSanity);
-//    data.put("fileStructureMessage", fileStructureMessage);
-//    data.put("allImportsAvailable", allImportsAvailable);
-//    data.put("validationPassed", execution.validationPassed());
-//    data.put("profileChecks", execution.getProfileCheckResults());
-//    data.put("schemaInferences", execution.getSchemaInferenceResults());
-//    data.put("dataInferences", execution.getDataInferenceResults());
-//    data.put("validationRules", execution.getValidationRuleResults());
+    reportItems.put("valid",         valid);
+    reportItems.put("bundleResults", bundleResults);
 
     return reportItems;
+  }
+
+
+  public static long quadsAdded(Map<String, Long> previous, Map<String, Long> current) {
+    if(current == null || current.isEmpty()) {
+      return 0l;
+    }
+    if(previous == null || previous.isEmpty()) {
+      long count = 0l;
+      for(Long graphCount : current.values()) {
+        count += graphCount;
+      }
+      return count;
+    }
+
+    long count = 0l;
+    for(String graphName : current.keySet()) {
+      if(!previous.containsKey(graphName)) {
+        count += current.get(graphName);
+      } else {
+        count += (current.get(graphName) - previous.get(graphName));
+      }
+    }
+    return count;
   }
 }

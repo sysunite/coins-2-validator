@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public interface ContainerGraphSet {
 
-  void select(String query, ValidationStepResult result);
+  void select(String query, Object formatTemplate, ValidationStepResult result);
   void update(String query, ValidationStepResult result);
   void setContainerFile(ContainerFile container);
   void setContainerConfig(Object containerConfig);

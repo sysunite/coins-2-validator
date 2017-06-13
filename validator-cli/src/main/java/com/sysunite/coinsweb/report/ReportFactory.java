@@ -1,11 +1,12 @@
 package com.sysunite.coinsweb.report;
 
-import freemarker.cache.StringTemplateLoader;
 import freemarker.core.InvalidReferenceException;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.rdf4j.query.Binding;
+import org.eclipse.rdf4j.query.BindingSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,7 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -99,18 +101,21 @@ public class ReportFactory {
     }
   }
 
-  public String formatResult(String resultFormat, Map<String, String> data) {
+  public static String formatResult(BindingSet row, Template template) {
 
-    if(resultFormat == null) {
-      throw new RuntimeException("Please set a ResultFormat before the results can be returned in a formatted form.");
+    log.warn("A result was found, this is bad");
+
+    HashMap<String, String> data = new HashMap();
+    for(String var : row.getBindingNames()) {
+      Binding binding = row.getBinding(var);
+      if(binding != null) {
+        data.put(var, binding.getValue().stringValue());
+      } else {
+        data.put(var, "NO_VALUE");
+      }
     }
 
     try {
-      StringTemplateLoader templateLoader = new StringTemplateLoader();
-      Configuration cfg = new Configuration();
-      cfg.setTemplateLoader(templateLoader);
-      templateLoader.putTemplate("resultFormat", resultFormat);
-      Template template = cfg.getTemplate("resultFormat");
 
       Writer writer = new StringWriter();
       template.process(data, writer);
@@ -123,6 +128,6 @@ public class ReportFactory {
     } catch (TemplateException e) {
       log.error(e.getMessage(), e);
     }
-    throw new RuntimeException("Something went wrong formatting a result.");
+    throw new RuntimeException("Something went wrong formatting a result");
   }
 }

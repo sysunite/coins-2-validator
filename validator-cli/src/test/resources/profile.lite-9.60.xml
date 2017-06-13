@@ -12,9 +12,9 @@
         <description>All triples.</description>
       </graph>
       <!--<graph>-->
-        <!--<code>INSTANCE_GRAPH</code>-->
-        <!--<uri>http://instances/union</uri>-->
-        <!--<description>Instances triples.</description>-->
+      <!--<code>INSTANCE_GRAPH</code>-->
+      <!--<uri>http://instances/union</uri>-->
+      <!--<description>Instances triples.</description>-->
       <!--</graph>-->
       <graph>
         <code>SCHEMA_UNION_GRAPH</code>
@@ -501,7 +501,7 @@
 
             }group by ?this ?class ?min ?property
             }
-            filter(xsd:integer(?aantal) &lt; xsd:integer(?min))
+            filter(xsd:integer(?aantal) < xsd:integer(?min))
 
             }
             ]]>
@@ -539,7 +539,7 @@
 
             }group by ?this ?class ?min ?property
             }
-            filter((xsd:integer(?aantal) &lt; xsd:integer(?min)) || (xsd:integer(?aantal)>xsd:integer(?min)) )
+            filter((xsd:integer(?aantal) < xsd:integer(?min)) || (xsd:integer(?aantal)>xsd:integer(?min)) )
 
             }
             ]]>
@@ -612,7 +612,7 @@
 
             }  group by ?this ?class ?min  ?property  ?onClass
             }
-            filter((?aantal &lt; ?min) || (?aantal &gt; ?min) )
+            filter((?aantal < ?min) || (?aantal > ?min) )
 
             }
             ]]>
@@ -685,7 +685,7 @@
 
             }  group by ?this ?class ?min  ?property
             }
-            filter((xsd:integer(?aantal) &lt; xsd:integer(?min)) )
+            filter((xsd:integer(?aantal) < xsd:integer(?min)) )
 
             }
             ]]>
@@ -1017,11 +1017,6 @@
           </format>
           <query>
             <![CDATA[
-            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX owl: <http://www.w3.org/2002/07/owl#>
-            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-            PREFIX cbim: <http://www.coinsweb.nl/cbim-2.0.rdf#>
             select distinct ?x ?c1 ?c2
 
             WHERE {Graph ${FULL_UNION_GRAPH}{

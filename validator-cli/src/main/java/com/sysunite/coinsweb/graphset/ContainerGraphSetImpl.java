@@ -6,11 +6,19 @@ import com.sysunite.coinsweb.filemanager.FileFactory;
 import com.sysunite.coinsweb.parser.config.ConfigFile;
 import com.sysunite.coinsweb.parser.config.Container;
 import com.sysunite.coinsweb.parser.config.Graph;
+import com.sysunite.coinsweb.report.ReportFactory;
 import com.sysunite.coinsweb.steps.ValidationStepResult;
+import com.sysunite.coinsweb.steps.profile.ValidationQueryResult;
+import freemarker.template.Template;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -66,93 +74,31 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     this.connector.setAllLoaded();
   }
 
-  public void select(String query, ValidationStepResult validationStepResult) {
-
-    String errorMessage = null;
-    boolean passed = false;
-    long start = new Date().getTime();
-
-    Iterator<Map<String, String>> resultSet = null;
-    ArrayList<String> formattedResults = new ArrayList<>();
+  public void select(String query, Object formatTemplate, ValidationStepResult validationStepResult) {
 
     if(connector.requiresLoad()) {
       load();
     }
-    connector.query(query);
 
-//    try {
-//
-//      List<Map<String, String>> result = new ArrayList<>();
-//
-//      ResultSet results = getResultSet(queryString, getValidationDataset());
-//
-//      passed = !results.hasNext();
-//
-//      // Output query results
-//      while (results.hasNext()) {
-//
-//        HashMap<String, String> resultRow = new HashMap();
-//
-//        QuerySolution row = results.next();
-//
-//        Iterator columnNames = row.varNames();
-//        while(columnNames.hasNext()) {
-//          String columnName = (String) columnNames.next();
-//          RDFNode item = row.get(columnName);
-//          if(item.isAnon()) {
-//            resultRow.put(columnName, "BLANK");
-//          } else if(item.isResource()) {
-//            String value = item.asResource().getURI();
-//            if(value == null) {
-//              value = "NON INTERPRETABLE URI";
-//            }
-//            resultRow.put(columnName, value);
-//          } else if(item.isLiteral()) {
-//            String value = item.asLiteral().getLexicalForm();
-//            if(value == null) {
-//              value = "NON INTERPRETABLE LITERAL";
-//            }
-//            resultRow.put(columnName, value);
-//          } else {
-//            resultRow.put(columnName, "NOT INTERPRETED");
-//            log.warn("Skipping a result from the query "+validationQuery.getReference()+".");
-//          }
-//        }
-//
-//        formattedResults.add(validationQuery.formatResult(resultRow));
-//
-//        result.add(resultRow);
-//      }
-//
-//      resultSet = result.iterator();
-//
-//
-//      if(passed) {
-//        log.trace("Query "+validationQuery.getReference()+" found no results, passed.");
-//      } else {
-//        log.trace("For query "+validationQuery.getReference()+" results where found, not passing validation.");
-//
-//      }
-//
-//    } catch (QueryParseException e) {
-//
-//      errorMessage = "Problem executing query "+validationQuery.getReference()+": ";
-//      errorMessage += escapeHtml4("\n" + queryString + "\n" + e.getMessage());
-//      log.error(errorMessage);
-//      passed = false;
-//
-//    } catch (OutOfMemoryError e) {
-//
-//      errorMessage = "Problem executing query "+validationQuery.getReference()+", not enough memory.";
-//      log.error(errorMessage);
-//      passed = false;
-//
-//      // Free up variables
-//      resultSet = null;
-//      formattedResults = null;
-//    }
+    long start = new Date().getTime();
+
+    ArrayList<String> formattedResults = new ArrayList<>();
+    TupleQueryResult result = (TupleQueryResult) connector.query(query);
+
+    if(!result.hasNext()) {
+      log.info("No results, which is good");
+    } else {
+
+      while(result.hasNext()) {
+        BindingSet row = result.next();
+        formattedResults.add(ReportFactory.formatResult(row, (Template) formatTemplate));
+      }
+    }
 
     long executionTime = new Date().getTime() - start;
+    ((ValidationQueryResult) validationStepResult).setExecutionTime(executionTime);
+    ((ValidationQueryResult) validationStepResult).setExecutedQuery(query);
+    ((ValidationQueryResult) validationStepResult).addFormattedResults(formattedResults);
   }
 
   public Map<String, Long> quadCount() {
@@ -163,28 +109,17 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
   public void update(String query, ValidationStepResult validationStepResult) {
 
-
-//    validationDataset = getValidationDataset();
-//
-    long start = new Date().getTime();
-
     if(connector.requiresLoad()) {
       load();
     }
+
+    long start = new Date().getTime();
+
     connector.update(query);
-//    String queryString = query.getSparqlQuery(this);
-//
-//    try {
-//
-//      UpdateRequest request = new UpdateRequest();
-//      request.add(queryString);
-//      UpdateAction.execute(request, validationDataset);
-//
-//    } catch (QueryException e) {
-//      throw new RuntimeException("There is a problem with this query: " + queryString, e);
-//    }
 
     long executionTime = new Date().getTime() - start;
+    ((ValidationQueryResult) validationStepResult).setExecutionTime(executionTime);
+    ((ValidationQueryResult) validationStepResult).setExecutedQuery(query);
   }
 
   @Override

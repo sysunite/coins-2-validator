@@ -1,9 +1,11 @@
 package com.sysunite.coinsweb.connector;
 
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.query.*;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -45,25 +47,16 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   @Override
-  public void query(String queryString) {
+  public TupleQueryResult query(String queryString) {
 
     try (RepositoryConnection con = repository.getConnection()) {
 
       TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
-      try (TupleQueryResult result = tupleQuery.evaluate()) {
-        while (result.hasNext()) {  // iterate over the result
-          BindingSet bindingSet = result.next();
-          Value s = bindingSet.getValue("s");
-          Value p = bindingSet.getValue("p");
-          Value o = bindingSet.getValue("o");
-          log.info( s+"-"+p+"->"+o);
-        }
-      } catch (Exception e) {
-        log.error(e.getMessage(), e);
-      }
+      return tupleQuery.evaluate();
     } catch (Exception e) {
       log.error(e.getMessage(), e);
     }
+    throw new RuntimeException("Was not able to build resultset for query");
   }
 
   @Override

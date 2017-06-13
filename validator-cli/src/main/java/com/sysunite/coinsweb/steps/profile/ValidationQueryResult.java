@@ -44,11 +44,11 @@ public class ValidationQueryResult implements ValidationStepResult {
   private String description;
   private String sparqlQuery;
   private Iterator<Map<String,String>> resultSet;
-  private List<String> formattedResults;
+  private List<String> formattedResults = new ArrayList<>();
   private boolean passed;
   private String errorMessage;
   private long executionTime;
-  private ArrayList<Map<String, Long>> runStatistics = new ArrayList<>();
+  private List<Map<String, Long>> runStatistics = new ArrayList<>();
 
   public ValidationQueryResult(Query queryConfig) {
 
@@ -56,20 +56,23 @@ public class ValidationQueryResult implements ValidationStepResult {
     this.id = Long.toHexString(Double.doubleToLongBits(Math.random()));
     this.reference = queryConfig.getReference();
     this.description = queryConfig.getDescription();
-    this.passed = passed;
     this.errorMessage = errorMessage;
-    this.executionTime = executionTime;
-//    this.triplesAdded = new HashMap<>();
   }
 
+  public void setExecutionTime(long executionTime) {
+    this.executionTime = executionTime;
+  }
   public void setExecutedQuery(String sparqlQuery) {
     this.sparqlQuery = sparqlQuery;
   }
   public void setResultSet(Iterator<Map<String,String>> resultSet) {
     this.resultSet = resultSet;
   }
-  public void setFormattedResults(List<String> formattedResults) {
-    this.formattedResults = formattedResults;
+  public void addFormattedResults(List<String> formattedResults) {
+    this.formattedResults.addAll(formattedResults);
+  }
+  public void setPassed(boolean passed) {
+    this.passed = passed;
   }
 
 
@@ -103,32 +106,9 @@ public class ValidationQueryResult implements ValidationStepResult {
 
   public void addRunStatistics(Map<String, Long> quadCount) {
     runStatistics.add(quadCount);
-    log.info("Finished run "+runStatistics.size()+" for query \""+reference+"\", this total amount of quads was added: "+quadsAddedLastRun());
   }
-  public long quadsAddedLastRun() {
-    if(runStatistics.isEmpty()) {
-      return 0l;
-    }
-    if(runStatistics.size() == 1) {
-      long count = 0l;
-      for(Long graphCount : runStatistics.get(0).values()) {
-        count += graphCount;
-      }
-      return count;
-    }
-
-    Map<String, Long> previous = runStatistics.get(runStatistics.size()-2);
-    Map<String, Long> current = runStatistics.get(runStatistics.size()-1);
-    long count = 0l;
-    for(String graphName : current.keySet()) {
-      if(!previous.containsKey(graphName)) {
-        count += current.get(graphName);
-      } else {
-        count += (current.get(graphName) - previous.get(graphName));
-      }
-    }
-    return count;
+  public List<Map<String, Long>> getRunStatistics() {
+    return runStatistics;
   }
-
 
 }

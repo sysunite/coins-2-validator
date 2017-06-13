@@ -11,7 +11,7 @@ public interface Connector {
 
   void init();
   boolean testConnection();
-  void query(String queryString);
+  Object query(String queryString);
   void update(String queryString);
   boolean cleanup();
   void uploadFile(File file, String[] contexts);

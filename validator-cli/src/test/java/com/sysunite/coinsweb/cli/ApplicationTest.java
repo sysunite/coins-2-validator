@@ -12,7 +12,8 @@ import java.io.InputStream;
  */
 public class ApplicationTest {
 
-  public static String configPath = "/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/config-generated.yml";
+//  public static String ccrPath = "/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/starterkit/starterskit4.03_inmem.ccr";
+  public static String configPath = "/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/config-generated.yml";
 //  public static String configPath = "/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-parser-config-yml/src/test/resources/debug-config.yml";
 
   @Test

@@ -87,23 +87,4 @@ public class GraphSetFactory {
     }
     throw new RuntimeException("Not able to load model from file");
   }
-
-  public static Map<String, Long> diffNumTriples(Map<String, Long> oldValues, Map<String, Long> newValues) {
-    HashMap<String, Long> result = new HashMap<>();
-
-    Iterator<String> graphNameIterator = newValues.keySet().iterator();
-    while(graphNameIterator.hasNext()) {
-      String graphName = graphNameIterator.next();
-
-      Long oldValue;
-      if(oldValues.containsKey(graphName)) {
-        oldValue = oldValues.get(graphName);
-      } else {
-        oldValue = 0l;
-      }
-      Long newValue = newValues.get(graphName);
-      result.put(graphName, newValue - oldValue);
-    }
-    return result;
-  }
 }

@@ -33,11 +33,8 @@ public class QueryFactory {
       data.put(graph.getCode(), '<'+graph.getUri()+'>');
     }
 
-
     String cleanQuery = configuration.cleanDefaultPrefixes() + '\n' + query.cleanQuery();
-
     String finalQuery = parseFreemarker(cleanQuery, data);
-
     return finalQuery;
   }
 

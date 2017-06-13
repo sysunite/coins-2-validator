@@ -10,11 +10,11 @@ import java.util.Map;
  */
 public interface ContainerGraphSet {
 
-  ValidationStepResult select(String query);
-  Map<String, Long> numTriples();
+  void select(String query, ValidationStepResult result);
   void update(String query, ValidationStepResult result);
   void setContainerFile(ContainerFile container);
   void setContainerConfig(Object containerConfig);
   void setConfigFile(Object configFile);
+  Map<String, Long> quadCount();
 
 }

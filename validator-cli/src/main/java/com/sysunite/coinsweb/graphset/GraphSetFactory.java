@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.graphset;
 
+import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.connector.ConnectorFactory;
 import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
@@ -38,12 +39,14 @@ public class GraphSetFactory {
     }
 
     HashMap<String, String> graphs = new HashMap();
-    for(Mapping mapping :configFile.getEnvironment().getGraphs()) {
+    for(Mapping mapping : configFile.getEnvironment().getGraphs()) {
       graphs.put(mapping.getContent(), mapping.getGraphname());
     }
 
+    log.info("Construct graphset and lazy load connector");
     ConnectorFactory factory = new ConnectorFactoryImpl();
-    ContainerGraphSet graphSet = new ContainerGraphSetImpl(factory.build(storeConfig), graphs);
+    Connector connector = factory.build(storeConfig);
+    ContainerGraphSet graphSet = new ContainerGraphSetImpl(connector, graphs);
     graphSet.setContainerFile(container);
     graphSet.setContainerConfig(containerConfig);
     graphSet.setConfigFile(configFile);

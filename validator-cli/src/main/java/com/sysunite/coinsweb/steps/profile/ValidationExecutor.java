@@ -22,7 +22,7 @@
  * IN THE SOFTWARE.
  *
  **/
-package com.sysunite.coinsweb.validator;
+package com.sysunite.coinsweb.steps.profile;
 
 
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
@@ -44,6 +44,8 @@ public class ValidationExecutor {
 
   private static final Logger log = LoggerFactory.getLogger(ValidationExecutor.class);
 
+  private static final int MAX_RUNS = 50;
+
   private ProfileFile profile;
   private ContainerGraphSet graphSet;
 
@@ -55,8 +57,8 @@ public class ValidationExecutor {
   public Map<String, Object> validate() {
 
 
-    log.info("Execute profile.");
-    ProfileExecution execution = new ProfileExecution();
+    log.info("Execute profile");
+
 
     long start = new Date().getTime();
 
@@ -70,26 +72,50 @@ public class ValidationExecutor {
       boolean containsUpdate = false;
       boolean someTripleWasAdded = false;
 
-      log.info("\uD83D\uDC1A Will perform bundle "+bundle.getReference()+".");
+      HashMap<String, ValidationQueryResult> resultMap = new HashMap();
 
+      log.info("\uD83D\uDC1A Will perform bundle \""+bundle.getReference()+"\"");
+
+      int run = 1;
       do {
 
+        if(run > MAX_RUNS) {
+          throw new RuntimeException("Break running, max number of repeated runs reached for bundle: "+bundle.getReference());
+        }
+
         for (Query query : bundle.getQueries()) {
+
+          ValidationQueryResult resultCarrier;
+          if(!resultMap.containsKey(query.getReference())) {
+            resultCarrier = new ValidationQueryResult(query);
+            resultMap.put(query.getReference(), resultCarrier);
+          } else {
+            resultCarrier = resultMap.get(query.getReference());
+          }
+
+
           if (Query.UPDATE.equals(query.getType())) {
             containsUpdate = true;
 
             String queryString = QueryFactory.buildQuery(query, profile.getQueryConfiguration());
-            graphSet.update(queryString, null); // todo
+            graphSet.update(queryString, resultCarrier);
+            resultCarrier.addRunStatistics(graphSet.quadCount());
+            if(resultCarrier.quadsAddedLastRun() > 0) {
+              someTripleWasAdded = true;
+            }
+
 
           }
           if (Query.NO_RESULT.equals(query.getType())) {
 
             String queryString = QueryFactory.buildQuery(query, profile.getQueryConfiguration());
-            graphSet.select(queryString);
+//            graphSet.select(queryString, resultCarrier);
 
           }
 
         }
+
+        run++;
       } while(containsUpdate && someTripleWasAdded);
     }
 
@@ -101,13 +127,13 @@ public class ValidationExecutor {
 
 //    execution.setProfileChecksPassed(profileChecks);
 //    execution.setValidationPassed(validationRules);
-    execution.setExecutionTime(new Date().getTime() - start);
+//    execution.setExecutionTime(new Date().getTime() - start);
 
 
 
 
 
-    log.info("Build report.");
+    log.info("Built report");
 
 
 
@@ -143,67 +169,4 @@ public class ValidationExecutor {
 
     return reportItems;
   }
-
-
-
-
-
-
-
-
-//
-//  private void addInferences(List<Query> queries, InferenceExecution inferenceExecution) {
-//    addInferences(queries, inferenceExecution, true);
-//  }
-//  private void addInferences(List<Query> queries, final InferenceExecution inferenceExecution, boolean recursive) {
-//
-//    // Build a map of all results in resultList
-//    HashMap<String, InferenceQueryResult> resultByReference = new HashMap<>();
-//
-//    long triplesAddedThisRun = 0l;
-//    long start = new Date().getTime();
-//
-//    int run = 1;
-//
-//    do {
-//
-//      for (Query step : queries) {
-//
-//
-//        // Prepare a resultCarrier
-//        if(!resultByReference.containsKey(step.getReference())) {
-//          InferenceQueryResult resultCarrier = new InferenceQueryResult(step.getReference(), step.getDescription(), step.cleanQuery(), null);
-//          resultByReference.put(step.getReference(), resultCarrier);
-//        }
-//        InferenceQueryResult resultCarrier = resultByReference.get(step.getReference());
-//
-//        Map<String, Long> before = graphSet.numTriples();
-//        graphSet.update(step, resultCarrier);
-//        Map<String, Long> diff = GraphSetFactory.diffNumTriples(before, graphSet.numTriples());
-//
-//        inferenceExecution.addTriplesAdded(Integer.toString(run), step.getReference(), diff);
-//
-//      }
-//
-//
-////      String lastRunNr = Integer.toString(inferenceExecution.getNumRuns());
-////      Map<String, Long> statistics = inferenceExecution.getTriplesAdded(lastRunNr);
-////      if(statistics.containsKey(connector.getFullUnionNamespace())) {
-////        triplesAddedThisRun = statistics.get(connector.getFullUnionNamespace());
-////        log.info("This round " + triplesAddedThisRun + " triples were added.");
-////      } else {
-////        triplesAddedThisRun = 0;
-////        log.warn("This round no triples were added to the full union graph, which might have unexpected reasons.");
-////      }
-//
-//      run++;
-//
-//    // Loop
-//    } while (recursive && triplesAddedThisRun > 0l);
-//
-//    // Store all resultCarriers in the allocated list
-//    long executionTime = new Date().getTime() - start;
-//    inferenceExecution.setExecutionTime(executionTime);
-//    inferenceExecution.getQueryResults().addAll(resultByReference.values());
-//  }
 }

@@ -1,19 +1,11 @@
 package com.sysunite.coinsweb.connector.graphdb;
 
-import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.connector.Rdf4jConnector;
 import com.sysunite.coinsweb.parser.config.Store;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.GraphUtil;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.QueryLanguage;
-import org.eclipse.rdf4j.query.TupleQuery;
-import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
 import org.eclipse.rdf4j.repository.manager.RemoteRepositoryManager;
@@ -26,129 +18,58 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class GraphDB implements Connector {
+public class GraphDB extends Rdf4jConnector {
 
   private static final Logger log = LoggerFactory.getLogger(GraphDB.class);
-  private Repository repository;
 
-  private String endpoint;
+  private String url;
+
 
 
   public GraphDB(Store config) {
 
-    log.info(""+config.getConfig().containsKey("custom"));
-    log.info(""+config.getConfig().containsKey("endpoint"));
-    log.info(""+config.getConfig().containsKey("user"));
-    log.info(""+config.getConfig().containsKey("password"));
+//    log.info(""+config.getConfig().containsKey("custom"));
+    if(config.getConfig() == null || !config.getConfig().containsKey("endpoint")) {
+      throw new RuntimeException("No endpoint url specified");
+    }
+    url = config.getConfig().get("endpoint");
+//    log.info(""+config.getConfig().containsKey("endpoint"));
+//    log.info(""+config.getConfig().containsKey("user"));
+//    log.info(""+config.getConfig().containsKey("password"));
 
 
 
 
   }
 
-  private void init() {
-    RepositoryManager manager = new RemoteRepositoryManager( "http://localhost:7200" );
+  public void init() {
+
+    RepositoryManager manager = new RemoteRepositoryManager(url);
     manager.initialize();
 
-//    String repositoryId = "otl21-generated";
-//
-//    try {
-//      manager.addRepositoryConfig(createRepositoryConfig(repositoryId));
-//    } catch (IOException e) {
-//    log.error(e.getMessage(), e);
-//    }
-//    repository = manager.getRepository(repositoryId);
+    String repositoryId = "otl21-generated";
 
-    repository = manager.getRepository("otl21");
-  }
-
-
-
-
-  @Override
-  public boolean testConnection() {
-    init();
-    return false;
-  }
-
-  @Override
-  public boolean query(String queryString) {
-
-    try (RepositoryConnection con = repository.getConnection()) {
-
-
-
-
-      TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
-      try (TupleQueryResult result = tupleQuery.evaluate()) {
-        while (result.hasNext()) {  // iterate over the result
-          BindingSet bindingSet = result.next();
-          Value s = bindingSet.getValue("s");
-          Value p = bindingSet.getValue("p");
-          Value o = bindingSet.getValue("o");
-          log.info( s+"-"+p+"->"+o);
-        }
-      } catch (Exception e) {
-        log.error(e.getMessage(), e);
-      }
-    } catch (Exception e) {
-      log.error(e.getMessage(), e);
-    }
-    return true;
-  }
-
-  @Override
-  public boolean cleanup() {
-    try (RepositoryConnection con = repository.getConnection()) {
-      con.clear();
-    }
-    return false;
-  }
-
-  @Override
-  public void uploadFile(File file, String[] contexts) {
-
-    ValueFactory factory = repository.getValueFactory();
-    try (RepositoryConnection con = repository.getConnection()) {
-      Optional<RDFFormat> format = Rio.getParserFormatForFileName(file.toString());
-      if(!format.isPresent()) {
-        throw new RuntimeException("Could not determine the type of file this is: " + file.getName());
-      }
-      con.add(file, null, format.get());
-
-//      log.warn("listing context ids:");
-//      RepositoryResult<Resource> contexts = con.getContextIDs();
-//      while(contexts.hasNext()) {
-//        log.warn(contexts.next().stringValue());
-//      }
+    try {
+      manager.addRepositoryConfig(createRepositoryConfig(repositoryId));
     } catch (IOException e) {
-      log.error(e.getMessage(), e);
+    log.error(e.getMessage(), e);
     }
+    repository = manager.getRepository(repositoryId);
+
+//    repository = manager.getRepository("otl21");
   }
 
-  @Override
-  public void uploadFile(InputStream inputStream, String fileName, String baseUri, String[] contexts) {
 
-  }
 
-  @Override
-  public boolean requiresLoad() {
-    return false;
-  }
 
-  @Override
-  public void setAllLoaded() {
 
-  }
 
   private RepositoryConfig createRepositoryConfig(String repositoryId) throws IOException {
 

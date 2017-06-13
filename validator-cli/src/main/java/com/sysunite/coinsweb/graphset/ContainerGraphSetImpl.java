@@ -7,8 +7,6 @@ import com.sysunite.coinsweb.parser.config.ConfigFile;
 import com.sysunite.coinsweb.parser.config.Container;
 import com.sysunite.coinsweb.parser.config.Graph;
 import com.sysunite.coinsweb.steps.ValidationStepResult;
-import com.sysunite.coinsweb.validator.InferenceQueryResult;
-import com.sysunite.coinsweb.validator.ValidationQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +44,9 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
       return;
     }
 
+    log.info("Initialize connector");
+    connector.init();
+
     for(Graph graph : containerConfig.getGraphs()) {
 
       String[] graphNames = new String[graph.getContent().size()];
@@ -56,12 +57,16 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
       if(fileName == null) {
         fileName = graph.getUri();
       }
+
+      log.info("Upload rdf file to connector: "+fileName);
       connector.uploadFile(FileFactory.toInputStream(graph, container, configFile), fileName, graph.getGraphname(), graphNames);
     }
+
+    log.info("Finished initializing connector");
     this.connector.setAllLoaded();
   }
 
-  public ValidationQueryResult select(String query) {
+  public void select(String query, ValidationStepResult validationStepResult) {
 
     String errorMessage = null;
     boolean passed = false;
@@ -148,29 +153,25 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 //    }
 
     long executionTime = new Date().getTime() - start;
-    return new ValidationQueryResult("ref", "desc", query, resultSet, formattedResults, passed, errorMessage, executionTime);
   }
 
-  public Map<String, Long> numTriples() {
-    HashMap<String, Long> result = new HashMap<>();
-//    Iterator<String> graphNameIterator = getValidationDataset().listNames();
-//    while(graphNameIterator.hasNext()) {
-//      String graphName = graphNameIterator.next();
-//      long size = getValidationDataset().getNamedModel(graphName).size();
-//      result.put(graphName, size);
-//    }
-    return result;
+  public Map<String, Long> quadCount() {
+    return connector.quadCount();
   }
 
 
 
   public void update(String query, ValidationStepResult validationStepResult) {
 
-    InferenceQueryResult result = (InferenceQueryResult) validationStepResult;
 
 //    validationDataset = getValidationDataset();
 //
     long start = new Date().getTime();
+
+    if(connector.requiresLoad()) {
+      load();
+    }
+    connector.update(query);
 //    String queryString = query.getSparqlQuery(this);
 //
 //    try {
@@ -184,7 +185,6 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 //    }
 
     long executionTime = new Date().getTime() - start;
-    result.addExecutionTime(executionTime);
   }
 
   @Override

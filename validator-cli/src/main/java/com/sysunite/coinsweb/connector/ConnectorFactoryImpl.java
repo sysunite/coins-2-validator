@@ -6,6 +6,7 @@ import com.sysunite.coinsweb.parser.config.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,9 +37,13 @@ public class ConnectorFactoryImpl implements ConnectorFactory {
     if(!(config instanceof Store)) {
       throw new RuntimeException("Config item for connection should be a Store instance.");
     }
-    Class<? extends Connector> clazz = get(((Store)config).getType());
     try {
-      return clazz.getConstructor(Store.class).newInstance(config);
+      String key = ((Store)config).getType();
+      log.info("Try to get connector with key: "+key);
+      Class<? extends Connector> clazz = get(key);
+      Constructor<? extends Connector> constructor = clazz.getConstructor(Store.class);
+      Connector instance = constructor.newInstance((Store)config);
+      return instance;
     } catch (InstantiationException e) {
       log.error(e.getMessage(), e);
     } catch (IllegalAccessException e) {

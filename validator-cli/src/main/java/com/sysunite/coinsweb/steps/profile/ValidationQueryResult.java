@@ -22,17 +22,15 @@
  * IN THE SOFTWARE.
  *
  **/
-package com.sysunite.coinsweb.validator;
+package com.sysunite.coinsweb.steps.profile;
 
 
+import com.sysunite.coinsweb.parser.profile.Query;
 import com.sysunite.coinsweb.steps.ValidationStepResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Bastiaan Bijl, Sysunite 2016
@@ -40,7 +38,6 @@ import java.util.Map;
 public class ValidationQueryResult implements ValidationStepResult {
 
   private static final Logger log = LoggerFactory.getLogger(ValidationQueryResult.class);
-
 
   private String id;
   private String reference;
@@ -51,26 +48,28 @@ public class ValidationQueryResult implements ValidationStepResult {
   private boolean passed;
   private String errorMessage;
   private long executionTime;
+  private ArrayList<Map<String, Long>> runStatistics = new ArrayList<>();
 
-  public ValidationQueryResult(String reference,
-                               String description,
-                               String sparqlQuery,
-                               Iterator<Map<String, String>> resultSet,
-                               List<String> formattedResults,
-                               boolean passed,
-                               String errorMessage,
-                               long executionTime) {
+  public ValidationQueryResult(Query queryConfig) {
 
     // Set passed attributes
     this.id = Long.toHexString(Double.doubleToLongBits(Math.random()));
-    this.reference = reference;
-    this.description = description;
-    this.sparqlQuery = sparqlQuery;
-    this.resultSet = resultSet;
-    this.formattedResults = formattedResults;
+    this.reference = queryConfig.getReference();
+    this.description = queryConfig.getDescription();
     this.passed = passed;
     this.errorMessage = errorMessage;
     this.executionTime = executionTime;
+//    this.triplesAdded = new HashMap<>();
+  }
+
+  public void setExecutedQuery(String sparqlQuery) {
+    this.sparqlQuery = sparqlQuery;
+  }
+  public void setResultSet(Iterator<Map<String,String>> resultSet) {
+    this.resultSet = resultSet;
+  }
+  public void setFormattedResults(List<String> formattedResults) {
+    this.formattedResults = formattedResults;
   }
 
 
@@ -101,5 +100,35 @@ public class ValidationQueryResult implements ValidationStepResult {
   public long getExecutionTime() {
     return executionTime;
   }
+
+  public void addRunStatistics(Map<String, Long> quadCount) {
+    runStatistics.add(quadCount);
+    log.info("Finished run "+runStatistics.size()+" for query \""+reference+"\", this total amount of quads was added: "+quadsAddedLastRun());
+  }
+  public long quadsAddedLastRun() {
+    if(runStatistics.isEmpty()) {
+      return 0l;
+    }
+    if(runStatistics.size() == 1) {
+      long count = 0l;
+      for(Long graphCount : runStatistics.get(0).values()) {
+        count += graphCount;
+      }
+      return count;
+    }
+
+    Map<String, Long> previous = runStatistics.get(runStatistics.size()-2);
+    Map<String, Long> current = runStatistics.get(runStatistics.size()-1);
+    long count = 0l;
+    for(String graphName : current.keySet()) {
+      if(!previous.containsKey(graphName)) {
+        count += current.get(graphName);
+      } else {
+        count += (current.get(graphName) - previous.get(graphName));
+      }
+    }
+    return count;
+  }
+
 
 }

@@ -8,7 +8,7 @@ import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.parser.config.ConfigFile;
 import com.sysunite.coinsweb.parser.config.Locator;
 import com.sysunite.coinsweb.parser.profile.ProfileFile;
-import com.sysunite.coinsweb.validator.ValidationExecutor;
+import com.sysunite.coinsweb.steps.profile.ValidationExecutor;
 
 import java.util.Map;
 

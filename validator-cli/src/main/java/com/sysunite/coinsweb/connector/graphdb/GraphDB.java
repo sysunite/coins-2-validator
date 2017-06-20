@@ -1,7 +1,7 @@
 package com.sysunite.coinsweb.connector.graphdb;
 
 import com.sysunite.coinsweb.connector.Rdf4jConnector;
-import com.sysunite.coinsweb.parser.config.Store;
+import com.sysunite.coinsweb.parser.config.Environment;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.TreeModel;
@@ -36,21 +36,26 @@ public class GraphDB extends Rdf4jConnector {
   String repositoryId;
 
   boolean disableCleanUp = false;
+  boolean repoPerRun = false;
 
 
 
-  public GraphDB(Store config) {
+  public GraphDB(Environment config) {
 
-    if(config.getConfig() == null || !config.getConfig().containsKey("endpoint")) {
+    if(config.getStore().getConfig() == null || !config.getStore().getConfig().containsKey("endpoint")) {
       throw new RuntimeException("No endpoint url specified");
     }
-    url = config.getConfig().get("endpoint");
+    url = config.getStore().getConfig().get("endpoint");
 //    log.info(""+config.getConfig().containsKey("endpoint"));
 //    log.info(""+config.getConfig().containsKey("user"));
 //    log.info(""+config.getConfig().containsKey("password"));
 
-    if(config.getConfig().containsKey("disableCleanUp")) {
-      disableCleanUp = Boolean.parseBoolean(config.getConfig().get("disableCleanUp"));
+    if(config.getStore().getConfig().containsKey("disableCleanUp")) {
+      disableCleanUp = Boolean.parseBoolean(config.getStore().getConfig().get("disableCleanUp"));
+    }
+
+    if(Environment.REPO_PER_RUN.equals(config.getLoadingStrategy())) {
+      repoPerRun = true;
     }
 
 
@@ -63,10 +68,18 @@ public class GraphDB extends Rdf4jConnector {
     manager = new RemoteRepositoryManager(url);
     manager.initialize();
 
-    repositoryId = "validator-generated-" + RandomStringUtils.random(8, true, true);
-
     try {
-      manager.addRepositoryConfig(createRepositoryConfig(repositoryId));
+
+      if(repoPerRun) {
+        repositoryId = "validator-generated-" + RandomStringUtils.random(8, true, true);
+      } else {
+        repositoryId = "validator-generated";
+      }
+      if(manager.hasRepositoryConfig(repositoryId)) {
+        log.info("Found existing repository");
+      } else {
+        manager.addRepositoryConfig(createRepositoryConfig(repositoryId));
+      }
     } catch (IOException e) {
     log.error(e.getMessage(), e);
     }

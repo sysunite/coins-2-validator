@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -98,14 +99,14 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   @Override
-  public void uploadFile(InputStream inputStream, String fileName, String baseUri, String[] contexts) {
+  public void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts) {
 
     try (RepositoryConnection con = repository.getConnection()) {
       Optional<RDFFormat> format = Rio.getParserFormatForFileName(fileName);
       if(!format.isPresent()) {
         throw new RuntimeException("Could not determine the type of file this is: " + fileName);
       }
-      con.add(inputStream, baseUri, format.get(), getContexts(contexts));
+      con.add(inputStream, baseUri, format.get(), getContexts(contexts.toArray(new String[0])));
 
     } catch (IOException e) {
       log.error(e.getMessage(), e);
@@ -127,6 +128,18 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
 
+  public boolean containsContext(String context) {
+    try (RepositoryConnection con = repository.getConnection()) {
+      RepositoryResult<Resource> graphIterator = con.getContextIDs();
+      while(graphIterator.hasNext()) {
+        Resource graphName = graphIterator.next();
+        if(graphName.toString().equals(context)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
   private Resource[] getContexts(String[] contexts) {
     ValueFactory factory = repository.getValueFactory();
     Resource[] contextsIRI = new Resource[contexts.length];

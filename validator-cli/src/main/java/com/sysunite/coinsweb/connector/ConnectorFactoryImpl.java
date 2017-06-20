@@ -2,7 +2,7 @@ package com.sysunite.coinsweb.connector;
 
 import com.sysunite.coinsweb.connector.graphdb.GraphDB;
 import com.sysunite.coinsweb.connector.inmem.InMemRdf4j;
-import com.sysunite.coinsweb.parser.config.Store;
+import com.sysunite.coinsweb.parser.config.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,15 +34,15 @@ public class ConnectorFactoryImpl implements ConnectorFactory {
   }
 
   public Connector build(Object config) {
-    if(!(config instanceof Store)) {
-      throw new RuntimeException("Config item for connection should be a Store instance.");
+    if(!(config instanceof Environment)) {
+      throw new RuntimeException("Config item for connection should be a Environment instance.");
     }
     try {
-      String key = ((Store)config).getType();
+      String key = ((Environment)config).getStore().getType();
       log.info("Try to get connector with key: "+key);
       Class<? extends Connector> clazz = get(key);
-      Constructor<? extends Connector> constructor = clazz.getConstructor(Store.class);
-      Connector instance = constructor.newInstance((Store)config);
+      Constructor<? extends Connector> constructor = clazz.getConstructor(Environment.class);
+      Connector instance = constructor.newInstance((Environment)config);
       return instance;
     } catch (InstantiationException e) {
       log.error(e.getMessage(), e);

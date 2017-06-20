@@ -21,6 +21,7 @@ environment:
       user: admin
       password: pw123
       custom: baaaaa
+  loadingStrategy: permanent-sorted-hashes-in-graphname
 
 run:
 

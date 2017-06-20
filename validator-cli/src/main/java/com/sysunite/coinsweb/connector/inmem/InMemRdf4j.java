@@ -1,7 +1,7 @@
 package com.sysunite.coinsweb.connector.inmem;
 
 import com.sysunite.coinsweb.connector.Rdf4jConnector;
-import com.sysunite.coinsweb.parser.config.Store;
+import com.sysunite.coinsweb.parser.config.Environment;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.slf4j.Logger;
@@ -17,7 +17,7 @@ public class InMemRdf4j extends Rdf4jConnector {
 
 
 
-  public InMemRdf4j(Store config) {
+  public InMemRdf4j(Environment config) {
 
 //    log.info(config.getConfig().containsKey("custom"));
 //    log.info(config.getConfig().containsKey("endpoint"));

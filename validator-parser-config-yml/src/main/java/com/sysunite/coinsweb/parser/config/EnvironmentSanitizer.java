@@ -16,6 +16,8 @@ class EnvironmentSanitizer extends StdConverter<Environment, Environment> {
   @Override
   public Environment convert(Environment obj) {
     isNotNull(obj.getStore());
+    isNotNull(obj.getLoadingStrategy());
+
     return obj;
   }
 }

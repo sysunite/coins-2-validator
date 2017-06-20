@@ -26,7 +26,7 @@ public class GraphDBTest {
       File configYml = new File(getClass().getClassLoader().getResource("config.yml").getFile());
       ConfigFile configFile = mapper.readValue(configYml, ConfigFile.class);
 
-      GraphDB connector = new GraphDB(configFile.getEnvironment().getStore());
+      GraphDB connector = new GraphDB(configFile.getEnvironment());
       log.info(""+connector.testConnection());
 
       File otl = new File(getClass().getClassLoader().getResource("otl-2.1/otl-2.1.ttl").getFile());

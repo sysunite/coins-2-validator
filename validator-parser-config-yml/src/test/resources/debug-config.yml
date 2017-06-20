@@ -16,6 +16,7 @@ environment:
 
   store:
     type: none
+  loadingStrategy: permanent-sorted-hashes-in-graphname
 
 run:
 

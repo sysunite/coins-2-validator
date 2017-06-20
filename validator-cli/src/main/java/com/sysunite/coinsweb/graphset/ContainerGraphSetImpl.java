@@ -2,10 +2,8 @@ package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
-import com.sysunite.coinsweb.filemanager.FileFactory;
 import com.sysunite.coinsweb.parser.config.ConfigFile;
 import com.sysunite.coinsweb.parser.config.Container;
-import com.sysunite.coinsweb.parser.config.Graph;
 import com.sysunite.coinsweb.report.ReportFactory;
 import com.sysunite.coinsweb.steps.ValidationStepResult;
 import com.sysunite.coinsweb.steps.profile.ValidationQueryResult;
@@ -55,20 +53,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     log.info("Initialize connector");
     connector.init();
 
-    for(Graph graph : containerConfig.getGraphs()) {
-
-      String[] graphNames = new String[graph.getContent().size()];
-      for(int i = 0; i < graph.getContent().size(); i++) {
-        graphNames[i] = graphs.get(graph.getContent().get(i));
-      }
-      String fileName = graph.getPath();
-      if(fileName == null) {
-        fileName = graph.getUri();
-      }
-
-      log.info("Upload rdf file to connector: "+fileName);
-      connector.uploadFile(FileFactory.toInputStream(graph, container, configFile), fileName, graph.getGraphname(), graphNames);
-    }
+    GraphSetFactory.load(containerConfig.getGraphs(), connector, container, configFile);
 
     log.info("Finished initializing connector");
     this.connector.setAllLoaded();

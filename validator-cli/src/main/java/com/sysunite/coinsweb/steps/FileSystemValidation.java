@@ -3,7 +3,7 @@ package com.sysunite.coinsweb.steps;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
-import com.sysunite.coinsweb.graphset.GraphSetFactory;
+import com.sysunite.coinsweb.rdfutil.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +50,7 @@ public class FileSystemValidation implements ValidationStep {
 
     ArrayList<String> imports = new ArrayList();
     if(!container.getContentFiles().isEmpty()) {
-      imports = GraphSetFactory.imports(container.getContentFile(container.getContentFiles().iterator().next()));
+      imports = Utils.imports(container.getContentFile(container.getContentFiles().iterator().next()));
       for (String namespace : imports) {
         allImportsImportable &= availableGraphs.contains(namespace);
       }

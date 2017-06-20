@@ -1,11 +1,13 @@
 package com.sysunite.coinsweb.parser.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import static com.sysunite.coinsweb.parser.Parser.validate;
@@ -55,6 +57,33 @@ public class Graph {
     this.graphname = graphname;
   }
 
+  @JsonIgnore
+  public boolean anyGraph() {
+    boolean anyGraph = "*".equals(graphname);
+    if(anyGraph && !(anyContentFile() || anyLibraryFile())) {
+      throw new RuntimeException("Not allowed to use asterisk as graphname wildcard other than using a container selector with wildcard");
+    }
+    return anyGraph;
+  }
+
+  @JsonIgnore
+  public boolean anyContentFile() {
+    boolean anyContentFile = CONTAINER.equals(type) && path != null && path.equals("bim" + File.separator + "*");
+    if(anyContentFile && !"*".equals(graphname)) {
+      throw new RuntimeException("Set graphname to \"*\" when using an asterisk in the container path, it was "+graphname);
+    }
+    return anyContentFile;
+  }
+
+  @JsonIgnore
+  public boolean anyLibraryFile() {
+    boolean anyLibraryFile = CONTAINER.equals(type) && path != null && path.equals("bim" + File.separator + "repository" + File.separator + "*");
+    if(anyLibraryFile && !"*".equals(graphname)) {
+      throw new RuntimeException("Set graphname to \"*\" when using an asterisk in the container path, it was "+graphname);
+    }
+    return anyLibraryFile;
+  }
+
   public void setContent(ArrayList<String> content) {
 //    validate(content, "instances", "library");
     this.content = content;
@@ -75,5 +104,18 @@ public class Graph {
 
   public void setEndpoint(Store store) {
     this.store = store;
+  }
+
+
+  @JsonIgnore
+  public Graph clone() {
+    Graph clone = new Graph();
+    clone.setGraphname(this.graphname);
+    clone.setContent((ArrayList<String>)this.content.clone());
+    clone.setType(this.type);
+    clone.setUri(this.uri);
+    clone.setPath(this.path);
+    clone.setEndpoint(this.store);
+    return clone;
   }
 }

@@ -60,4 +60,15 @@ public class Locator {
   public void localizeTo(Path path) {
     this.localizeTo = path;
   }
+
+
+  @JsonIgnore
+  public Locator clone() {
+    Locator clone = new Locator();
+    clone.setType(this.type);
+    clone.setPath(this.path);
+    clone.setUri(this.uri);
+    clone.localizeTo(this.localizeTo);
+    return clone;
+  }
 }

@@ -3,27 +3,20 @@ package com.sysunite.coinsweb.graphset;
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.connector.ConnectorFactory;
 import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
+import com.sysunite.coinsweb.filemanager.ConfigGenerator;
+import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
+import com.sysunite.coinsweb.filemanager.FileFactory;
 import com.sysunite.coinsweb.parser.config.ConfigFile;
 import com.sysunite.coinsweb.parser.config.Container;
-import com.sysunite.coinsweb.parser.config.Mapping;
+import com.sysunite.coinsweb.parser.config.Graph;
 import com.sysunite.coinsweb.parser.config.Store;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.vocabulary.OWL;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RDFParser;
-import org.eclipse.rdf4j.rio.Rio;
-import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.*;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -38,10 +31,8 @@ public class GraphSetFactory {
       return new ContainerGraphSetImpl();
     }
 
-    HashMap<String, String> graphs = new HashMap();
-    for(Mapping mapping : configFile.getEnvironment().getGraphs()) {
-      graphs.put(mapping.getContent(), mapping.getGraphname());
-    }
+
+    HashMap<String, String> graphs = configFile.getEnvironment().getMapping();
 
     log.info("Construct graphset and lazy load connector");
     ConnectorFactory factory = new ConnectorFactoryImpl();
@@ -53,38 +44,88 @@ public class GraphSetFactory {
     return graphSet;
   }
 
-  public static ArrayList<String> imports(File file) {
+  /**
+   * Build load strategy and execute the loading
+   *
+   * @param selectedGraphs
+   * @param connector
+   */
+  public static void load(Graph[] selectedGraphs, Connector connector, ContainerFile container, ConfigFile configFile) {
 
-    ArrayList<String> namespaces = new ArrayList();
+    Graph allContentFile = null;
+    Graph allLibraryFile = null;
 
-    Model model = load(file);
+    // Explicit graphs
+    ArrayList<String> explicitGraphs = new ArrayList();
+    for(Graph graph : selectedGraphs) {
+      if(!graph.anyGraph()) {
+        explicitGraphs.add(graph.getGraphname());
+      }
 
-    for (Value library : model.filter(null, OWL.IMPORTS, null).objects()) {
-      namespaces.add(library.toString());
+      // Keep track of fallback graph definitions
+      if(graph.anyContentFile()) {
+        if(allContentFile != null) {
+          throw new RuntimeException("Only one graph with content file asterisk allowed");
+        }
+        allContentFile = graph;
+      }
+      if(graph.anyLibraryFile()) {
+        if(allLibraryFile != null) {
+          throw new RuntimeException("Only one graph with content file asterisk allowed");
+        }
+        allLibraryFile = graph;
+      }
     }
 
-    return namespaces;
+    if(allContentFile != null) {
+      for(Graph graph : ConfigGenerator.contentGraphsInContainer(container, allContentFile.getContent())) {
+        if(!explicitGraphs.contains(graph.getGraphname())) {
+          log.info("Will load content file from wildcard definition");
+          load(graph, connector, container, configFile);
+        }
+      }
+    }
+
+    if(allLibraryFile != null) {
+      for(Graph graph : ConfigGenerator.libraryGraphsInContainer(container, allLibraryFile.getContent())) {
+        if(!explicitGraphs.contains(graph.getGraphname())) {
+          log.info("Will load library file from wildcard definition");
+          load(graph, connector, container, configFile);
+        }
+      }
+    }
+
+    for(Graph graph : selectedGraphs) {
+      if(!graph.anyGraph()) {
+
+        // Check if the file in the container is available
+        if(graph.CONTAINER.equals(graph.getType())) {
+          try {
+            container.getFile(Paths.get(graph.getPath()));
+          } catch(RuntimeException e) {
+            throw e;
+          }
+        }
+
+        log.info("Will load explicitly defined file");
+        load(graph, connector, container, configFile);
+      }
+    }
   }
 
-  @Deprecated
-  public static Model load(File file) {
+  public static void load(Graph graph, Connector connector, ContainerFile container, ConfigFile configFile) {
 
-    Optional<RDFFormat> format = Rio.getParserFormatForFileName(file.toString());
-    if(!format.isPresent()) {
-      throw new RuntimeException("Not able to determine format of file: " + file.getName());
+    String[] graphNames = new String[graph.getContent().size()];
+    for(int i = 0; i < graph.getContent().size(); i++) {
+      graphNames[i] = configFile.getEnvironment().getMapping().get(graph.getContent().get(i));
     }
-    Model model = new LinkedHashModel();
-    RDFParser rdfParser = Rio.createParser(format.get());
-    rdfParser.setRDFHandler(new StatementCollector(model));
+    String fileName = graph.getPath();
+    if(fileName == null) {
+      fileName = graph.getUri();
+    }
 
-    try {
-      rdfParser.parse(new FileInputStream(file), "http://backup");
-      return model;
-    } catch (FileNotFoundException e) {
-      log.error(e.getMessage(), e);
-    } catch (IOException e) {
-      log.error(e.getMessage(), e);
-    }
-    throw new RuntimeException("Not able to load model from file");
+    log.info("Upload rdf file to connector: "+fileName);
+    connector.uploadFile(FileFactory.toInputStream(graph, container, configFile), fileName, graph.getGraphname(), graphNames);
   }
+
 }

@@ -25,8 +25,7 @@ public class CliOptions {
   public static boolean QUIET = false;
 
 
-  public static void printHeader() {
-
+  public static String getVersion() {
     // Load version from properties file
     Properties props = new Properties();
     String version = "";
@@ -36,9 +35,12 @@ public class CliOptions {
     } catch (IOException e) {
       printOutput("(!) unable to read coins-cli.properties from jar");
     }
+    return version;
+  }
+  public static void printHeader() {
 
     // Print header
-    printOutput(")} \uD83D\uDC1A  COINS 2.0 validator\ncommand line interface (version " + version + ")\n");
+    printOutput(")} \uD83D\uDC1A  COINS 2.0 validator\ncommand line interface (version " + getVersion() + ")\n");
   }
 
   public static void printOutput(String message) {
@@ -65,7 +67,7 @@ public class CliOptions {
       formatter.printHelp(
       "\n" +
       "\n coins-validator run [args] container.ccr" +
-      "\n coins-validator run [args] config.yml" +
+      "\n coins-validator run [args] config.yml [container.ccr ...]" +
       "\n coins-validator describe [args] container.ccr" +
       "\n" +
       "\nor pipe into run:" +
@@ -133,15 +135,42 @@ public class CliOptions {
     return hasMode() && RUN_MODE.equals(cmd.getArgs()[0].trim());
   }
 
-  public boolean hasFile() {
+  public boolean hasConfigFile() {
     if(cmd.getArgs().length < 2) {
       return false;
     }
     Path path = CliOptions.resolvePath(cmd.getArgs()[1]);
-    return path.toFile().exists() && path.toFile().isFile();
+    return path.toFile().exists() && path.toFile().isFile() && isConfigFile(path);
   }
-  public Path getFile() {
-    return (!hasFile()) ? null : CliOptions.resolvePath(cmd.getArgs()[1]);
+  public Path getConfigFile() {
+    return (!hasConfigFile()) ? null : CliOptions.resolvePath(cmd.getArgs()[1]);
+  }
+
+  public int hasContainerFile() {
+    int count = 0;
+    int i = 1;
+    if(hasConfigFile()) {
+      i = 2;
+    }
+    while(cmd.getArgs().length > i) {
+      log.info(""+i);
+      Path path = CliOptions.resolvePath(cmd.getArgs()[i]);
+      if(path.toFile().exists() && path.toFile().isFile() && isContainerFile(path)) {
+        count++;
+      }
+      i++;
+    }
+    log.info("Found "+count+" container files as arguments");
+    return count;
+  }
+  public Path getContainerFile(int i) {
+    if(i >= hasContainerFile()) {
+      return null;
+    }
+    if(hasConfigFile()) {
+      i++;
+    }
+    return CliOptions.resolvePath(cmd.getArgs()[i+1]);
   }
 
 

@@ -21,6 +21,11 @@ class GraphSanitizer extends StdConverter<Graph, Graph> {
     isNotNull(obj.getType());
 
     if(obj.getType().equals("file")) {
+      if(obj.getPath() != null && obj.getPath().contains("*")) {
+        if(!obj.anyContentFile() && !obj.anyLibraryFile()) {
+          throw new RuntimeException("Only wildcard allowed for bim or bim-repository folder");
+        }
+      }
       isFile(obj.getPath());
     }
     if(obj.getType().equals("online")) {

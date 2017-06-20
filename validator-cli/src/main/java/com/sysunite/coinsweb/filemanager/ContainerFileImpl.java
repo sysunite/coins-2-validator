@@ -151,13 +151,13 @@ public class ContainerFileImpl extends File implements ContainerFile {
       // Get the zip file content
       ZipInputStream zis = new ZipInputStream(new FileInputStream(this));
       ZipEntry ze = zis.getNextEntry();
-      Path zePath = Paths.get(ze.getName());
+      Path zePath;
 
       while(ze != null) {
+        zePath = Paths.get(ze.getName());
 
         if(ze.isDirectory()) {
           ze = zis.getNextEntry();
-          zePath = Paths.get(ze.getName());
           continue;
         }
 
@@ -175,12 +175,10 @@ public class ContainerFileImpl extends File implements ContainerFile {
           zis.closeEntry();
           zis.close();
 
-
           return file;
         }
 
         ze = zis.getNextEntry();
-        zePath = Paths.get(ze.getName());
       }
 
       zis.closeEntry();

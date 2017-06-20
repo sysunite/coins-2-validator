@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,6 +52,7 @@ public class Application {
 
     if (options.writeLog()) {
       setLoggers("log.txt");
+      log.info(")} COINS 2.0 validator - version " + CliOptions.getVersion());
     } else {
       setLoggers(null);
     }
@@ -66,13 +68,14 @@ public class Application {
     }
     if(options.runMode()) {
       try {
-        File configFile = null;
-        if (options.hasFile() && options.isContainerFile(options.getFile())) {
+        File configFile;
+        if (!options.hasConfigFile()) {
           configFile = CliOptions.resolvePath("config-generated.yml").toFile();
           FileUtils.writeStringToFile(configFile, describe(), "UTF-8");
-        } else if (options.hasFile() && options.isConfigFile(options.getFile())) {
-          configFile = options.getFile().toFile();
+        } else {
+          configFile = options.getConfigFile().toFile();
         }
+
         run(configFile);
       } catch (RuntimeException e) {
         log.error(e.getMessage(), e);
@@ -82,20 +85,29 @@ public class Application {
     }
   }
 
+
+
   public static String describe() {
 
-    // Get config
-    ContainerFile containerFile;
+    ArrayList<ContainerFile> containers = new ArrayList();
+
     try {
-      if (options.hasFile() && options.isContainerFile(options.getFile())) {
+
+      // Get containers
+      for(int i = 0; i < options.hasContainerFile(); i++) {
         log.info("Try to read container file");
-        containerFile = new ContainerFileImpl(options.getFile().toFile().toString());
+        ContainerFile containerFile = new ContainerFileImpl(options.getContainerFile(i).toFile().toString());
         log.info("Done reading container file");
-      } else {
+        containers.add(containerFile);
+      }
+
+      if(containers.isEmpty()) {
         throw new RuntimeException();
       }
+
+
     } catch(RuntimeException e) {
-      CliOptions.printOutput("(!) problem reading container file\n");
+      CliOptions.printOutput("(!) problem reading container file(s)\n");
       CliOptions.usage();
       System.exit(1);
       return null;
@@ -106,7 +118,7 @@ public class Application {
       localizeTo = CliOptions.resolvePath("");
     }
 
-    String yml = ConfigGenerator.run(containerFile, localizeTo);
+    String yml = ConfigGenerator.run(containers, localizeTo);
     return yml;
   }
 
@@ -136,6 +148,21 @@ public class Application {
       CliOptions.usage();
       System.exit(1);
       return;
+    }
+
+    if(options.hasContainerFile() > 0) {
+
+      if(configFile.getRun().getContainers().length != 1) {
+        throw new RuntimeException("When overriding the container location from config file please configure precisely one container-to-override in the config.yml");
+      }
+
+      Container blueprint = configFile.getRun().getContainers()[0];
+      Container[] overriddenContainerSet = new Container[options.hasContainerFile()];
+      for(int i = 0; i < options.hasContainerFile(); i++) {
+        overriddenContainerSet[i] = blueprint.clone();
+        overriddenContainerSet[i].getLocation().setPath(options.getContainerFile(i).toString());
+      }
+      configFile.getRun().setContainers(overriddenContainerSet);
     }
 
 

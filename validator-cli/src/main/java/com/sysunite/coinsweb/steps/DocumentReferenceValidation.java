@@ -3,7 +3,7 @@ package com.sysunite.coinsweb.steps;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
-import com.sysunite.coinsweb.graphset.GraphSetFactory;
+import com.sysunite.coinsweb.rdfutil.Utils;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -34,7 +34,7 @@ public class DocumentReferenceValidation implements ValidationStep {
     if(!container.getContentFiles().isEmpty()) {
       File file = container.getContentFile(container.getContentFiles().iterator().next());
 
-      Model model = GraphSetFactory.load(file);
+      Model model = Utils.load(file);
       ValueFactory factory = SimpleValueFactory.getInstance();
       IRI InternalDocumentReference = factory.createIRI("http://www.coinsweb.nl/cbim-2.0.rdf#InternalDocumentReference");
       IRI filePath = factory.createIRI("http://www.coinsweb.nl/cbim-2.0.rdf#filePath");

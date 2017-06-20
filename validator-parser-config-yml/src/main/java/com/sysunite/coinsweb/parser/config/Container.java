@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.parser.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -43,4 +44,17 @@ public class Container {
     this.graphs = graphs;
   }
 
+
+  @JsonIgnore
+  public Container clone() {
+    Container clone = new Container();
+    clone.setType(this.type);
+    clone.setLocation(this.location.clone());
+    Graph[] graphs = new Graph[this.graphs.length];
+    for(int i = 0; i < this.graphs.length; i++) {
+      graphs[i] = this.graphs[i].clone();
+    }
+    clone.setGraphs(graphs);
+    return clone;
+  }
 }

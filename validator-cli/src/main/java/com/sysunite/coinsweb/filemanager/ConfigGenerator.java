@@ -23,10 +23,15 @@ public class ConfigGenerator {
 
   private static final Logger log = LoggerFactory.getLogger(ConfigGenerator.class);
 
-  public static String run(ContainerFile containerFile) {
-    return run(containerFile, null);
+  public static String run(ArrayList<ContainerFile> containersList) {
+    if(containersList.isEmpty()) {
+      throw new RuntimeException("");
+    }
+
+    Path localizeTo = containersList.get(0).toPath().getParent();
+    return run(containersList, localizeTo);
   }
-  public static String run(ContainerFile containerFile, Path localizeTo) {
+  public static String run(ArrayList<ContainerFile> containersList, Path localizeTo) {
 
     ObjectMapper mapper = new ObjectMapper(
       new YAMLFactory()
@@ -65,19 +70,24 @@ public class ConfigGenerator {
 
 
       // Run
+      ArrayList<Container> containers = new ArrayList();
+      for(ContainerFile containerFile : containersList) {
 
-      // - Container
-      Locator locator = new Locator();
-      locator.localizeTo(localizeTo);
-      locator.setType("file");
-      locator.setPath(containerFile.toString());
+        // - Container
+        Locator locator = new Locator();
+        locator.localizeTo(localizeTo);
+        locator.setType("file");
+        locator.setPath(containerFile.toString());
 
-      ArrayList<Graph> graphs = graphsInContainer(containerFile);
+        ArrayList<Graph> graphs = graphsInContainer(containerFile);
 
-      Container container = new Container();
-      container.setType("container");
-      container.setLocation(locator);
-      container.setGraphs(graphs.toArray(new Graph[graphs.size()]));
+        Container container = new Container();
+        container.setType("container");
+        container.setLocation(locator);
+        container.setGraphs(graphs.toArray(new Graph[0]));
+
+        containers.add(container);
+      }
 
       // - Steps
       ArrayList<Step> steps = new ArrayList();
@@ -87,12 +97,8 @@ public class ConfigGenerator {
       steps.add(fileSystemValidation);
 
 
-      Path profileLocation;
-      if(localizeTo != null) {
-        profileLocation = localizeTo.resolve("profile.lite-9.60.xml");
-      } else {
-        profileLocation = containerFile.toPath().getParent().resolve("profile.lite-9.60.xml");
-      }
+      Path profileLocation = localizeTo.resolve("profile.lite-9.60.xml");
+
       Locator validationLocator = new Locator();
       validationLocator.localizeTo(localizeTo);
       validationLocator.setType("file");
@@ -113,12 +119,8 @@ public class ConfigGenerator {
       // - Reports
       ArrayList<Report> reports = new ArrayList();
 
-      Path reportLocation;
-      if(localizeTo != null) {
-        reportLocation = localizeTo.resolve("report.xml");
-      } else {
-        reportLocation = containerFile.toPath().getParent().resolve("report.xml");
-      }
+      Path reportLocation = localizeTo.resolve("report.xml");
+
       Locator reportLocator = new Locator();
       reportLocator.localizeTo(localizeTo);
       reportLocator.setType("file");
@@ -130,8 +132,8 @@ public class ConfigGenerator {
       reports.add(report);
 
       Run run = new Run();
-      Container[] containers = {container};
-      run.setContainers(containers);
+
+      run.setContainers(containers.toArray(new Container[0]));
       run.setSteps(steps.toArray(new Step[0]));
       run.setReports(reports.toArray(new Report[0]));
 
@@ -164,7 +166,16 @@ public class ConfigGenerator {
     throw new RuntimeException("Was not able to generate config.yml");
   }
 
-  private static ArrayList<Graph> graphsInContainer(ContainerFile containerFile) {
+  public static ArrayList<Graph> graphsInContainer(ContainerFile containerFile) {
+    ArrayList<Graph> graphs = new ArrayList();
+    graphs.addAll(contentGraphsInContainer(containerFile));
+    graphs.addAll(libraryGraphsInContainer(containerFile));
+    return graphs;
+  }
+  public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile) {
+    return contentGraphsInContainer(containerFile, new ArrayList<>(Arrays.asList("instances", "full")));
+  }
+  public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile, ArrayList<String> content) {
     ArrayList<Graph> graphs = new ArrayList();
     for(String contentFile : containerFile.getContentFiles()) {
 
@@ -175,7 +186,7 @@ public class ConfigGenerator {
           Graph graph = new Graph();
           graph.setGraphname(namespace);
           graph.setType("container");
-          graph.setContent(new ArrayList<>(Arrays.asList("instances", "full")));
+          graph.setContent(content);
           graph.setPath(containerFile.getContentFilePath(contentFile).toString());
           graphs.add(graph);
         }
@@ -183,6 +194,13 @@ public class ConfigGenerator {
         log.warn(e.getMessage());
       }
     }
+    return graphs;
+  }
+  public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile) {
+    return libraryGraphsInContainer(containerFile, new ArrayList<>(Arrays.asList("library", "full")));
+  }
+  public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile, ArrayList<String> content) {
+    ArrayList<Graph> graphs = new ArrayList();
     for(String repositoryFile : containerFile.getRepositoryFiles()) {
 
       File file = containerFile.getRepositoryFile(repositoryFile);
@@ -192,7 +210,7 @@ public class ConfigGenerator {
           Graph graph = new Graph();
           graph.setGraphname(namespace);
           graph.setType("container");
-          graph.setContent(new ArrayList<>(Arrays.asList("library", "full")));
+          graph.setContent(content);
           graph.setPath(containerFile.getRepositoryFilePath(repositoryFile).toString());
           graphs.add(graph);
         }

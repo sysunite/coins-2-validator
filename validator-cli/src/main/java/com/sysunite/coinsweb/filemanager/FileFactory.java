@@ -100,6 +100,8 @@ public class FileFactory {
     throw new RuntimeException("File could not be loaded.");
   }
 
+
+  public final static int NUM_HASH_CHARS = 8;
   public static String getFileHash(Path zipPath) {
     try {
       MessageDigest md5 = MessageDigest.getInstance("md5");
@@ -107,7 +109,7 @@ public class FileFactory {
       byte buf[] = new byte[8 * 1024];
       while (dis.read(buf, 0, buf.length) > 0);
       dis.close();
-      return StringUtils.leftPad(new BigInteger(1, md5.digest()).toString(16), 32, '0');
+      return StringUtils.leftPad(new BigInteger(1, md5.digest()).toString(16), 32, '0').substring(0, NUM_HASH_CHARS);
     } catch (FileNotFoundException e) {
       e.printStackTrace();
       throw new RuntimeException("Failed calculating md5 hash", e);
@@ -126,7 +128,7 @@ public class FileFactory {
       byte buf[] = new byte[8 * 1024];
       while (dis.read(buf, 0, buf.length) > 0);
       dis.close();
-      return StringUtils.leftPad(new BigInteger(1, md5.digest()).toString(16), 32, '0');
+      return StringUtils.leftPad(new BigInteger(1, md5.digest()).toString(16), 32, '0').substring(0, NUM_HASH_CHARS);
     } catch (FileNotFoundException e) {
       e.printStackTrace();
       throw new RuntimeException("Failed calculating md5 hash", e);

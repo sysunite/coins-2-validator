@@ -59,4 +59,11 @@ public class Utils {
     }
     throw new RuntimeException("Not able to load model from file");
   }
+
+  public static String withoutHash(String input) {
+    while(input.endsWith("#")) {
+      input = input.substring(0, input.length()-1);
+    }
+    return input;
+  }
 }

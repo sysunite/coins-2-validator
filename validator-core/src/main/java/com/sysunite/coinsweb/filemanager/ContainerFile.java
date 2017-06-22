@@ -2,6 +2,7 @@ package com.sysunite.coinsweb.filemanager;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Set;
 
 /**
@@ -21,6 +22,8 @@ public interface ContainerFile {
   File getWoaFile(String filename);
   File getAttachmentFile(String filename);
   File getOrphanFile(String filename);
+
+  ArrayList<String> getRepositoryFileNamespaces(String filename);
 
   Path toPath();
   Path getContentFilePath(String filename);

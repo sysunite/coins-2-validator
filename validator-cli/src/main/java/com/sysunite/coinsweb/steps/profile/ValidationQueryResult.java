@@ -39,6 +39,8 @@ public class ValidationQueryResult implements ValidationStepResult {
 
   private static final Logger log = LoggerFactory.getLogger(ValidationQueryResult.class);
 
+  private boolean validationQuery;
+
   private String id;
   private String reference;
   private String description;
@@ -56,7 +58,7 @@ public class ValidationQueryResult implements ValidationStepResult {
     this.id = Long.toHexString(Double.doubleToLongBits(Math.random()));
     this.reference = queryConfig.getReference();
     this.description = queryConfig.getDescription();
-    this.errorMessage = errorMessage;
+    this.validationQuery = Query.NO_RESULT.equals(queryConfig.getType());
   }
 
   public void setExecutionTime(long executionTime) {
@@ -76,6 +78,9 @@ public class ValidationQueryResult implements ValidationStepResult {
   }
 
 
+  public boolean getValidationQuery() {
+    return validationQuery;
+  }
   public String getId() {
     return id;
   }

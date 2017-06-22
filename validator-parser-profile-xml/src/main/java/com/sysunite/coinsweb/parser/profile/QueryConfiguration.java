@@ -6,17 +6,12 @@ import com.sysunite.coinsweb.parser.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-
 /**
  * @author bastbijl, Sysunite 2017
  */
 public class QueryConfiguration {
 
   private static final Logger log = LoggerFactory.getLogger(QueryConfiguration.class);
-
-  @JacksonXmlProperty(localName = "graphs")
-  private ArrayList<Graph> graphs;
 
   @JacksonXmlCData
   @JacksonXmlProperty(localName = "defaultPrefixes")
@@ -33,10 +28,4 @@ public class QueryConfiguration {
     this.defaultPrefixes = Parser.indentText(defaultPrefixes, 3);
   }
 
-  public ArrayList<Graph> getGraphs() {
-    return graphs;
-  }
-  public void setGraphs(ArrayList<Graph> graphs) {
-    this.graphs = graphs;
-  }
 }

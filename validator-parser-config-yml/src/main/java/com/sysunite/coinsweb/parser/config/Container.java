@@ -2,12 +2,13 @@ package com.sysunite.coinsweb.parser.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.*;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.sysunite.coinsweb.parser.Parser.*;
+import static com.sysunite.coinsweb.parser.Parser.validate;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -22,6 +23,13 @@ public class Container {
   private Locator location;
   private Graph[] graphs;
 
+  @JsonIgnore
+  private String code;
+
+  public Container() {
+    this.code = RandomStringUtils.random(8, true, true);
+  }
+
   public String getType() {
     return type;
   }
@@ -30,6 +38,11 @@ public class Container {
   }
   public Graph[] getGraphs() {
     return graphs;
+  }
+
+  @JsonIgnore
+  public String getCode() {
+    return code;
   }
 
 

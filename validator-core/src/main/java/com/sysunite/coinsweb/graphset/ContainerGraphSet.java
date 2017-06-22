@@ -10,11 +10,12 @@ import java.util.Map;
  */
 public interface ContainerGraphSet {
 
-  void select(String query, Object formatTemplate, ValidationStepResult result);
+  boolean select(String query, Object formatTemplate, ValidationStepResult result);
   void update(String query, ValidationStepResult result);
   void setContainerFile(ContainerFile container);
   void setContainerConfig(Object containerConfig);
   void setConfigFile(Object configFile);
+  Map<String, String> contextMap();
   Map<String, Long> quadCount();
 
   void close();

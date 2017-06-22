@@ -31,309 +31,194 @@
 Variables posted to this report page
 #####
 
-String                      : filename
-String                      : imports
-String                      : libraries
-String                      : graphs
-String                      : attachments
-String                      : date
-long                        : executionTime
-String                      : profileName
-String                      : profileVersion
-boolean                     : fileStructureSanity
-boolean                     : allImportsAvailable
-boolean                     : profileChecksPassed
-boolean                     : validationPassed
-List<ValidationQueryResult> : profileChecks
-InferenceExecution          : schemaInferences
-InferenceExecution          : dataInferences
-List<ValidationQueryResult> : validationRules
+<ConfigFile>                                : runConfig
+<Map>(ContainerCode<String> -> <Map>)       : containers
+
 
 -->
 
-
-
+<!-- Containers Listing  -->
 <table>
-  <tr><th>name</th><td><#if filename??>📦 ${filename}<#else>not started from .ccr file</#if></td><tr>
-  <tr><th>imports</th><td>
-  <#if imports?has_content>
-  <#list 0..imports?size-1 as i>
-    <#if graphs?seq_contains(imports[i])>✅<#else><#if online?seq_contains(imports[i])>📡<#else>⛔</#if></#if>
-     ${imports[i]}<br/>
+  <tr><th>Containers</th><th></th><th></th></tr>
+  <#list 0..runConfig.getRun().getContainers()?size-1 as i>
+    <#assign container = runConfig.getRun().getContainers()[i] />
+    <tr><th>#${i+1}</th><td><a href="#${container.code}">${container.getLocation().toString()}</a></td><td><a href="#${container.code}"><#if containers[container.code].valid>✅ <#else>⛔️ </#if></a></td></tr>
   </#list>
-  </#if></td><tr>
-  <tr><th>libraries</th><td>
-  <#if libraries?has_content>
-  <#list 0..libraries?size-1 as i>
-    📄 ${libraries[i]} (${graphs[i]})<br/>
-  </#list>
-  </#if></td><tr>
-  <tr><th>attachments</th><td>
-  <#if attachments?has_content>
-    <#if attachments?size lt 10>
-      <#list 0..attachments?size-1 as i>
-      📎 ${attachments[i]}
-      </#list>
-    <#else>
-      <#list 0..9 as i>
-        📎 ${attachments[i]} <br/>
-      </#list>
-      <div style="display:none" id="attachment_list">
-
-      <#list 10..attachments?size-1 as i>
-        📎 ${attachments[i]} <br/>
-      </#list>
-      </div>
-      <div onclick="document.getElementById('attachment_list').className+=' active';">show all...</div>
-    </#if>
-  <#else>
-    <i>none</i>
-  </#if>
-</td><tr>
-  <tr><th>date</th><td>${date}</td><tr>
-  <tr><th>total duration</th><td>${executionTime / 1000} sec</td><tr>
-  <tr><th>memory usage</th><td>${memMaxUsage} (limited to ${memLimit})</td><tr>
-  <tr><th>profile</th><td>${profileName}</td><tr>
-  <tr><th>version</th><td>${profileVersion}</td><tr>
-  <tr><th>performed steps</th><td>
-<#if fileStructureSanity>✅ file structure is correct<#else>⛔️ not meeting file structure requirements</#if><br/>
-<#if allImportsAvailable>✅ able to find all imports<#else>⛔️ some imports could not be found</#if><br/>
-<#if profileChecksPassed>✅ meets profile requirements<#else>⛔️ not meeting profile requirements</#if><br/>
-✅ added schema inferences<br/>
-✅ added data inferences<br/>
-<#if validationPassed>✅ validation passed<#else>⛔️ validation failed</#if>
-  </ol></td><tr>
 </table>
 
 
+<!-- Container Specs + Validation Summary -->
+<#list 0..runConfig.getRun().getContainers()?size-1 as i>
 
-<h2>File structure check</h2>
-<#if fileStructureSanity>File structure is correct.<#else>Not meeting file structure requirements, this problem was found:<br/>
-<table>
-  <th>
-    <td></td>
-  </th>
-  <tr>
-    <td>⛔️</td><td>${fileStructureMessage}</td>
-  </tr>
-</table>
-</#if>
+  <#assign container = runConfig.getRun().getContainers()[i] />
+  <#assign validation = containers[container.code] />
+  <#assign containerFile = validation.file />
+  <#assign availableNamespaces = validation.availableNamespaces />
+  <#assign steps = validation.steps />
+  <#assign stepNames = steps?keys />
+  <#assign attachments = containerFile.attachmentFiles />
+  <#assign libraries = containerFile.repositoryFiles />
+  <#assign contentFiles = containerFile.contentFiles />
 
-
-
-<h2>Profile checks summary</h2>
-
-<table>
-  <tr><th></th><th>name</th><th>description</th><th>duration</th><tr>
-<#list profileChecks as query>
-  <tr>
-    <td><#if query.passed>✅<#else>⛔️</#if></td>
-    <td><a href="#${query.id}">${query.reference}</a></td>
-    <td>${query.description}</td>
-    <td><#if query.executionTime??>
-      <#if query.executionTime lt 1000>
-        ${query.executionTime} ms
-        <#else>
-          ${query.executionTime / 1000} sec
-      </#if>
-    </#if></td>
-  <tr>
-</#list>
-</table>
-
-
-<h2>Validation summary</h2>
-
-<table>
-  <tr><th></th><th>name</th><th>description</th><th>duration</th><tr>
-<#list validationRules as query>
-  <tr>
-    <td><#if query.passed>✅<#else>⛔️</#if></td>
-    <td><a href="#${query.id}">${query.reference}</a></td>
-    <td>${query.description}</td>
-    <td><#if query.executionTime??>
-      <#if query.executionTime lt 1000>
-        ${query.executionTime} ms
-        <#else>
-          ${query.executionTime / 1000} sec
-      </#if>
-    </#if></td>
-  <tr>
-</#list>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-<h2>1. Details profile requirements</h2>
-
-<#list profileChecks as query>
-  <a name="${query.id}"></a>
-  <h4><#if query.passed>✅<#else>⛔️</#if> ${query.reference}</h4>
-  <p>${query.description}</p>
-
-  <#if query.formattedResults?has_content>
-    <table id="val_${query.id}">
-      <#if query.formattedResults?size lte 7>
-        <#list 0..query.formattedResults?size-1 as i>
-          <tr>
-            <td>${query.formattedResults[i]}</td>
-          </tr>
+  <a name="${container.code}"></a>
+  <h2>Container #${i+1}</h2>
+  <table>
+    <tr><th>name</th><td>${containerFile.getName()}</td></tr>
+    <tr><th>size</th><td>${containerFile.length() / 1024 / 1024} Mb</td></tr>
+    <tr><th>content files</th><td>
+      <#if contentFiles?has_content>
+        <#list 0..contentFiles?size-1 as i>
+          📄 ${contentFiles[i]}<br/>
         </#list>
-      <#else>
-        <#list 0..6 as i>
-          <tr>
-            <td>${query.formattedResults[i]}</td>
-          </tr>
-        </#list>
-
-        <#if query.formattedResults?size lte 50>
-          <#list 7..query.formattedResults?size-1 as i>
-            <tr style="display:none;">
-              <td>${query.formattedResults[i]}</td>
-            </tr>
+        <#else>
+          <i>none</i>
+      </#if>
+    </td></tr>
+    <tr><th>library files</th><td>
+      <#if libraries?has_content>
+        <#if libraries?size lt 10>
+          <#list 0..libraries?size-1 as i>
+            📄 ${libraries[i]}
+            (${availableNamespaces[libraries[i]]})<br/>
           </#list>
           <#else>
-            <#list 7..49 as i>
-              <tr style="display:none;">
-                <td>${query.formattedResults[i]}</td>
-              </tr>
+            <#list 0..9 as i>
+              📎 ${libraries[i]}
+              (${availableNamespaces[libraries[i]]})<br/>
             </#list>
-            <tr style="display:none;"><td>reported the first 50 items, there are more</td></tr>
+            <div style="display:none" id="libraries_list_${container.code}">
+
+              <#list 10..libraries?size-1 as i>
+                📎 ${libraries[i]}
+                (${availableNamespaces[libraries[i]]})<br/>
+              </#list>
+            </div>
+            <div onclick="document.getElementById('libraries_list_${container.code}').className+=' active';">show all...</div>
         </#if>
-      </#if>
-    </table>
-    <#if query.formattedResults?size gt 6>
-      <div onclick="document.getElementById('val_${query.id}').className+=' active';">more...</div>
-    </#if>
-  </#if>
-
-
-</#list>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h2>2. Details schema inferences</h2>
-
-<p>Adding schema inferences was done in ${schemaInferences.numRuns} runs and took ${schemaInferences.executionTime} ms.</p>
-<p>Per graph this number of triples were added:
-<table border="1">
-  <#assign keys = schemaInferences.triplesAdded?keys>
-    <#list keys as row>
-      <tr>
-        <td>${row}</td>
-        <td>${schemaInferences.triplesAdded[row]}</td>
-      </tr>
-    </#list>
-</table>
-
-
-
-<h2>3. Details data inferences</h2>
-
-<p>Adding data inferences was done in ${dataInferences.numRuns} runs and took ${dataInferences.executionTime} ms.</p>
-<p>Per graph this number of triples were added:
-<table border="1">
-  <#assign keys = dataInferences.triplesAdded?keys>
-    <#list keys as row>
-      <tr>
-        <td>${row}</td>
-        <td>${dataInferences.triplesAdded[row]}</td>
-      </tr>
-    </#list>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h2>4. Details validation</h2>
-
-<#list validationRules as query>
-  <a name="${query.id}"></a>
-  <h4><#if query.passed>✅<#else>⛔️</#if> ${query.reference}</h4>
-  <p>${query.description}</p>
-  <#if query.errorMessage??>
-  <p>${query.errorMessage}</p>
-  </#if>
-
-  <#if query.formattedResults?has_content>
-    <table id="val_${query.id}">
-      <#if query.formattedResults?size lte 7>
-        <#list 0..query.formattedResults?size-1 as i>
-          <tr>
-            <td>${query.formattedResults[i]}</td>
-          </tr>
-        </#list>
         <#else>
-          <#list 0..6 as i>
-            <tr>
-              <td>${query.formattedResults[i]}</td>
-            </tr>
-          </#list>
-
-          <#if query.formattedResults?size lte 50>
-            <#list 7..query.formattedResults?size-1 as i>
-              <tr style="display:none;">
-                <td>${query.formattedResults[i]}</td>
-              </tr>
+          <i>none</i>
+      </#if>
+    </td></tr>
+    <#if stepNames?seq_contains("FileSystemValidation")>
+      <tr><th>imports</th><td>
+        <#if validation.imports?has_content>
+          <#if validation.imports?size lt 10>
+            <#list 0..validation.imports?size-1 as i>
+              ${validation.imports[i]} <br/>
             </#list>
             <#else>
-              <#list 7..49 as i>
-                <tr style="display:none;">
-                  <td>${query.formattedResults[i]}</td>
-                </tr>
+              <#list 0..9 as i>
+                ${validation.validation.imports[i]} <br/>
               </#list>
-              <tr style="display:none;"><td>reported the first 50 items, there are more</td></tr>
+              <div style="display:none" id="imports_list_${container.code}">
+
+                <#list 10..validation.imports?size-1 as i>
+                  ${validation.imports[i]} <br/>
+                </#list>
+              </div>
+              <div onclick="document.getElementById('imports_list_${container.code}').className+=' active';">show all...</div>
           </#if>
-      </#if>
-    </table>
-    <#if query.formattedResults?size gt 6>
-      <div onclick="document.getElementById('val_${query.id}').className+=' active';">more...</div>
+          <#else>
+            <i>none</i>
+        </#if>
+      </td></tr>
     </#if>
-  </#if>
+    <tr><th>attachments</th><td>
+      <#if attachments?has_content>
+        <#if attachments?size lt 10>
+          <#list 0..attachments?size-1 as i>
+            📎 ${attachments[i]}<br/>
+          </#list>
+          <#else>
+            <#list 0..9 as i>
+              📎 ${attachments[i]} <br/>
+            </#list>
+            <div style="display:none" id="attachment_list_${container.code}">
+
+              <#list 10..attachments?size-1 as i>
+                📎 ${attachments[i]} <br/>
+              </#list>
+            </div>
+            <div onclick="document.getElementById('attachment_list_${container.code}').className+=' active';">show all...</div>
+        </#if>
+        <#else>
+          <i>none</i>
+      </#if>
+    </td></tr>
+
+    <#list stepNames as stepName>
+      <tr><th>${stepName}</th><td><a href="#${container.code}_${stepName}"><#if steps[stepName]>✅ <#else>⛔️ </#if></a></td></tr>
+    </#list>
+  </table>
+
+  <!-- Validation Details -->
+  <#list stepNames as stepName>
+    <a name="${container.code}_${stepName}"></a>
+    <h3><#if steps[stepName]>✅ <#else>⛔️ </#if> ${stepName}</h3>
+
+    <#if stepName=="FileSystemValidation">
+      <table>
+        <tr><td>oneRepoFile</td><td><#if validation.oneRepoFile>✅ <#else>⛔️ </#if></td></tr>
+        <tr><td>noSubsInBim</td><td><#if validation.noSubsInBim>✅ <#else>⛔️ </#if></td></tr>
+        <tr><td>noOrphans</td><td><#if validation.noOrphans>✅ <#else>⛔️ </#if></td></tr>
+        <tr><td>allImportsImportable</td><td><#if validation.allImportsImportable>✅ <#else>⛔️ </#if></td></tr>
+      </table>
+
+    <#elseif stepName=="DocumentReferenceValidation">
+      <table>
+        <tr><td>internalDocumentReferences</td>
+          <td>
+            <#if validation.internalDocumentReferences?has_content>
+              <#list validation.internalDocumentReferences as id>
+                ${id}<br/>
+              </#list>
+            <#else>
+              <i>none</i>
+            </#if>
+          </td></tr>
+      </table>
+    <#elseif stepName=="ProfileValidation">
+      <#list validation.bundleResults?keys as bundleKey>
+
+        <h4>${bundleKey}</h4>
+
+        <table>
+        <#assign bundle = validation.bundleResults[bundleKey] />
+          <#list bundle?keys as queryKey>
+            <#assign query = bundle[queryKey] />
+
+            <#if query.validationQuery>
+
+
+                <tr><td>${query.reference}</td><td>${query.description}</td><td><#if query.passed>✅<#else>⛔️</#if></td></tr>
+
+                    <#if query.formattedResults?has_content>
+                      <tr><td colspan="3">
+                        <ul>
+                          <#list 0..query.formattedResults?size-1 as i>
+                            <li>${query.formattedResults[i]}</li>
+                          </#list>
+                        </ul>
+                      </td></tr>
+                    </#if>
+
+            </#if>
+
+          </#list>
+        </table>
+
+      </#list>
+    <#else>
+      no html format available for: ${stepName}
+    </#if>
+
+
+    <table>
+
+    </table>
+  </#list>
+
+
 
 </#list>
 

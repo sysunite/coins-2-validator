@@ -1,8 +1,6 @@
 package com.sysunite.coinsweb.graphset;
 
-import com.sysunite.coinsweb.parser.profile.Graph;
 import com.sysunite.coinsweb.parser.profile.Query;
-import com.sysunite.coinsweb.parser.profile.QueryConfiguration;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -13,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,14 +23,15 @@ public class QueryFactory {
 
 
 
-  public static String buildQuery(Query query, QueryConfiguration configuration) {
 
-    Map<String, String> data = new HashMap<>();
-    for(Graph graph : configuration.getGraphs()) {
-      data.put(graph.getCode(), '<'+graph.getUri()+'>');
+  public static String buildQuery(Query query, Map<String, String> data) {
+    return buildQuery(query, data, null);
+  }
+  public static String buildQuery(Query query, Map<String, String> data, String prefixes) {
+    String cleanQuery = query.cleanQuery();
+    if(prefixes != null && !prefixes.isEmpty()) {
+      cleanQuery = prefixes + '\n' + cleanQuery;
     }
-
-    String cleanQuery = configuration.cleanDefaultPrefixes() + '\n' + query.cleanQuery();
     String finalQuery = parseFreemarker(cleanQuery, data);
     return finalQuery;
   }

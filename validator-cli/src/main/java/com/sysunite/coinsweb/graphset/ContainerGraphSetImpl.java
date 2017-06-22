@@ -31,6 +31,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   private Container containerConfig;
   private ConfigFile configFile;
   private HashMap<String, String> graphs;
+  private HashMap<String, String> contextMap;
 
 
 
@@ -53,13 +54,18 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     log.info("Initialize connector");
     connector.init();
 
-    GraphSetFactory.load(containerConfig.getGraphs(), connector, container, configFile);
+    contextMap = GraphSetFactory.load(containerConfig.getGraphs(), connector, container, configFile);
 
     log.info("Finished initializing connector");
     this.connector.setAllLoaded();
   }
 
-  public void select(String query, Object formatTemplate, ValidationStepResult validationStepResult) {
+  /**
+   * returns true if it least one result was found
+   */
+  public boolean select(String query, Object formatTemplate, ValidationStepResult validationStepResult) {
+
+    boolean resultsFound = false;
 
     if(connector.requiresLoad()) {
       load();
@@ -73,20 +79,36 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     if(!result.hasNext()) {
       log.info("No results, which is good");
     } else {
+      resultsFound = true;
 
-      while(result.hasNext()) {
-        BindingSet row = result.next();
-        formattedResults.add(ReportFactory.formatResult(row, (Template) formatTemplate));
+      if(formatTemplate != null) {
+        while (result.hasNext()) {
+          BindingSet row = result.next();
+          formattedResults.add(ReportFactory.formatResult(row, (Template) formatTemplate));
+        }
       }
     }
 
     long executionTime = new Date().getTime() - start;
-    ((ValidationQueryResult) validationStepResult).setExecutionTime(executionTime);
-    ((ValidationQueryResult) validationStepResult).setExecutedQuery(query);
-    ((ValidationQueryResult) validationStepResult).addFormattedResults(formattedResults);
+    if(validationStepResult != null) {
+      ((ValidationQueryResult) validationStepResult).setExecutionTime(executionTime);
+      ((ValidationQueryResult) validationStepResult).setExecutedQuery(query);
+      ((ValidationQueryResult) validationStepResult).addFormattedResults(formattedResults);
+    }
+    return resultsFound;
+  }
+
+  public Map<String, String> contextMap() {
+    if(connector.requiresLoad()) {
+      load();
+    }
+    return contextMap;
   }
 
   public Map<String, Long> quadCount() {
+    if(connector.requiresLoad()) {
+      load();
+    }
     return connector.quadCount();
   }
 

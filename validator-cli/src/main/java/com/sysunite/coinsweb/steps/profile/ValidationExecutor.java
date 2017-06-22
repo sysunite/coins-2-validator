@@ -64,7 +64,24 @@ public class ValidationExecutor {
     boolean valid = true;
 
 
+    String defaultPrefixes = null;
+    if(profile.getQueryConfiguration() != null) {
+      defaultPrefixes = profile.getQueryConfiguration().cleanDefaultPrefixes();
+    }
 
+
+    // Assumption is that there are certain graphs available, check this
+    Map<String, String> validationGraphs = new HashMap<>();
+    for(String code : graphSet.contextMap().keySet()) {
+      validationGraphs.put(code, '<'+graphSet.contextMap().get(code)+'>');
+    }
+
+    for(String code : validationGraphs.keySet()) {
+      String graphName = validationGraphs.get(code);
+      if(!graphSet.select("SELECT * WHERE { GRAPH "+graphName+" {?s ?p ?o}} LIMIT 1", null, null)) {
+//        throw new RuntimeException("Store not loaded properly, this context is empty: "+graphName);
+      }
+    }
 
 //    Runtime runtime = Runtime.getRuntime();
 
@@ -75,7 +92,7 @@ public class ValidationExecutor {
       boolean containsUpdate = false;
       boolean someTripleWasAdded = false;
 
-      Map<String, Long> previous = null;
+      Map<String, Long> previous = graphSet.quadCount();
       HashMap<String, ValidationQueryResult> resultMap = new HashMap();
 
       log.info("\uD83D\uDC1A Will perform bundle \""+bundle.getReference()+"\"");
@@ -101,7 +118,7 @@ public class ValidationExecutor {
           if (Query.UPDATE.equals(query.getType())) {
             containsUpdate = true;
 
-            String queryString = QueryFactory.buildQuery(query, profile.getQueryConfiguration());
+            String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes);
             graphSet.update(queryString, resultCarrier);
 
             Map<String, Long> current = graphSet.quadCount();
@@ -118,7 +135,7 @@ public class ValidationExecutor {
           }
           if (Query.NO_RESULT.equals(query.getType())) {
 
-            String queryString = QueryFactory.buildQuery(query, profile.getQueryConfiguration());
+            String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes);
             graphSet.select(queryString, query.getFormatTemplate(), resultCarrier);
             boolean hasNoResults = resultCarrier.getFormattedResults().isEmpty();
             resultCarrier.setPassed(hasNoResults);

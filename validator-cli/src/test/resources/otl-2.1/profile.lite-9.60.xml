@@ -5,31 +5,6 @@
   <author>Hans Schevers</author>
   <queryLanguage>SPARQL-1.1</queryLanguage>
   <queryConfiguration>
-    <graphs>
-      <graph>
-        <code>FULL_UNION_GRAPH</code>
-        <uri>http://full/union</uri>
-        <description>All triples.</description>
-      </graph>
-      <!--<graph>-->
-      <!--<code>INSTANCE_GRAPH</code>-->
-      <!--<uri>http://instances/union</uri>-->
-      <!--<description>Instances triples.</description>-->
-      <!--</graph>-->
-      <graph>
-        <code>SCHEMA_UNION_GRAPH</code>
-        <uri>http://library/union</uri>
-        <description>Schema triples.</description>
-      </graph>
-      <!--
-//      data.put("INSTANCE_GRAPH", "<"+ InMemGraphSet.INSTANCE_GRAPH +">");
-//      data.put("WOA_GRAPH", "<"+ InMemGraphSet.WOA_GRAPH +">");
-////      data.put("CORE_GRAPH", "<"+ InMemGraphSet.SCHEMA_GRAPH +">");
-////      data.put("SCHEMA_GRAPH", "<"+ InMemGraphSet.SCHEMA_GRAPH +">");
-//      data.put("SCHEMA_UNION_GRAPH", "<"+ InMemGraphSet.SCHEMA_UNION_GRAPH +">");
-//      data.put("FULL_UNION_GRAPH", "<"+ graphSet.getFullUnionNamespace() +">");
--->
-    </graphs>
     <defaultPrefixes>
       <![CDATA[
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>

@@ -31,7 +31,6 @@ public class Mapping {
   }
 
   public void setContent(String content) {
-//    validate(content, "instances", "library");
     this.content = content;
   }
 }

@@ -7,13 +7,10 @@ import com.sysunite.coinsweb.rdfutil.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.sysunite.coinsweb.filemanager.ContainerFileImpl.namespacesForFile;
 
 
 /**
@@ -44,15 +41,22 @@ public class FileSystemValidation implements ValidationStep {
 
     ArrayList<String> availableGraphs = new ArrayList();
     for(String repoFilePath : container.getRepositoryFiles()) {
-      File repoFile = container.getRepositoryFile(repoFilePath);
-      availableGraphs.addAll(namespacesForFile(repoFile));
+      availableGraphs.addAll(container.getRepositoryFileNamespaces(repoFilePath));
     }
 
     ArrayList<String> imports = new ArrayList();
     if(!container.getContentFiles().isEmpty()) {
       imports = Utils.imports(container.getContentFile(container.getContentFiles().iterator().next()));
       for (String namespace : imports) {
-        allImportsImportable &= availableGraphs.contains(namespace);
+
+        boolean found = false;
+        for(String compare : availableGraphs) {
+          found |= Utils.withoutHash(compare).equals(Utils.withoutHash(namespace));
+        }
+        if(!found) {
+          log.info("Namespace to import "+ namespace+ " was not found in "+String.join(", ", availableGraphs));
+        }
+        allImportsImportable &= found;
       }
     }
 

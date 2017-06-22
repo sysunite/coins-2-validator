@@ -57,7 +57,7 @@ public abstract class Rdf4jConnector implements Connector {
     } catch (Exception e) {
       log.error(e.getMessage(), e);
     }
-    throw new RuntimeException("Was not able to build resultset for query");
+    throw new RuntimeException("Was not able to build resultset for query: "+queryString);
   }
 
   @Override

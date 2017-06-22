@@ -40,7 +40,11 @@ public class ContainerFileImpl extends File implements ContainerFile {
   public static ContainerFileImpl parse(Locator locator, ConfigFile configFile) {
 
     if(Locator.FILE.equals(locator.getType())) {
-      return new ContainerFileImpl(configFile.resolve(locator.getPath()).toString());
+      ContainerFileImpl containerFile = new ContainerFileImpl(configFile.resolve(locator.getPath()).toString());
+      if(!containerFile.exists()) {
+        throw new RuntimeException("Configured file not found: "+containerFile.getPath());
+      }
+      return containerFile;
     }
     if(Locator.ONLINE.equals(locator.getType())) {
       try {
@@ -124,6 +128,14 @@ public class ContainerFileImpl extends File implements ContainerFile {
   }
   public File getOrphanFile(String filename) {
     return getFile(orphanFiles.get(filename));
+  }
+
+  HashMap<String, ArrayList<String>> repositoryFileNamespaces = new HashMap();
+  public ArrayList<String> getRepositoryFileNamespaces(String filename) {
+    if(!repositoryFileNamespaces.containsKey(filename)) {
+      repositoryFileNamespaces.put(filename, namespacesForFile(getRepositoryFile(filename)));
+    }
+    return repositoryFileNamespaces.get(filename);
   }
 
   public Path getContentFilePath(String filename) {

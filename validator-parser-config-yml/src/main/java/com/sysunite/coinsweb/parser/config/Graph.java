@@ -68,6 +68,7 @@ public class Graph {
 
   @JsonIgnore
   public boolean anyContentFile() {
+    log.info("Any content file: matching "+path+" to "+("bim" + File.separator + "*"));
     boolean anyContentFile = CONTAINER.equals(type) && path != null && path.equals("bim" + File.separator + "*");
     if(anyContentFile && !"*".equals(graphname)) {
       throw new RuntimeException("Set graphname to \"*\" when using an asterisk in the container path, it was "+graphname);
@@ -77,6 +78,7 @@ public class Graph {
 
   @JsonIgnore
   public boolean anyLibraryFile() {
+    log.info("Any library file: matching "+path+" to "+("bim" + File.separator + "repository" + File.separator + "*"));
     boolean anyLibraryFile = CONTAINER.equals(type) && path != null && path.equals("bim" + File.separator + "repository" + File.separator + "*");
     if(anyLibraryFile && !"*".equals(graphname)) {
       throw new RuntimeException("Set graphname to \"*\" when using an asterisk in the container path, it was "+graphname);
@@ -85,7 +87,6 @@ public class Graph {
   }
 
   public void setContent(ArrayList<String> content) {
-//    validate(content, "instances", "library");
     this.content = content;
   }
 

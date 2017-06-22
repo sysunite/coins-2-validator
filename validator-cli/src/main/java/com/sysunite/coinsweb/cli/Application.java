@@ -167,25 +167,39 @@ public class Application {
 
 
 
+    Map<String, Object> reportItems = new HashMap();
+    reportItems.put("runConfig", configFile);
+
+    Map<String, Object> containers = new HashMap();
+    reportItems.put("containers", containers);
+
     // For each container file execute steps
     for(Container containerConfig : configFile.getRun().getContainers()) {
 
-      ContainerFileImpl container = ContainerFileImpl.parse(containerConfig.getLocation(), configFile);
-      ContainerGraphSet graphSet = GraphSetFactory.lazyLoad(container, containerConfig, configFile);
+      log.info("Validate "+containerConfig.getLocation().toString());
 
-      Map<String, Object> reportItems = new HashMap();
-      reportItems.put("steps", new HashMap<String, Boolean>());
+      ContainerFileImpl containerFile = ContainerFileImpl.parse(containerConfig.getLocation(), configFile);
+      ContainerGraphSet graphSet = GraphSetFactory.lazyLoad(containerFile, containerConfig, configFile);
 
-      for(Step step : configFile.getRun().getSteps()) {
+      Map<String, Object> containerItems = new HashMap();
+      containerItems.put("file", containerFile);
+      HashMap<String, String> availableNamespaces = new HashMap();
+      for(String libraryFile : containerFile.getRepositoryFiles()) {
+        availableNamespaces.put(libraryFile, String.join(", ", containerFile.getRepositoryFileNamespaces(libraryFile)));
+      }
+      containerItems.put("availableNamespaces", availableNamespaces);
+      containerItems.put("steps", new HashMap<String, Boolean>());
+
+      for (Step step : configFile.getRun().getSteps()) {
 
         ValidationStep validationStep = step.getValidationStep();
-        Map<String, Object> items = validationStep.execute(container, graphSet);
-        if(!items.containsKey("valid")) {
-          throw new RuntimeException("Validator "+step.getType()+" dit not return the field \"valid\"");
+        Map<String, Object> items = validationStep.execute(containerFile, graphSet);
+        if (!items.containsKey("valid")) {
+          throw new RuntimeException("Validator " + step.getType() + " dit not return the field \"valid\"");
         }
         boolean valid = (boolean) items.remove("valid");
-        ((Map<String, Boolean>) reportItems.get("steps")).put(step.getType(), valid);
-        reportItems.putAll(items);
+        ((Map<String, Boolean>) containerItems.get("steps")).put(step.getType(), valid);
+        containerItems.putAll(items);
       }
 
       // Close graphSet
@@ -193,47 +207,50 @@ public class Application {
 
       // Postprocessing of reportItems
       boolean valid = true;
-      Map<String, Boolean> steps = (Map<String, Boolean>) reportItems.get("steps");
-      for(Boolean stepValid : steps.values()) {
+      Map<String, Boolean> steps = (Map<String, Boolean>) containerItems.get("steps");
+      for (Boolean stepValid : steps.values()) {
         valid &= stepValid;
       }
-      reportItems.put("valid", valid);
+      containerItems.put("valid", valid);
 
-      // Generate the reports
-      String xml = null;
-      String html = null;
-      for(Report report : configFile.getRun().getReports()) {
-        String payload = null;
-        if(Report.XML.equals(report.getType())) {
-          if(xml == null) {
-            xml = ReportFactory.buildXml(reportItems);
-          }
-          payload = xml;
-        }
-        if(Report.HTML.equals(report.getType())) {
-          if(html == null) {
-            html = ReportFactory.buildHtml(reportItems);
-          }
-          payload = html;
-        }
-        if(Report.DEBUG.equals(report.getType())) {
-          if(html == null) {
-            html = ReportFactory.buildDebug(reportItems);
-          }
-          payload = html;
-        }
+      containers.put(containerConfig.getCode(), containerItems);
+    }
 
-        if(Locator.FILE.equals(report.getLocation().getType()) && payload != null) {
-          ReportFactory.saveReport(payload, configFile.resolve(report.getLocation().getPath()));
+    // Generate the reports
+    String xml = null;
+    String html = null;
+    for(Report report : configFile.getRun().getReports()) {
+      String payload = null;
+      if(Report.XML.equals(report.getType())) {
+        if(xml == null) {
+          xml = ReportFactory.buildXml(reportItems);
         }
-        if(Locator.ONLINE.equals(report.getLocation().getType()) && payload != null) {
-          ReportFactory.postReport(payload, report.getLocation().getUri());
+        payload = xml;
+      }
+      if(Report.HTML.equals(report.getType())) {
+        if(html == null) {
+          html = ReportFactory.buildHtml(reportItems);
         }
+        payload = html;
+      }
+      if(Report.DEBUG.equals(report.getType())) {
+        if(html == null) {
+          html = ReportFactory.buildDebug(reportItems);
+        }
+        payload = html;
       }
 
-      log.info("Finished successfully, quitting");
-      System.exit(0);
+      if(Locator.FILE.equals(report.getLocation().getType()) && payload != null) {
+        ReportFactory.saveReport(payload, configFile.resolve(report.getLocation().getPath()));
+      }
+      if(Locator.ONLINE.equals(report.getLocation().getType()) && payload != null) {
+        ReportFactory.postReport(payload, report.getLocation().getUri());
+      }
     }
+
+    log.info("Finished successfully, quitting");
+    System.exit(0);
+
 
   }
 

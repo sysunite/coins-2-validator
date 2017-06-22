@@ -61,6 +61,17 @@ public class Locator {
     this.localizeTo = path;
   }
 
+  @JsonIgnore
+  public String toString() {
+    if(path != null) {
+      return path;
+    }
+    if(uri != null) {
+      return uri;
+    }
+    return null;
+  }
+
 
   @JsonIgnore
   public Locator clone() {

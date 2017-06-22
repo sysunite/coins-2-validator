@@ -78,15 +78,9 @@ public class ProfileFileTest {
 
     try {
 
-      Graph graph = new Graph();
-      graph.setCode("SCHEMA_UNION");
-      graph.setUri("http://schema-union");
-      ArrayList<Graph> graphs = new ArrayList();
-      graphs.add(graph);
-
       QueryConfiguration queryConfiguration = new QueryConfiguration();
       queryConfiguration.setDefaultPrefixes("PREFIX yo: <http://prefixer#yo>");
-      queryConfiguration.setGraphs(graphs);
+
 
       File file = new File(Paths.get(getClass().getClassLoader().getResource("template-test.xml").getFile()).getParent().getParent().getParent()+"/written-profile.xml");
       ProfileFile profileFile = new ProfileFile();

@@ -46,10 +46,12 @@ public class GraphSetFactory {
   /**
    * Build load strategy and execute the loading
    *
+   * Returns a map that maps
+   *
    * @param selectedGraphs
    * @param connector
    */
-  public static void load(Graph[] selectedGraphs, Connector connector, ContainerFile container, ConfigFile configFile) {
+  public static HashMap<String, String> load(Graph[] selectedGraphs, Connector connector, ContainerFile container, ConfigFile configFile) {
 
     ArrayList<Graph> loadList = new ArrayList();
 
@@ -115,7 +117,7 @@ public class GraphSetFactory {
     }
 
     // Keep a blacklist of keys that should not be loaded
-    ArrayList<String> blacklist = new ArrayList();
+    ArrayList<String> whitelist = new ArrayList();
 
     // Map source graphname to target graphname
     HashMap<String, String> mapping = configFile.getEnvironment().getMapping();
@@ -143,8 +145,8 @@ public class GraphSetFactory {
 
         // Fill the blacklist
         if(connector.containsContext(fullNamespace)) {
-          log.info("Adding key "+ key+" to the blacklist, this graph is already available: "+ fullNamespace);
-          blacklist.add(key);
+          log.info("Adding key "+ key+" to the whitelist, this graph is already available: "+ fullNamespace);
+          whitelist.add(key);
         }
       }
 
@@ -152,15 +154,17 @@ public class GraphSetFactory {
 
 
       for (Graph graph : loadList) {
-        load(graph, connector, container, configFile, sortedHashMapping, blacklist);
+        load(graph, connector, container, configFile, sortedHashMapping, whitelist);
       }
+      return sortedHashMapping;
 
     } else {
 
 
       for (Graph graph : loadList) {
-        load(graph, connector, container, configFile, mapping, blacklist);
+        load(graph, connector, container, configFile, mapping, whitelist);
       }
+      return mapping;
     }
   }
 

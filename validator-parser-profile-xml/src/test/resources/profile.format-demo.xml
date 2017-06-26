@@ -41,7 +41,7 @@
           <description>COINS 2.0 Lite profile check on predicate usage </description>
           <resultFormat>
             <![CDATA[
-            The subject ${a} uses an unsupported predicate ${b} to object ${c}, check <a href="http://google.com">link to Google!</a> for more info
+            The subject ${a} uses an unsupported predicate ${b} to object ${c}, check [link to Google!](http://google.com)> for more info
             ]]>
           </resultFormat>
           <sparql>

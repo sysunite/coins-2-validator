@@ -1,6 +1,7 @@
 package com.sysunite.coinsweb.parser.profile;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.sysunite.coinsweb.parser.Markdown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,11 +47,12 @@ public class Bundle {
 
 
   public String getDescription() {
-    return description;
+    return Markdown.parseLinksToHtml(description);
   }
   public void setDescription(String description) {
     this.description = description;
   }
+
 
   public ArrayList<Query> getQueries() {
     return queries;

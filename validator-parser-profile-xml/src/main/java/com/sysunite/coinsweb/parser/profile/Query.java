@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.sysunite.coinsweb.parser.Markdown;
 import com.sysunite.coinsweb.parser.Parser;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
@@ -48,7 +49,7 @@ public class Query {
 
 
   public String getDescription() {
-    return description;
+    return Markdown.parseLinksToHtml(description);
   }
   public void setDescription(String description) {
     this.description = description;
@@ -56,13 +57,13 @@ public class Query {
 
 
   public String getFormat() {
-    return format;
+    return Markdown.parseLinksToHtml(format);
   }
   public String cleanFormat() {
     if(format == null) {
       return "";
     } else {
-      return Parser.indentText(format, 0).trim();
+      return Parser.indentText(getFormat(), 0).trim();
     }
   }
   public void setFormat(String format) {

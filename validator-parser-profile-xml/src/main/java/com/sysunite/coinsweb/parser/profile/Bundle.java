@@ -1,6 +1,8 @@
 package com.sysunite.coinsweb.parser.profile;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
@@ -9,7 +11,15 @@ import java.util.ArrayList;
  */
 public class Bundle {
 
-  @JacksonXmlProperty(localName = "reference")
+  private static final Logger log = LoggerFactory.getLogger(Bundle.class);
+
+  public static final String VALIDATION = "validation";
+  public static final String INFERENCE = "inference";
+
+  @JacksonXmlProperty(localName = "type", isAttribute = true)
+  private String type;
+
+  @JacksonXmlProperty(localName = "reference", isAttribute = true)
   private String reference;
 
   @JacksonXmlProperty(localName = "description")
@@ -17,6 +27,14 @@ public class Bundle {
 
   @JacksonXmlProperty(localName = "queries")
   private ArrayList<Query> queries;
+
+
+  public String getType() {
+    return type;
+  }
+  public void setType(String type) {
+    this.type = type;
+  }
 
 
   public String getReference() {

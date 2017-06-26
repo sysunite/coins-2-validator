@@ -5,18 +5,6 @@
   <author>Bastiaan Bijl</author>
   <queryLanguage>SPARQL-1.1</queryLanguage>
   <queryConfiguration>
-    <graphs>
-      <graph>
-        <code>FULL_UNION_GRAPH</code>
-        <uri>http://full/union</uri>
-        <description>All triples.</description>
-      </graph>
-      <graph>
-        <code>SCHEMA_UNION_GRAPH</code>
-        <uri>http://schema/union</uri>
-        <description>Schema triples.</description>
-      </graph>
-    </graphs>
     <defaultPrefixes>
       <![CDATA[
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -28,19 +16,12 @@
     </defaultPrefixes>
   </queryConfiguration>
   <bundles>
-    <bundle>
-      <reference>b-1</reference>
+    <someBundle type="inference" reference="i-1">
       <description>Only one bundle</description>
       <queries>
-        <query type="no-result">
-          <reference>COINS 2.0 Lite</reference>
+        <query reference="iq-1">
           <description>COINS 2.0 Lite profile check on predicate usage </description>
-          <format>
-            <![CDATA[
-            The subject ${a} uses an unsupported predicate ${b} to object ${c}, check <a href="http://google.com">link to Google!</a> for more info
-            ]]>
-          </format>
-          <query>
+          <sparql>
             <![CDATA[
             select distinct ?a ?b ?c
             WHERE {Graph <http://content#> {
@@ -49,9 +30,32 @@
               filter (?b not in (owl:equivalentClass,owl:allValuesFrom,owl:oneOf,owl:cardinality,owl:disjointWith,owl:distinctMembers,owl:hasValue,owl:imports,owl:intersectionOf,owl:inverseOf,owl:maxCardinality,owl:maxQualifiedCardinality,owl:members,owl:minCardinality,owl:minQualifiedCardinality,owl:onClass,owl:onProperty,owl:qualifiedCardinality,owl:unionOf,owl:annotatedProperty,owl:annotatedSource,owl:annotatedTarget,owl:backwardCompatibleWith,owl:deprecated,owl:incompatibleWith,owl:priorVersion,owl:versionInfo,owl:versionIRI))}
             }
             ]]>
-          </query>
+          </sparql>
         </query>
       </queries>
-    </bundle>
+    </someBundle>
+    <someBundle type="validation" reference="b-1">
+      <description>Only one bundle</description>
+      <queries>
+        <query reference="vq-1">
+          <description>COINS 2.0 Lite profile check on predicate usage </description>
+          <resultFormat>
+            <![CDATA[
+            The subject ${a} uses an unsupported predicate ${b} to object ${c}, check <a href="http://google.com">link to Google!</a> for more info
+            ]]>
+          </resultFormat>
+          <sparql>
+            <![CDATA[
+            select distinct ?a ?b ?c
+            WHERE {Graph <http://content#> {
+              ?a ?b ?c
+              filter (STRSTARTS(STR(?b),"http://www.w3.org/2002/07/owl#")) .
+              filter (?b not in (owl:equivalentClass,owl:allValuesFrom,owl:oneOf,owl:cardinality,owl:disjointWith,owl:distinctMembers,owl:hasValue,owl:imports,owl:intersectionOf,owl:inverseOf,owl:maxCardinality,owl:maxQualifiedCardinality,owl:members,owl:minCardinality,owl:minQualifiedCardinality,owl:onClass,owl:onProperty,owl:qualifiedCardinality,owl:unionOf,owl:annotatedProperty,owl:annotatedSource,owl:annotatedTarget,owl:backwardCompatibleWith,owl:deprecated,owl:incompatibleWith,owl:priorVersion,owl:versionInfo,owl:versionIRI))}
+            }
+            ]]>
+          </sparql>
+        </query>
+      </queries>
+    </someBundle>
   </bundles>
 </profile>

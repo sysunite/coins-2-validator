@@ -21,37 +21,23 @@ import java.io.IOException;
 @JacksonXmlRootElement(localName = "step")
 public class Query {
 
-  public static final String NO_RESULT = "no-result";
-  public static final String UPDATE = "update";
-
   private static final Logger log = LoggerFactory.getLogger(Query.class);
 
-  @JacksonXmlProperty(localName = "type", isAttribute = true)
-  private String type;
-
-  @JacksonXmlProperty(localName = "reference")
+  @JacksonXmlProperty(localName = "reference", isAttribute = true)
   private String reference;
 
   @JacksonXmlProperty(localName = "description")
   private String description;
 
-
   @JsonInclude(Include.NON_NULL)
   @JacksonXmlCData
-  @JacksonXmlProperty(localName = "format")
+  @JacksonXmlProperty(localName = "resultFormat")
   private String format;
 
   @JacksonXmlCData
-  @JacksonXmlProperty(localName = "query")
+  @JacksonXmlProperty(localName = "sparql")
   private String query;
 
-
-  public String getType() {
-    return type;
-  }
-  public void setType(String type) {
-    this.type = type;
-  }
 
   public String getReference() {
     return reference;
@@ -60,12 +46,14 @@ public class Query {
     this.reference = reference;
   }
 
+
   public String getDescription() {
     return description;
   }
   public void setDescription(String description) {
     this.description = description;
   }
+
 
   public String getFormat() {
     return format;
@@ -109,7 +97,6 @@ public class Query {
   public void setQuery(String query) {
     this.query = Parser.indentText(query, 6);
   }
-
 
 
 }

@@ -5,18 +5,6 @@
   <author>Hans Schevers</author>
   <queryLanguage>SPARQL-1.1</queryLanguage>
   <queryConfiguration>
-    <graphs>
-      <graph>
-        <code>FULL_UNION_GRAPH</code>
-        <uri>http://full/union</uri>
-        <description>All triples.</description>
-      </graph>
-      <graph>
-        <code>SCHEMA_UNION_GRAPH</code>
-        <uri>http://schema/union</uri>
-        <description>Schema triples.</description>
-      </graph>
-    </graphs>
     <defaultPrefixes>
       <![CDATA[
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -24,65 +12,56 @@
       PREFIX owl: <http://www.w3.org/2002/07/owl#>
       PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
       PREFIX coins-base: <http://www.coinsweb.nl/cbim-2.0.rdf#>
+      PREFIX cbim: <http://www.coinsweb.nl/cbim-2.0.rdf#>
       ]]>
     </defaultPrefixes>
   </queryConfiguration>
   <bundles>
-    <bundle>
-      <reference>struc</reference>
+    <schemaValidation type="validation" reference="struc">
       <description>Structural checks</description>
       <queries>
-        <query type="no-result">
-          <reference>COINS 2.0 Lite</reference>
+        <query reference="COINS 2.0 Lite">
           <description>COINS 2.0 Lite profile check on predicate usage </description>
-          <format>
+          <resultFormat>
             <![CDATA[
             The subject ${a} uses an unsupported predicate ${b} to object ${c}, check <a href="http://google.com">link to Google!</a> for more info
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?a ?b ?c
-            WHERE {Graph <http://content#> {
+            WHERE {Graph ${SCHEMA_UNION_GRAPH} {
             ?a ?b ?c
             filter (STRSTARTS(STR(?b),"http://www.w3.org/2002/07/owl#")) .
             filter (?b not in (owl:equivalentClass,owl:allValuesFrom,owl:oneOf,owl:cardinality,owl:disjointWith,owl:distinctMembers,owl:hasValue,owl:imports,owl:intersectionOf,owl:inverseOf,owl:maxCardinality,owl:maxQualifiedCardinality,owl:members,owl:minCardinality,owl:minQualifiedCardinality,owl:onClass,owl:onProperty,owl:qualifiedCardinality,owl:unionOf,owl:annotatedProperty,owl:annotatedSource,owl:annotatedTarget,owl:backwardCompatibleWith,owl:deprecated,owl:incompatibleWith,owl:priorVersion,owl:versionInfo,owl:versionIRI))}}
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS 2.0 Lite</reference>
+        <query reference="COINS 2.0 Lite 2">
           <description>COINS 2.0 Lite profile check on object usage</description>
-          <format>
+          <resultFormat>
             <![CDATA[
             The subject ${a} has a predicate ${b} to an unsupported object ${c}
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?a ?b ?c
             WHERE {Graph ${SCHEMA_UNION_GRAPH}{
             ?a ?b ?c   filter (STRSTARTS(STR(?c),"http://www.w3.org/2002/07/owl#")).
             filter (?c not in (owl:AllDisjointClasses,owl:Annotation,owl:AnnotationProperty,owl:Class,owl:DatatypeProperty,owl:FunctionalProperty,owl:NamedIndividual,owl:ObjectProperty,owl:Ontology,owl:Restriction,owl:TransitiveProperty,owl:Thing,owl:topDataProperty,owl:topObjectProperty)) }}
             ]]>
-          </query>
+          </sparql>
         </query>
       </queries>
-    </bundle>
-    <bundle>
-      <reference>schema-inf</reference>
+    </schemaValidation>
+    <schemaInference type="inference" reference="schema-inf">
       <description>Schema inferences</description>
       <queries>
-        <query type="update">
-          <reference>Scm-otp</reference>
+        <query reference="Scm-otp">
           <description>defining object Properties</description>
-          <query>
+          <sparql>
             <![CDATA[
-            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX owl: <http://www.w3.org/2002/07/owl#>
-            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-            PREFIX cbim: <http://www.coinsweb.nl/cbim-2.0.rdf#>
             insert {Graph ${FULL_UNION_GRAPH}{
             ?prop a owl:ObjectProperty
             }}
@@ -95,12 +74,11 @@
             }
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>scm-avf1 (49)</reference>
+        <query reference="scm-avf1 (49)">
           <description>Entailment of restriction subclasses via the allvaluesfrom construct part 1</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?c1 rdfs:subClassOf ?c2
@@ -116,12 +94,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>scm-avf2 (50)</reference>
+        <query reference="scm-avf2 (50)">
           <description>Entailment of restriction subclasses via the allvaluesfrom construct part 2</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?c2 rdfs:subClassOf ?c1
@@ -137,12 +114,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>scm-dom2 (53)</reference>
+        <query reference="scm-dom2 (53)">
           <description>entailment of domains for subproperties</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?p1 rdfs:domain ?c
@@ -155,12 +131,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>scm-hv (59)</reference>
+        <query reference="scm-hv (59)">
           <description>Entailment of restriction subclasses via the hasValue construct</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?c1 rdfs:subClassOf ?c2
@@ -176,12 +151,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>scm-int (60) (member:list replaced)</reference>
+        <query reference="scm-int (60) (member:list replaced)">
           <description>Restriction subclassing for hasValue restrictions. dependency on list:member removed</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?c rdfs:subClassOf ?cl
@@ -193,12 +167,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>Scm-rng1 (62)</reference>
+        <query reference="Scm-rng1 (62)">
           <description>entailment of ranges for subclasses</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?p rdfs:range ?c2
@@ -211,12 +184,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>Scm-rng2 (63)</reference>
+        <query reference="Scm-rng2 (63)">
           <description>entailment of ranges for subproperties</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?p1 rdfs:range ?c
@@ -229,12 +201,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>Scm-sco (64)</reference>
+        <query reference="Scm-sco (64)">
           <description>entailment of the subclass hierarchy</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?c1 rdfs:subClassOf ?c3
@@ -247,12 +218,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>Scm-spo (65)</reference>
+        <query reference="Scm-spo (65)">
           <description>entailment of the subproperty hierarchy</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?p1 rdfs:subPropertyOf ?p3
@@ -265,12 +235,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>scm-svf1 (66)</reference>
+        <query reference="scm-svf1 (66)">
           <description>Restriction subclassing based upon someValuesFrom</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?c1 rdfs:subClassOf ?c2
@@ -286,12 +255,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>scm-svf2 (67)</reference>
+        <query reference="scm-svf2 (67)">
           <description>Restriction subclassing based upon someValuesFrom</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?c1 rdfs:subClassOf ?c2
@@ -307,12 +275,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="udpate">
-          <reference>scm-uni (68)</reference>
+        <query reference="scm-uni (68)">
           <description>UnionClass subtyping entailment. Removed list:member dependency</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?cl rdfs:subClassOf ?c
@@ -324,18 +291,16 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
       </queries>
-    </bundle>
-    <bundle>
-      <reference>data-inf</reference>
+    </schemaInference>
+    <dataInference type="inference" reference="data-inf">
       <description>Data inferences</description>
       <queries>
-        <query type="update">
-          <reference>CAXSCO (18)</reference>
+        <query reference="CAXSCO (18)">
           <description>Entailment of superclass typing</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?x a ?c2
@@ -350,12 +315,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>Prp-spo1 (45)</reference>
+        <query reference="Prp-spo1 (45)">
           <description>Entailment of subproperty values</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?x ?p2 ?y
@@ -370,12 +334,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>Prp-trp (48)</reference>
+        <query reference="Prp-trp (48)">
           <description>Entailment of transitive property values</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?x ?p ?z
@@ -391,12 +354,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>cls-hv1 (20)</reference>
+        <query reference="cls-hv1 (20)">
           <description>Default values entailment via the hasValue constraint</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?u a ?x
@@ -412,12 +374,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>Prp-inv (41)</reference>
+        <query reference="Prp-inv (41)">
           <description>Entailment of inverseOf values part 1</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?y ?p2 ?x
@@ -432,12 +393,11 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="update">
-          <reference>Prp-inv2 (42)</reference>
+        <query reference="Prp-inv2 (42)">
           <description>Entailment of inverse values part 2</description>
-          <query>
+          <sparql>
             <![CDATA[
             insert {Graph ${FULL_UNION_GRAPH}{
             ?y ?p1 ?x
@@ -452,23 +412,21 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
       </queries>
-    </bundle>
-    <bundle>
-      <reference>rules</reference>
+    </dataInference>
+    <dataValidation type="validation" reference="rules">
       <description>Validation rules</description>
       <queries>
-        <query type="no-result">
-          <reference>COINS-minCar</reference>
+        <query reference="COINS-minCar">
           <description>minimal constraint validation</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${this} has ${aantal} <b onclick="alert('you won the lottery')">properties</b> of ${property}. The minimum is ${min},
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?class ?this  ?min ?aantal ?property
 
@@ -492,21 +450,20 @@
 
             }group by ?this ?class ?min ?property
             }
-            filter(xsd:integer(?aantal) &lt; xsd:integer(?min))
+            filter(xsd:integer(?aantal) < xsd:integer(?min))
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-CAREX</reference>
+        <query reference="COINS-CAREX">
           <description>Exactly cardinality validatie</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${this} has ${aantal} properties of ${property}.  Exactly ${min} is necessary.
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?this  ?min ?aantal ?property
 
@@ -530,21 +487,20 @@
 
             }group by ?this ?class ?min ?property
             }
-            filter((xsd:integer(?aantal) &lt; xsd:integer(?min)) || (xsd:integer(?aantal)>xsd:integer(?min)) )
+            filter((xsd:integer(?aantal) < xsd:integer(?min)) || (xsd:integer(?aantal)>xsd:integer(?min)) )
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-maxCar</reference>
+        <query reference="COINS-maxCar">
           <description>maximum cardinality constraint validation</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${this} has ${aantal} properties of ${property}.  The maximum is ${min}.
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?this ?class ?min ?aantal ?property
 
@@ -570,17 +526,16 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-QCREx</reference>
+        <query reference="COINS-QCREx">
           <description>Exactly Qualitative Cardinality restriction validatie</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${this} has ${aantal} qualified properties of ${property} of type ${onClass}.  ${min} values is necessary.
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?this  ?min ?aantal ?property  ?onClass
 
@@ -603,21 +558,20 @@
 
             }  group by ?this ?class ?min  ?property  ?onClass
             }
-            filter((?aantal &lt; ?min) || (?aantal &gt; ?min) )
+            filter((?aantal < ?min) || (?aantal > ?min) )
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-QCRMax</reference>
+        <query reference="COINS-QCRMax">
           <description>Maximum Qualitative Cardinality restriction validatie</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${this} has ${aantal} qualified properties of ${property} .  the maximum is ${min}.
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?this ?class ?min ?aantal ?property
 
@@ -642,17 +596,16 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-QCRMin</reference>
+        <query reference="COINS-QCRMin">
           <description>Minimal Qualitative Cardinality restriction validatie</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${this} has ${aantal} qualified properties of ${property} .  the minimum is ${min}.
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?this  ?min ?aantal ?property
 
@@ -676,21 +629,20 @@
 
             }  group by ?this ?class ?min  ?property
             }
-            filter((xsd:integer(?aantal) &lt; xsd:integer(?min)) )
+            filter((xsd:integer(?aantal) < xsd:integer(?min)) )
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-FUP</reference>
+        <query reference="COINS-FUP">
           <description>functional property as a restriction validation</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${this} has ${aantal} properties of ${property}.  Only 1 is allowed (functional property).
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?this  ?property ?aantal
 
@@ -712,17 +664,16 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-DTVC</reference>
+        <query reference="COINS-DTVC">
           <description>Datatype check</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${value} is of the type ${dat} which is not valid for ${prop} for individual ${a}. It should be a ${range}.
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?a ?prop ?range ?value (Datatype(?value) as ?dat)
 
@@ -737,17 +688,16 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-DPVL</reference>
+        <query reference="COINS-DPVL">
           <description>Datatype waarde check</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${value} is not a valid value for datatype property ${prop} for individual ${a}
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?a ?prop ?value
 
@@ -761,17 +711,16 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-OPVU</reference>
+        <query reference="COINS-OPVU">
           <description>ObjectProperty waarde check</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${value} is not a valid value for object property ${prop} for individual ${a}
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?a ?prop ?value
 
@@ -785,17 +734,16 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-dom</reference>
+        <query reference="COINS-dom">
           <description>Domain als een restrictie</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               individual ${a} has a property ${prop} with value ${b}. ${a} is not of the correct type
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?a ?prop ?b
 
@@ -813,17 +761,16 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-rng</reference>
+        <query reference="COINS-rng">
           <description>Range als een restrictie</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               individual ${a} has a property ${prop} with value ${b}. ${b} is not of the correct type
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?a ?prop ?b
 
@@ -841,17 +788,16 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-HVC</reference>
+        <query reference="COINS-HVC">
           <description>hasValue check</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${value} is not set for object property ${prop} for individual ${a}
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?res ?a ?prop ?value
 
@@ -870,17 +816,16 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-AVFOneOf</reference>
+        <query reference="COINS-AVFOneOf">
           <description>owl:allValuesFrom oneOf value check</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${a} is not correct for property ${prop}
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?res ?a ?prop
 
@@ -912,17 +857,16 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-UO</reference>
+        <query reference="COINS-UO">
           <description>UnionOf as a restriction validation</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${a} does not fulfill all UnionOf restrictions
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?a ?first
 
@@ -940,17 +884,16 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>COINS-IS</reference>
+        <query reference="COINS-IS">
           <description>Intersection as a restriction validation</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               ${a} does not fulfill the Intersection restriction ${restriction}
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?restriction ?a
 
@@ -968,17 +911,16 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>Cax-adx (listmod)</reference>
+        <query reference="Cax-adx (listmod)">
           <description>Disjoint via owl:allDisjointClasses</description>
-          <format>
+          <resultFormat>
             <![CDATA[
               instance ${x} is a member of ${c1} and of ${c2}. ${c1} and ${c2} are disjoint so instance ${x} cannot be a member of both classes
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
             select distinct ?x ?c1 ?c2
 
@@ -996,23 +938,17 @@
 
             }
             ]]>
-          </query>
+          </sparql>
         </query>
-        <query type="no-result">
-          <reference>cax-dw</reference>
+        <query reference="cax-dw">
           <description>Disjoint via owl:disjointWith</description>
-          <format>
+          <resultFormat>
             <![CDATA[
             instance ${x} is a member of ${c1} and of ${c2}. ${c1} and ${c2} are disjoint so instance ${x} cannot be a member of both <a href="http://www.google.com/?query=classes">classes</a>.
             ]]>
-          </format>
-          <query>
+          </resultFormat>
+          <sparql>
             <![CDATA[
-            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX owl: <http://www.w3.org/2002/07/owl#>
-            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-            PREFIX cbim: <http://www.coinsweb.nl/cbim-2.0.rdf#>
             select distinct ?x ?c1 ?c2
 
             WHERE {Graph ${FULL_UNION_GRAPH}{
@@ -1024,9 +960,9 @@
             }
             }
             ]]>
-          </query>
+          </sparql>
         </query>
       </queries>
-    </bundle>
+    </dataValidation>
   </bundles>
 </profile>

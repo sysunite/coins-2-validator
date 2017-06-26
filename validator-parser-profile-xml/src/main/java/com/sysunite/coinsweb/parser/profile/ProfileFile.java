@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.parser.profile;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -83,6 +84,10 @@ public class ProfileFile {
     this.queryLanguage = queryLanguage;
   }
 
+  @JsonIgnore
+  public boolean hasQueryConfiguration() {
+    return queryConfiguration != null;
+  }
   public QueryConfiguration getQueryConfiguration() {
     return queryConfiguration;
   }

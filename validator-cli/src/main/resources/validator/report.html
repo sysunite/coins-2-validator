@@ -55,7 +55,7 @@ Variables posted to this report page
   <#assign containerFile = validation.file />
   <#assign availableNamespaces = validation.availableNamespaces />
   <#assign steps = validation.steps />
-  <#assign stepNames = steps?keys />
+  <#assign stepNames = validation.stepNames />
   <#assign attachments = containerFile.attachmentFiles />
   <#assign libraries = containerFile.repositoryFiles />
   <#assign contentFiles = containerFile.contentFiles />
@@ -180,9 +180,11 @@ Variables posted to this report page
     <#elseif stepName=="ProfileValidation">
       <#list validation.bundleResults?keys as bundleKey>
 
-        <h4>${bundleKey}</h4>
-
         <table>
+          <tr><th colspan="3">${bundleKey}</th></tr>
+
+
+
         <#assign bundle = validation.bundleResults[bundleKey] />
           <#list bundle?keys as queryKey>
             <#assign query = bundle[queryKey] />
@@ -201,6 +203,16 @@ Variables posted to this report page
                         </ul>
                       </td></tr>
                     </#if>
+
+            </#if>
+
+
+            <#if query.inferenceQuery>
+
+
+              <tr><td>${query.reference}</td><td>${query.description}</td><td>${query.quadsAdded}</td></tr>
+
+
 
             </#if>
 

@@ -1,7 +1,7 @@
 package com.sysunite.coinsweb.connector.graphdb;
 
 import com.sysunite.coinsweb.connector.Rdf4jConnector;
-import com.sysunite.coinsweb.parser.config.Environment;
+import com.sysunite.coinsweb.parser.config.pojo.Environment;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.TreeModel;

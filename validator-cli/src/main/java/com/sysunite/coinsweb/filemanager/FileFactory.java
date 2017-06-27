@@ -1,8 +1,10 @@
 package com.sysunite.coinsweb.filemanager;
 
-import com.sysunite.coinsweb.parser.config.ConfigFile;
-import com.sysunite.coinsweb.parser.config.Graph;
-import com.sysunite.coinsweb.parser.config.Locator;
+
+import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
+import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
+import com.sysunite.coinsweb.parser.config.pojo.Graph;
+import com.sysunite.coinsweb.parser.config.pojo.Locator;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +25,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public class FileFactory {
 
-  private static final Logger log = LoggerFactory.getLogger(ConfigGenerator.class);
+  private static final Logger log = LoggerFactory.getLogger(ConfigFactory.class);
 
   public static InputStream toInputStream(Locator locator, ConfigFile configFile) {
     if(Locator.FILE.equals(locator.getType())) {

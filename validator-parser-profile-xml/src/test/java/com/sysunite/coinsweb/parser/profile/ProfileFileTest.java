@@ -4,7 +4,11 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
-import com.sysunite.coinsweb.parser.IndentedCDATAPrettyPrinter;
+import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
+import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
+import com.sysunite.coinsweb.parser.profile.pojo.Query;
+import com.sysunite.coinsweb.parser.profile.pojo.QueryConfiguration;
+import com.sysunite.coinsweb.parser.profile.util.IndentedCDATAPrettyPrinter;
 import org.junit.Test;
 
 import java.io.File;

@@ -1,7 +1,7 @@
 package com.sysunite.coinsweb.connector.inmem;
 
 import com.sysunite.coinsweb.connector.Rdf4jConnector;
-import com.sysunite.coinsweb.parser.config.Environment;
+import com.sysunite.coinsweb.parser.config.pojo.Environment;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.slf4j.Logger;

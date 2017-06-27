@@ -103,8 +103,6 @@ public class ReportFactory {
 
   public static String formatResult(BindingSet row, Template template) {
 
-    log.warn("A result was found, this is bad");
-
     HashMap<String, String> data = new HashMap();
     for(String var : row.getBindingNames()) {
       Binding binding = row.getBinding(var);

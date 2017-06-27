@@ -29,56 +29,31 @@ import com.sysunite.coinsweb.parser.profile.pojo.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 /**
  * @author Bastiaan Bijl, Sysunite 2016
  */
-public class ValidationQueryResult extends QueryResult {
+public class InferenceQueryResult extends QueryResult {
 
-  private static final Logger log = LoggerFactory.getLogger(ValidationQueryResult.class);
+  private static final Logger log = LoggerFactory.getLogger(InferenceQueryResult.class);
 
-  private Iterator<Map<String,String>> resultSet;
-  private List<String> formattedResults = new ArrayList<>();
-  private boolean passed;
-
-  public ValidationQueryResult(Query queryConfig) {
+  public InferenceQueryResult(Query queryConfig) {
     super(queryConfig);
   }
+  private long quadsAdded = 0l;
 
-
-  public void setResultSet(Iterator<Map<String,String>> resultSet) {
-    this.resultSet = resultSet;
-  }
-  public void addFormattedResults(List<String> formattedResults) {
-    this.formattedResults.addAll(formattedResults);
-  }
-  public void setPassed(boolean passed) {
-    this.passed = passed;
+  public void addQuadsAdded(long count) {
+    this.quadsAdded += count;
   }
 
   public boolean isValidationQuery() {
-    return true;
-  }
-  public boolean isInferenceQuery() {
     return false;
   }
-
-
-  public Iterator<Map<String,String>> getResultSet() {
-    return resultSet;
-  }
-  public List<String> getFormattedResults() {
-    return formattedResults;
-  }
-  public boolean getPassed() {
-    return passed;
+  public boolean isInferenceQuery() {
+    return true;
   }
 
 
-
-
+  public long getQuadsAdded() {
+    return quadsAdded;
+  }
 }

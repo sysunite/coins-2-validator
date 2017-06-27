@@ -1,6 +1,6 @@
 package com.sysunite.coinsweb.graphset;
 
-import com.sysunite.coinsweb.parser.profile.Query;
+import com.sysunite.coinsweb.parser.profile.pojo.Query;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;

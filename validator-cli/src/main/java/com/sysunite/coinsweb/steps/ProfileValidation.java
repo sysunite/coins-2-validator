@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.FileFactory;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
-import com.sysunite.coinsweb.parser.config.ConfigFile;
-import com.sysunite.coinsweb.parser.config.Locator;
-import com.sysunite.coinsweb.parser.profile.ProfileFile;
+import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
+import com.sysunite.coinsweb.parser.config.pojo.Locator;
+import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.steps.profile.ValidationExecutor;
 
 import java.util.Map;

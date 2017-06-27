@@ -2,7 +2,7 @@ package com.sysunite.coinsweb.connector;
 
 import com.sysunite.coinsweb.connector.graphdb.GraphDB;
 import com.sysunite.coinsweb.connector.inmem.InMemRdf4j;
-import com.sysunite.coinsweb.parser.config.Environment;
+import com.sysunite.coinsweb.parser.config.pojo.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

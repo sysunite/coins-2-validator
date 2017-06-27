@@ -153,14 +153,12 @@ public class CliOptions {
       i = 2;
     }
     while(cmd.getArgs().length > i) {
-      log.info(""+i);
       Path path = CliOptions.resolvePath(cmd.getArgs()[i]);
       if(path.toFile().exists() && path.toFile().isFile() && isContainerFile(path)) {
         count++;
       }
       i++;
     }
-    log.info("Found "+count+" container files as arguments");
     return count;
   }
   public Path getContainerFile(int i) {
@@ -171,6 +169,17 @@ public class CliOptions {
       i++;
     }
     return CliOptions.resolvePath(cmd.getArgs()[i+1]);
+  }
+  public Path[] getContainerFiles() {
+    Path[] result = new Path[hasContainerFile()];
+    for(int i = 0; i < hasContainerFile(); i++) {
+      int skip = 0;
+      if(hasConfigFile()) {
+        skip++;
+      }
+      result[i] = CliOptions.resolvePath(cmd.getArgs()[i+skip+1]);
+    }
+    return result;
   }
 
 

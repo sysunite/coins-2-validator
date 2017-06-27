@@ -3,11 +3,14 @@ package com.sysunite.coinsweb.graphset;
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.connector.ConnectorFactory;
 import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
-import com.sysunite.coinsweb.filemanager.ConfigGenerator;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.filemanager.FileFactory;
-import com.sysunite.coinsweb.parser.config.*;
+import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
+import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
+import com.sysunite.coinsweb.parser.config.pojo.Container;
+import com.sysunite.coinsweb.parser.config.pojo.Environment;
+import com.sysunite.coinsweb.parser.config.pojo.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +85,7 @@ public class GraphSetFactory {
     }
 
     if(allContentFile != null) {
-      for(Graph graph : ConfigGenerator.contentGraphsInContainer(container, allContentFile.getContent())) {
+      for(Graph graph : ConfigFactory.contentGraphsInContainer(container, allContentFile.getContent())) {
         if(!explicitGraphs.contains(graph.getGraphname())) {
           log.info("Will load content file from wildcard definition");
           loadList.add(graph);
@@ -91,7 +94,7 @@ public class GraphSetFactory {
     }
 
     if(allLibraryFile != null) {
-      for(Graph graph : ConfigGenerator.libraryGraphsInContainer(container, allLibraryFile.getContent())) {
+      for(Graph graph : ConfigFactory.libraryGraphsInContainer(container, allLibraryFile.getContent())) {
         if(!explicitGraphs.contains(graph.getGraphname())) {
           log.info("Will load library file from wildcard definition");
           loadList.add(graph);

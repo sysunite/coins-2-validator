@@ -1,0 +1,123 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="profile">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element type="xs:string" name="name"/>
+        <xs:element type="xs:string" name="version"/>
+        <xs:element type="xs:string" name="author"/>
+        <xs:element type="xs:string" name="queryLanguage"/>
+        <xs:element name="queryConfiguration">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:string" name="defaultPrefixes"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="bundles">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="schemaValidation">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:string" name="description"/>
+                    <xs:element name="queries">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="query" maxOccurs="unbounded" minOccurs="0">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="description"/>
+                                <xs:element type="xs:string" name="resultFormat"/>
+                                <xs:element type="xs:string" name="sparql"/>
+                              </xs:sequence>
+                              <xs:attribute type="xs:string" name="reference" use="optional"/>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute type="xs:string" name="type"/>
+                  <xs:attribute type="xs:string" name="reference"/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="schemaInference">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:string" name="description"/>
+                    <xs:element name="queries">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="query" maxOccurs="unbounded" minOccurs="0">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="description"/>
+                                <xs:element type="xs:string" name="sparql"/>
+                              </xs:sequence>
+                              <xs:attribute type="xs:string" name="reference" use="optional"/>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute type="xs:string" name="type"/>
+                  <xs:attribute type="xs:string" name="reference"/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="dataInference">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:string" name="description"/>
+                    <xs:element name="queries">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="query" maxOccurs="unbounded" minOccurs="0">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="description"/>
+                                <xs:element type="xs:string" name="sparql"/>
+                              </xs:sequence>
+                              <xs:attribute type="xs:string" name="reference" use="optional"/>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute type="xs:string" name="type"/>
+                  <xs:attribute type="xs:string" name="reference"/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="dataValidation">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:string" name="description"/>
+                    <xs:element name="queries">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="query" maxOccurs="unbounded" minOccurs="0">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="description"/>
+                                <xs:element type="xs:string" name="resultFormat"/>
+                                <xs:element type="xs:string" name="sparql"/>
+                              </xs:sequence>
+                              <xs:attribute type="xs:string" name="reference" use="optional"/>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute type="xs:string" name="type"/>
+                  <xs:attribute type="xs:string" name="reference"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

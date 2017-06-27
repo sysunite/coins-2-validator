@@ -27,9 +27,9 @@ package com.sysunite.coinsweb.steps.profile;
 
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.QueryFactory;
-import com.sysunite.coinsweb.parser.profile.Bundle;
-import com.sysunite.coinsweb.parser.profile.ProfileFile;
-import com.sysunite.coinsweb.parser.profile.Query;
+import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
+import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
+import com.sysunite.coinsweb.parser.profile.pojo.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +85,7 @@ public class ValidationExecutor {
 
 //    Runtime runtime = Runtime.getRuntime();
 
-    HashMap<String, HashMap<String, ValidationQueryResult>> bundleResults = new HashMap();
+    HashMap<String, HashMap<String, QueryResult>> bundleResults = new HashMap();
 
     // Execute bundles in order of appearance
     for(Bundle bundle : profile.getBundles()) {
@@ -93,7 +93,7 @@ public class ValidationExecutor {
       boolean someTripleWasAdded = false;
 
       Map<String, Long> previous = graphSet.quadCount();
-      HashMap<String, ValidationQueryResult> resultMap = new HashMap();
+      HashMap<String, QueryResult> resultMap = new HashMap();
 
       log.info("\uD83D\uDC1A Will perform bundle \""+bundle.getReference()+"\"");
 
@@ -106,16 +106,24 @@ public class ValidationExecutor {
 
         for (Query query : bundle.getQueries()) {
 
-          ValidationQueryResult resultCarrier;
+          QueryResult resultCarrier;
           if(!resultMap.containsKey(query.getReference())) {
-            resultCarrier = new ValidationQueryResult(query);
+            if(Bundle.INFERENCE.equals(bundle.getType())) {
+
+              resultCarrier = new InferenceQueryResult(query);
+            } else if(Bundle.VALIDATION.equals(bundle.getType())) {
+
+              resultCarrier = new ValidationQueryResult(query);
+            } else {
+              throw new RuntimeException("No supported bundle type.");
+            }
             resultMap.put(query.getReference(), resultCarrier);
           } else {
             resultCarrier = resultMap.get(query.getReference());
           }
 
 
-          if (Query.UPDATE.equals(query.getType())) {
+          if (resultCarrier instanceof InferenceQueryResult) {
             containsUpdate = true;
 
             String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes);
@@ -125,6 +133,7 @@ public class ValidationExecutor {
             resultCarrier.addRunStatistics(current);
             long quadsAdded = quadsAdded(previous, current);
             previous = current;
+            ((InferenceQueryResult)resultCarrier).addQuadsAdded(quadsAdded);
 
             log.info("Finished run "+resultCarrier.getRunStatistics().size()+" for query \""+query.getReference()+"\", this total amount of quads was added: "+quadsAdded);
             if(quadsAdded > 0) {
@@ -133,12 +142,12 @@ public class ValidationExecutor {
 
 
           }
-          if (Query.NO_RESULT.equals(query.getType())) {
+          if (resultCarrier instanceof ValidationQueryResult) {
 
             String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes);
             graphSet.select(queryString, query.getFormatTemplate(), resultCarrier);
-            boolean hasNoResults = resultCarrier.getFormattedResults().isEmpty();
-            resultCarrier.setPassed(hasNoResults);
+            boolean hasNoResults = ((ValidationQueryResult)resultCarrier).getFormattedResults().isEmpty();
+            ((ValidationQueryResult)resultCarrier).setPassed(hasNoResults);
 
             valid &= hasNoResults;
 

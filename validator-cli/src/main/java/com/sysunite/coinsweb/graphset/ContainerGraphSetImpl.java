@@ -2,10 +2,11 @@ package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
-import com.sysunite.coinsweb.parser.config.ConfigFile;
-import com.sysunite.coinsweb.parser.config.Container;
+import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
+import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.report.ReportFactory;
 import com.sysunite.coinsweb.steps.ValidationStepResult;
+import com.sysunite.coinsweb.steps.profile.QueryResult;
 import com.sysunite.coinsweb.steps.profile.ValidationQueryResult;
 import freemarker.template.Template;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -79,6 +80,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     if(!result.hasNext()) {
       log.info("No results, which is good");
     } else {
+      log.info("Results were found, this is bad");
       resultsFound = true;
 
       if(formatTemplate != null) {
@@ -91,8 +93,8 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
     long executionTime = new Date().getTime() - start;
     if(validationStepResult != null) {
-      ((ValidationQueryResult) validationStepResult).setExecutionTime(executionTime);
-      ((ValidationQueryResult) validationStepResult).setExecutedQuery(query);
+      ((QueryResult) validationStepResult).setExecutionTime(executionTime);
+      ((QueryResult) validationStepResult).setExecutedQuery(query);
       ((ValidationQueryResult) validationStepResult).addFormattedResults(formattedResults);
     }
     return resultsFound;
@@ -125,8 +127,8 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     connector.update(query);
 
     long executionTime = new Date().getTime() - start;
-    ((ValidationQueryResult) validationStepResult).setExecutionTime(executionTime);
-    ((ValidationQueryResult) validationStepResult).setExecutedQuery(query);
+    ((QueryResult) validationStepResult).setExecutionTime(executionTime);
+    ((QueryResult) validationStepResult).setExecutedQuery(query);
   }
 
   @Override

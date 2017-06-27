@@ -6,12 +6,12 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
-import com.sysunite.coinsweb.filemanager.ConfigGenerator;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphSetFactory;
-import com.sysunite.coinsweb.parser.config.*;
+import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
+import com.sysunite.coinsweb.parser.config.pojo.*;
 import com.sysunite.coinsweb.report.ReportFactory;
 import com.sysunite.coinsweb.steps.StepFactoryImpl;
 import com.sysunite.coinsweb.steps.ValidationStep;
@@ -118,7 +118,7 @@ public class Application {
       localizeTo = CliOptions.resolvePath("");
     }
 
-    String yml = ConfigGenerator.run(containers, localizeTo);
+    String yml = ConfigFactory.run(containers, localizeTo);
     return yml;
   }
 
@@ -151,18 +151,7 @@ public class Application {
     }
 
     if(options.hasContainerFile() > 0) {
-
-      if(configFile.getRun().getContainers().length != 1) {
-        throw new RuntimeException("When overriding the container location from config file please configure precisely one container-to-override in the config.yml");
-      }
-
-      Container blueprint = configFile.getRun().getContainers()[0];
-      Container[] overriddenContainerSet = new Container[options.hasContainerFile()];
-      for(int i = 0; i < options.hasContainerFile(); i++) {
-        overriddenContainerSet[i] = blueprint.clone();
-        overriddenContainerSet[i].getLocation().setPath(options.getContainerFile(i).toString());
-      }
-      configFile.getRun().setContainers(overriddenContainerSet);
+      ConfigFactory.overrideContainers(configFile, options.hasContainerFile(), options.getContainerFiles());
     }
 
 
@@ -188,16 +177,21 @@ public class Application {
         availableNamespaces.put(libraryFile, String.join(", ", containerFile.getRepositoryFileNamespaces(libraryFile)));
       }
       containerItems.put("availableNamespaces", availableNamespaces);
+      containerItems.put("stepNames", new ArrayList<String>());
       containerItems.put("steps", new HashMap<String, Boolean>());
 
       for (Step step : configFile.getRun().getSteps()) {
 
         ValidationStep validationStep = step.getValidationStep();
+
+        log.info("Will now execute validator with type "+step.getType());
+
         Map<String, Object> items = validationStep.execute(containerFile, graphSet);
         if (!items.containsKey("valid")) {
           throw new RuntimeException("Validator " + step.getType() + " dit not return the field \"valid\"");
         }
         boolean valid = (boolean) items.remove("valid");
+        ((ArrayList<String>) containerItems.get("stepNames")).add(step.getType());
         ((Map<String, Boolean>) containerItems.get("steps")).put(step.getType(), valid);
         containerItems.putAll(items);
       }
@@ -215,6 +209,9 @@ public class Application {
 
       containers.put(containerConfig.getCode(), containerItems);
     }
+
+
+    log.info("Start generating report");
 
     // Generate the reports
     String xml = null;

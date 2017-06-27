@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.filemanager;
 
+import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,6 @@ public class ConfigFileReverseTest {
     containers.add(new ContainerFileImpl(getClass().getClassLoader().getResource("mix.ccr").getFile()));
 
 
-    log.warn("\n"+ConfigGenerator.run(containers, projectPath));
+    log.warn("\n"+ ConfigFactory.run(containers, projectPath));
   }
 }

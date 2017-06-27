@@ -6,22 +6,49 @@
 
   <groupId>com.sysunite.coinsweb</groupId>
   <artifactId>validator-core</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
 
   <parent>
     <groupId>com.sysunite.coinsweb</groupId>
     <artifactId>coins-2-validator</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
   </parent>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <validator.version>1.0.0</validator.version>
+    <validator.version>1.0.1</validator.version>
   </properties>
 
 
 
   <dependencies>
+
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-rio-api</artifactId>
+      <version>2.1.6</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-rio-datatypes</artifactId>
+      <version>2.1.6</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-rio-languages</artifactId>
+      <version>2.1.6</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-rio-binary</artifactId>
+      <version>2.1.6</version>
+      <scope>runtime</scope>
+    </dependency>
+
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,7 @@ public class Graph {
     return uri;
   }
   public String getPath() {
-    return path;
+    return FilenameUtils.separatorsToSystem(path);
   }
   public Store getStore() {
     return store;
@@ -68,7 +69,7 @@ public class Graph {
 
   @JsonIgnore
   public boolean anyContentFile() {
-    boolean anyContentFile = CONTAINER.equals(type) && path != null && path.equals("bim" + File.separator + "*");
+    boolean anyContentFile = CONTAINER.equals(type) && getPath() != null && getPath().equals("bim" + File.separator + "*");
     if(anyContentFile && !"*".equals(graphname)) {
       throw new RuntimeException("Set graphname to \"*\" when using an asterisk in the container path, it was "+graphname);
     }
@@ -77,7 +78,7 @@ public class Graph {
 
   @JsonIgnore
   public boolean anyLibraryFile() {
-    boolean anyLibraryFile = CONTAINER.equals(type) && path != null && path.equals("bim" + File.separator + "repository" + File.separator + "*");
+    boolean anyLibraryFile = CONTAINER.equals(type) && getPath() != null && getPath().equals("bim" + File.separator + "repository" + File.separator + "*");
     if(anyLibraryFile && !"*".equals(graphname)) {
       throw new RuntimeException("Set graphname to \"*\" when using an asterisk in the container path, it was "+graphname);
     }

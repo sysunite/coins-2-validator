@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.parser.config.pojo;
 
+import org.apache.commons.io.FilenameUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -35,10 +36,11 @@ public class Locator {
     return type;
   }
   public String getPath() {
+    String cleanPath = FilenameUtils.separatorsToSystem(path);
     if(localizeTo == null) {
-      return path;
+      return cleanPath;
     }
-    return localizeTo.relativize(Paths.get(path)).toString();
+    return localizeTo.relativize(Paths.get(cleanPath)).toString();
   }
   public String getUri() {
     return uri;

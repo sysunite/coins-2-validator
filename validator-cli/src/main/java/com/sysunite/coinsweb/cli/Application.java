@@ -8,6 +8,8 @@ import ch.qos.logback.core.FileAppender;
 import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
+import com.sysunite.coinsweb.parser.config.factory.FileFactory;
+import com.sysunite.coinsweb.filemanager.VirtualContainerFileImpl;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphSetFactory;
 import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
@@ -118,7 +120,8 @@ public class Application {
       localizeTo = CliOptions.resolvePath("");
     }
 
-    String yml = ConfigFactory.run(containers, localizeTo);
+    ConfigFile configFile = ConfigFactory.getDefaultConfig(containers, localizeTo);
+    String yml = ConfigFactory.getDefaultConfigString(configFile);
     return yml;
   }
 
@@ -127,8 +130,8 @@ public class Application {
    */
   public static void run(File inputFile) {
 
-    StoreSanitizer.factory = new ConnectorFactoryImpl();
-    StepDeserializer.factory = new StepFactoryImpl();
+    Store.factory = new ConnectorFactoryImpl();
+    Step.factory = new StepFactoryImpl();
 
     // Get config
     ConfigFile configFile;
@@ -165,10 +168,16 @@ public class Application {
     // For each container file execute steps
     for(Container containerConfig : configFile.getRun().getContainers()) {
 
-      log.info("Validate "+containerConfig.getLocation().toString());
 
-      ContainerFileImpl containerFile = ContainerFileImpl.parse(containerConfig.getLocation(), configFile);
-      ContainerGraphSet graphSet = GraphSetFactory.lazyLoad(containerFile, containerConfig, configFile);
+      ContainerFile containerFile;
+      if(containerConfig.isVirtual()) {
+        log.info("Validate a virtual file");
+        containerFile = new VirtualContainerFileImpl();
+      } else {
+        log.info("Validate "+containerConfig.getLocation().toString());
+        containerFile = new ContainerFileImpl(FileFactory.toFile(containerConfig.getLocation()).getPath());
+      }
+      ContainerGraphSet graphSet = GraphSetFactory.lazyLoad(containerFile, containerConfig);
 
       Map<String, Object> containerItems = new HashMap();
       containerItems.put("file", containerFile);

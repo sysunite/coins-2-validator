@@ -3,7 +3,7 @@ package com.sysunite.coinsweb.steps;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
-import com.sysunite.coinsweb.filemanager.FileFactory;
+import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Locator;
@@ -20,12 +20,6 @@ public class ProfileValidation implements ValidationStep {
 
 
 
-  @JsonIgnore
-  private ConfigFile configFile;
-  @JsonIgnore
-  public void setConfigFile(ConfigFile configFile) {
-    this.configFile = configFile;
-  }
 
   private Locator profile;
   private int maxResults;
@@ -47,10 +41,17 @@ public class ProfileValidation implements ValidationStep {
   public Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet) {
 
     // Load the profile file
-    ProfileFile profileFile = ProfileFile.parse(FileFactory.toInputStream(profile, configFile));
+    ProfileFile profileFile = ProfileFile.parse(FileFactory.toInputStream(profile));
     ValidationExecutor executor = new ValidationExecutor(profileFile, graphSet);
 
     // Execute the validation
     return executor.validate();
+  }
+
+  @JsonIgnore
+  private ConfigFile configFile;
+  @Override
+  public void setParent(Object configFile) {
+    this.configFile = (ConfigFile) configFile;
   }
 }

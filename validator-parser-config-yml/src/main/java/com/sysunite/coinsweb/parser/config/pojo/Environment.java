@@ -2,21 +2,24 @@ package com.sysunite.coinsweb.parser.config.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.util.StdConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 
+import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 import static com.sysunite.coinsweb.parser.Parser.validate;
 
 /**
  * @author bastbijl, Sysunite 2017
  */
 @JsonDeserialize(converter=EnvironmentSanitizer.class)
-public class Environment {
+public class Environment extends ConfigPart {
 
   private static final Logger log = LoggerFactory.getLogger(Environment.class);
 
+  public static final String PERMANENT = "permanent";
   public static final String HASH_IN_GRAPHNAME = "permanent-sorted-hashes-in-graphname";
   public static final String REPO_PER_RUN = "repo-per-run";
 
@@ -37,20 +40,48 @@ public class Environment {
   public HashMap<String, String> getMapping() {
     HashMap<String, String> graphs = new HashMap();
     for(Mapping mapping : getGraphs()) {
-      graphs.put(mapping.getContent(), mapping.getGraphname());
+      graphs.put(mapping.getVariable(), mapping.getGraphname());
     }
     return graphs;
   }
 
   public void setStore(Store store) {
     this.store = store;
+    this.store.setParent(this.getParent());
   }
   public void setLoadingStrategy(String loadingStrategy) {
 
-    validate(loadingStrategy, HASH_IN_GRAPHNAME, REPO_PER_RUN);
+    validate(loadingStrategy, PERMANENT, HASH_IN_GRAPHNAME, REPO_PER_RUN);
     this.loadingStrategy = loadingStrategy;
   }
   public void setGraphs(Mapping[] graphs) {
     this.graphs = graphs;
+    for(Mapping mapping : this.graphs) {
+      mapping.setParent(this.getParent());
+    }
+  }
+
+  @Override
+  public void setParent(ConfigFile parent) {
+    super.setParent(parent);
+    if(this.store != null) {
+      this.store.setParent(this.getParent());
+    }
+    for(Mapping mapping : this.graphs) {
+      mapping.setParent(this.getParent());
+    }
+  }
+}
+
+class EnvironmentSanitizer extends StdConverter<Environment, Environment> {
+
+  private static final Logger log = LoggerFactory.getLogger(EnvironmentSanitizer.class);
+
+  @Override
+  public Environment convert(Environment obj) {
+    isNotNull(obj.getStore());
+    isNotNull(obj.getLoadingStrategy());
+
+    return obj;
   }
 }

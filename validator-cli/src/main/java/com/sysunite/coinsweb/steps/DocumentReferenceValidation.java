@@ -3,6 +3,7 @@ package com.sysunite.coinsweb.steps;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
+import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.rdfutil.Utils;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -71,5 +72,11 @@ public class DocumentReferenceValidation implements ValidationStep {
     reportItems.put("internalDocumentReferences",      ids);
 
     return reportItems;
+  }
+
+  private ConfigFile configFile;
+  @Override
+  public void setParent(Object configFile) {
+    this.configFile = (ConfigFile) configFile;
   }
 }

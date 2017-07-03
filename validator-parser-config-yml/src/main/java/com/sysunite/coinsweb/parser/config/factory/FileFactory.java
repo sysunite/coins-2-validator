@@ -1,10 +1,11 @@
-package com.sysunite.coinsweb.filemanager;
+package com.sysunite.coinsweb.parser.config.factory;
 
 
-import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
+import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
-import com.sysunite.coinsweb.parser.config.pojo.Graph;
 import com.sysunite.coinsweb.parser.config.pojo.Locator;
+import com.sysunite.coinsweb.parser.config.pojo.Source;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,12 +29,51 @@ public class FileFactory {
 
   private static final Logger log = LoggerFactory.getLogger(ConfigFactory.class);
 
-  public static InputStream toInputStream(Locator locator, ConfigFile configFile) {
+  public static File toFile(Locator locator) {
+
+    if(Locator.FILE.equals(locator.getType())) {
+      ConfigFile configFile = locator.getParent();
+      String path = locator.getPath();
+      File file = new File(configFile.resolve(path).toString());
+      if(!file.exists()) {
+        throw new RuntimeException("Configured file not found: "+file.getPath());
+      }
+      return file;
+    }
+    if(Locator.ONLINE.equals(locator.getType())) {
+      try {
+        File file = File.createTempFile(RandomStringUtils.random(8, true, true),".ccr");
+        file.deleteOnExit();
+        URL url = new URL(locator.getUri());
+        URLConnection connection = url.openConnection();
+        InputStream input = connection.getInputStream();
+        byte[] buffer = new byte[4096];
+        int n;
+
+        OutputStream output = new FileOutputStream(file);
+        while ((n = input.read(buffer)) != -1) {
+          output.write(buffer, 0, n);
+        }
+        output.close();
+
+        return file;
+      } catch (MalformedURLException e) {
+        log.error(e.getMessage(), e);
+      } catch (FileNotFoundException e) {
+        log.error(e.getMessage(), e);
+      } catch (IOException e) {
+        log.error(e.getMessage(), e);
+      }
+    }
+    throw new RuntimeException("The locator could not be transformed to a File");
+  }
+
+  public static InputStream toInputStream(Locator locator) {
     if(Locator.FILE.equals(locator.getType())) {
       try {
         File file;
-        if(configFile != null) {
-          file = configFile.resolve(locator.getPath()).toFile();
+        if(locator.getParent() != null) {
+          file = locator.getParent().resolve(locator.getPath()).toFile();
         } else {
           file =  new File(locator.getPath());
         }
@@ -55,32 +96,32 @@ public class FileFactory {
     throw new RuntimeException("File could not be loaded.");
   }
 
-  public static InputStream toInputStream(Graph graph, ContainerFile container, ConfigFile configFile) {
-    if(Graph.FILE.equals(graph.getType())) {
+  public static InputStream toInputStream(Source source, ContainerFile container) {
+    if(Source.FILE.equals(source.getType())) {
       try {
         File file;
-        if(configFile != null) {
-          file = configFile.resolve(graph.getPath()).toFile();
+        if(source.getParent() != null) {
+          file = source.getParent().resolve(source.getPath()).toFile();
         } else {
-          file =  new File(graph.getPath());
+          file =  new File(source.getPath());
         }
         return new FileInputStream(file);
       } catch (IOException e) {
         log.error(e.getMessage(), e);
       }
-    } else if(Graph.ONLINE.equals(graph.getType())) {
+    } else if(Source.ONLINE.equals(source.getType())) {
       try {
-        URL url = new URL(graph.getUri());
+        URL url = new URL(source.getUri());
         return url.openStream();
       } catch (MalformedURLException e) {
         log.error(e.getMessage(), e);
       } catch (IOException e) {
         log.error(e.getMessage(), e);
       }
-    } else if(Graph.CONTAINER.equals(graph.getType())) {
+    } else if(Source.CONTAINER.equals(source.getType())) {
       try {
 
-        File fromContainer = container.getFile(Paths.get(graph.getPath()));
+        File fromContainer = container.getFile(Paths.get(source.getPath()));
         FileInputStream stream = new FileInputStream(fromContainer);
         return stream;
       } catch (IOException e) {
@@ -91,13 +132,13 @@ public class FileFactory {
 
   }
 
-  public static String getFileHash(Graph graph, ContainerFile container) {
-    if(Graph.FILE.equals(graph.getType())) {
-      return getFileHash(Paths.get(graph.getPath()));
-    } else if(Graph.ONLINE.equals(graph.getType())) {
-      return getHash(graph.getUri());
-    } else if(Graph.CONTAINER.equals(graph.getType())) {
-      return getFileHash(container.getFile(Paths.get(graph.getPath())).toPath());
+  public static String getFileHash(Source source, ContainerFile container) {
+    if(Source.FILE.equals(source.getType())) {
+      return getFileHash(Paths.get(source.getPath()));
+    } else if(Source.ONLINE.equals(source.getType())) {
+      return getHash(source.getUri());
+    } else if(Source.CONTAINER.equals(source.getType())) {
+      return getFileHash(container.getFile(Paths.get(source.getPath())).toPath());
     }
     throw new RuntimeException("File could not be loaded.");
   }

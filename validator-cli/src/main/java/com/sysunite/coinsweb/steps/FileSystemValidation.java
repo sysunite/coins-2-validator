@@ -3,6 +3,7 @@ package com.sysunite.coinsweb.steps;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
+import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.rdfutil.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,5 +73,11 @@ public class FileSystemValidation implements ValidationStep {
     reportItems.put("imports",              imports);
 
     return reportItems;
+  }
+
+  private ConfigFile configFile;
+  @Override
+  public void setParent(Object configFile) {
+    this.configFile = (ConfigFile) configFile;
   }
 }

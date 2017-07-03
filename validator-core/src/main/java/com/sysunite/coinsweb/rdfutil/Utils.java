@@ -71,6 +71,8 @@ public class Utils {
 
   public static ArrayList<String> namespacesForFile(File file) {
 
+    String backupNamespace = "http://default/"+file.getName();
+
     ArrayList<String> namespaces = new ArrayList();
 
     log.info("Determine file type for file: "+file.toString());
@@ -83,7 +85,7 @@ public class Utils {
     rdfParser.setRDFHandler(new StatementCollector(model));
 
     try {
-      rdfParser.parse(new FileInputStream(file), "http://backup");
+      rdfParser.parse(new FileInputStream(file), backupNamespace);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage());
     }
@@ -105,7 +107,8 @@ public class Utils {
 
     // If still no namespace
     if(namespaces.size() < 1) {
-      throw new RuntimeException("No namespace found to represent this file.");
+      log.warn("No namespace found to represent this file, falling back to " + backupNamespace);
+      namespaces.add(backupNamespace);
     }
     return namespaces;
   }

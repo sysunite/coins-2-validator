@@ -1,17 +1,15 @@
 package com.sysunite.coinsweb.filemanager;
 
-import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
-import com.sysunite.coinsweb.parser.config.pojo.Locator;
 import com.sysunite.coinsweb.rdfutil.Utils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.MalformedURLException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -28,43 +26,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
   private static final Logger log = LoggerFactory.getLogger(ContainerFileImpl.class);
 
   private boolean scanned = false;
-
-  public static ContainerFileImpl parse(Locator locator, ConfigFile configFile) {
-
-    if(Locator.FILE.equals(locator.getType())) {
-      ContainerFileImpl containerFile = new ContainerFileImpl(configFile.resolve(locator.getPath()).toString());
-      if(!containerFile.exists()) {
-        throw new RuntimeException("Configured file not found: "+containerFile.getPath());
-      }
-      return containerFile;
-    }
-    if(Locator.ONLINE.equals(locator.getType())) {
-      try {
-        File file = File.createTempFile(RandomStringUtils.random(8, true, true),".ccr");
-        file.deleteOnExit();
-        URL url = new URL(locator.getUri());
-        URLConnection connection = url.openConnection();
-        InputStream input = connection.getInputStream();
-        byte[] buffer = new byte[4096];
-        int n;
-
-        OutputStream output = new FileOutputStream(file);
-        while ((n = input.read(buffer)) != -1) {
-          output.write(buffer, 0, n);
-        }
-        output.close();
-
-        return new ContainerFileImpl(file.getPath());
-      } catch (MalformedURLException e) {
-        log.error(e.getMessage(), e);
-      } catch (FileNotFoundException e) {
-        log.error(e.getMessage(), e);
-      } catch (IOException e) {
-        log.error(e.getMessage(), e);
-      }
-    }
-    throw new RuntimeException("Profile file could not be loaded.");
-  }
 
   public ContainerFileImpl(String pathname) {
     super(pathname);

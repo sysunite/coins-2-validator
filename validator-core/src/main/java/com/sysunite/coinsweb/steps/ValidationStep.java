@@ -10,4 +10,5 @@ import java.util.Map;
  */
 public interface ValidationStep {
   Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet);
+  void setParent(Object configFile);
 }

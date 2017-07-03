@@ -29,6 +29,6 @@ public class ConfigFileReverseTest {
     containers.add(new ContainerFileImpl(getClass().getClassLoader().getResource("mix.ccr").getFile()));
 
 
-    log.warn("\n"+ ConfigFactory.run(containers, projectPath));
+    log.warn("\n"+ ConfigFactory.describe(containers, projectPath));
   }
 }

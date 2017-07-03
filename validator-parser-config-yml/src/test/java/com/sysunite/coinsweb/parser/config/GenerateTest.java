@@ -1,6 +1,8 @@
 package com.sysunite.coinsweb.parser.config;
 
 import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.filemanager.ContainerFile;
+import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Step;
@@ -11,15 +13,15 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.util.ArrayList;
 
 
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class ConfigFileTest {
+public class GenerateTest {
 
-  Logger log = LoggerFactory.getLogger(ConfigFileTest.class);
+  Logger log = LoggerFactory.getLogger(GenerateTest.class);
 
   @BeforeClass
   public static void before() {
@@ -30,38 +32,16 @@ public class ConfigFileTest {
   @Test
   public void testMinimalContainer() {
 
-    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("minimal-container.yml").getFile()));
+    ArrayList<ContainerFile> containers = new ArrayList();
+    containers.add(new ContainerFileImpl(getClass().getClassLoader().getResource("some.ccr").getFile()));
+
+    ConfigFile configFile = ConfigFactory.getDefaultConfig(containers);
     String yml = ConfigFactory.getDefaultConfigString(configFile);
     System.out.println(yml);
 
-    ConfigFactory.expandGraphConfig(configFile);
-    String ymlExpanded = ConfigFactory.getDefaultConfigString(configFile);
-    System.out.println(ymlExpanded);
   }
 
-  @Test
-  public void testMinimalVirtual() {
 
-    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("minimal-virtual.yml").getFile()));
-    String yml = ConfigFactory.getDefaultConfigString(configFile);
-    System.out.println(yml);
-
-    ConfigFactory.expandGraphConfig(configFile);
-    String ymlExpanded = ConfigFactory.getDefaultConfigString(configFile);
-    System.out.println(ymlExpanded);
-  }
-
-  @Test
-  public void testVirtualExpandingWildcards() {
-
-    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("virtual-expanding-wildcards.yml").getFile()));
-    String yml = ConfigFactory.getDefaultConfigString(configFile);
-    System.out.println(yml);
-
-    ConfigFactory.expandGraphConfig(configFile);
-    String ymlExpanded = ConfigFactory.getDefaultConfigString(configFile);
-    System.out.println(ymlExpanded);
-  }
 
   private static class ConnectorFactoryStub implements com.sysunite.coinsweb.connector.ConnectorFactory {
     @Override

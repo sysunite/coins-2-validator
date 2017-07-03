@@ -134,7 +134,7 @@ public class GraphDB extends Rdf4jConnector {
     "            owlim:repository-type \"file-repository\" ;\n" +
     "            owlim:ruleset \"empty\" ;\n" +
     "            owlim:storage-folder \"storage\" ;\n" +
-    "            owlim:enable-context-index \"false\" ;\n" +
+    "            owlim:enable-context-index \"true\" ;\n" +
     "            owlim:enablePredicateList \"true\" ;\n" +
     "            owlim:in-memory-literal-properties \"true\" ;\n" +
     "            owlim:enable-literal-index \"true\" ;\n" +

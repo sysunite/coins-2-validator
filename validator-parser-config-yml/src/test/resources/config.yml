@@ -13,15 +13,19 @@
 #   coins-validator info
 
 environment:
-
   store:
     type: graphdb
     config:
-      endpoint: http://127.0.0.1:3030/ds/data
-      user: admin
-      password: pw123
-      custom: baaaaa
+      endpoint: http://192.168.1.13:7200
+      disableCleanUp: true
   loadingStrategy: permanent-sorted-hashes-in-graphname
+  graphs:
+  - graphname: http://full/union
+    content: FULL_UNION_GRAPH
+  - graphname: http://instances/union
+    content: INSTANCE_UNION_GRAPH
+  - graphname: http://library/union
+    content: SCHEMA_UNION_GRAPH
 
 run:
 
@@ -30,23 +34,26 @@ run:
     - type: container
       location:
         type: file
-        path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/test/resources/otl-2.1/01_NetwerkRuimteVoorbeeld_OTL21.ccr
+        path: emptyfolder.ccr
 
       graphs:
 
         - graphname: http://www.coinsweb.nl/cbim-2.0.rdf#
-          content: FULL_UNION_GRAPH
+          content:
+          - FULL_UNION_GRAPH
           type: online
           uri: http://www.coinsweb.nl/cbim-2.0.rdf
 
         - graphname: http://default#
-          content: content
+          content:
+          - INSTANCE_UNION_GRAPH
           type: container
 
         - graphname: http://libraries/1#
-          content: SCHEMA_UNION_GRAPH
+          content:
+          - SCHEMA_UNION_GRAPH
           type: file
-          path: /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/src/main/resources/test.ttl
+          path: empty.rdf
 
     #    - graphname: http://libraries/2#
     #      content: library

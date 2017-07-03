@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.parser.config.pojo;
 
+import com.fasterxml.jackson.databind.util.StdConverter;
 import org.apache.commons.io.FilenameUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static com.sysunite.coinsweb.parser.Parser.isResolvable;
 import static com.sysunite.coinsweb.parser.Parser.validate;
 
 /**
@@ -18,7 +20,7 @@ import static com.sysunite.coinsweb.parser.Parser.validate;
  */
 @JsonInclude(Include.NON_NULL)
 @JsonDeserialize(converter=LocatorSanitizer.class)
-public class Locator {
+public class Locator extends ConfigPart {
 
   private static final Logger log = LoggerFactory.getLogger(Locator.class);
 
@@ -83,5 +85,21 @@ public class Locator {
     clone.setUri(this.uri);
     clone.localizeTo(this.localizeTo);
     return clone;
+  }
+}
+
+class LocatorSanitizer extends StdConverter<Locator, Locator> {
+
+  private static final Logger log = LoggerFactory.getLogger(LocatorSanitizer.class);
+
+  @Override
+  public Locator convert(Locator obj) {
+    if(obj.getType().equals("file")) {
+//      isFile(obj.getPath());
+    }
+    if(obj.getType().equals("online")) {
+      isResolvable(obj.getUri());
+    }
+    return obj;
   }
 }

@@ -15,6 +15,7 @@ public class StepFactoryImpl implements StepFactory {
     register.put("FileSystemValidation", FileSystemValidation.class);
     register.put("ProfileValidation", ProfileValidation.class);
     register.put("DocumentReferenceValidation", DocumentReferenceValidation.class);
+    register.put("ContainerFileWriter", ContainerFileWriter.class);
   }
 
   public boolean exists(String key) {

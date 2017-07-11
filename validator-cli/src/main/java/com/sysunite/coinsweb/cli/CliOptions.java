@@ -54,7 +54,8 @@ public class CliOptions {
   public static Options getOptions() {
 
     Options options = new Options();
-    options.addOption("a", "absolute", false, "use absolute paths");
+    options.addOption("a", "absolute", false, "use absolute paths when generating config-generated.yml");
+    options.addOption(null, "yml-to-console", false, "print the generated config to the console");
     options.addOption("h", "help", false, "print help");
     options.addOption("l", "log", false, "write log file");
     options.addOption("q", false, "quiet, no output to the console");
@@ -69,10 +70,6 @@ public class CliOptions {
       "\n coins-validator run [args] container.ccr" +
       "\n coins-validator run [args] config.yml [container.ccr ...]" +
       "\n coins-validator describe [args] container.ccr" +
-      "\n" +
-      "\nor pipe into run:" +
-      "\n" +
-      "\n cat config.yml | coins-validator run [args]" +
       "\n" +
       "\nargs:"
       , getOptions());
@@ -112,8 +109,9 @@ public class CliOptions {
 
 
   // External interface methods
+  public boolean ymlToConsole() { return cmd.hasOption("yml-to-console"); }
   public boolean absolutePaths() { return cmd.hasOption("a"); }
-  public boolean quietMode() { return cmd.hasOption("q"); }
+  public boolean quietMode() { return cmd.hasOption("q") || ymlToConsole(); }
   public boolean printHelpOption() { return cmd.hasOption("h"); }
   public boolean writeLog() { return cmd.hasOption("l"); }
 
@@ -156,6 +154,8 @@ public class CliOptions {
       Path path = CliOptions.resolvePath(cmd.getArgs()[i]);
       if(path.toFile().exists() && path.toFile().isFile() && isContainerFile(path)) {
         count++;
+      } else {
+        throw new RuntimeException("Could not locate this container file "+path.toString());
       }
       i++;
     }
@@ -211,7 +211,7 @@ public class CliOptions {
 
 
   public static boolean isContainerFile(Path path) {
-    return path.toString().endsWith(".ccr") || path.toString().endsWith(".zip");
+    return path.toString().toLowerCase().endsWith(".ccr") || path.toString().toLowerCase().endsWith(".zip");
   }
 
   public static boolean isConfigFile(Path path) {

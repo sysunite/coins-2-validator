@@ -6,17 +6,17 @@
 
   <groupId>com.sysunite.coinsweb</groupId>
   <artifactId>validator-parser-config-yml</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.3-SNAPSHOT</version>
 
   <parent>
     <groupId>com.sysunite.coinsweb</groupId>
     <artifactId>coins-2-validator</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.3-SNAPSHOT</version>
   </parent>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <validator.version>1.0.1</validator.version>
+    <validator.version>1.0.3-SNAPSHOT</validator.version>
     <jackson.version>2.8.7</jackson.version>
   </properties>
 
@@ -65,24 +65,36 @@
       </plugin>
 
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-          <archive>
-            <manifest>
-              <mainClass>com.sysunite.coinsweb.cli.Application</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.0.0</version>
         <executions>
           <execution>
-            <id>make-assembly</id>
-            <phase>package</phase>
             <goals>
-              <goal>single</goal>
+              <goal>shade</goal>
             </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <manifestEntries>
+                    <X-Compile-Source-JDK>1.8</X-Compile-Source-JDK>
+                    <X-Compile-Target-JDK>1.8</X-Compile-Target-JDK>
+                  </manifestEntries>
+                </transformer>
+              </transformers>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
           </execution>
         </executions>
       </plugin>

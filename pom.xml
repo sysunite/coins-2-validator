@@ -6,8 +6,13 @@
 
   <groupId>com.sysunite.coinsweb</groupId>
   <artifactId>coins-2-validator</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.3-SNAPSHOT</version>
   <packaging>pom</packaging>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <validator.version>1.0.3-SNAPSHOT</validator.version>
+  </properties>
 
   <modules>
     <module>validator-core</module>
@@ -16,10 +21,5 @@
     <module>validator-cli</module>
   </modules>
 
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <validator.version>1.0.1</validator.version>
-  </properties>
 
 </project>

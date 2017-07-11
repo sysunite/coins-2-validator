@@ -1,6 +1,5 @@
 package com.sysunite.coinsweb.filemanager;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Set;
@@ -16,12 +15,12 @@ public interface ContainerFile {
   Set<String> getAttachmentFiles();
   Set<String> getOrphanFiles();
 
-  File getFile(Path zipPath);
-  File getContentFile(String filename);
-  File getRepositoryFile(String filename);
-  File getWoaFile(String filename);
-  File getAttachmentFile(String filename);
-  File getOrphanFile(String filename);
+  DeleteOnCloseFileInputStream getFile(Path zipPath);
+  DeleteOnCloseFileInputStream getContentFile(String filename);
+  DeleteOnCloseFileInputStream getRepositoryFile(String filename);
+  DeleteOnCloseFileInputStream getWoaFile(String filename);
+  DeleteOnCloseFileInputStream getAttachmentFile(String filename);
+  DeleteOnCloseFileInputStream getOrphanFile(String filename);
 
   ArrayList<String> getRepositoryFileNamespaces(String filename);
 

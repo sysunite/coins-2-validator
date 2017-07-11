@@ -3,6 +3,7 @@ package com.sysunite.coinsweb.graphset;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.steps.ValidationStepResult;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -10,8 +11,16 @@ import java.util.Map;
  */
 public interface ContainerGraphSet {
 
+  @Deprecated // this is too specific for containergraphset
   boolean select(String query, Object formatTemplate, ValidationStepResult result);
+  Object select(String query);
+
+  @Deprecated // this is too specific for containergraphset
   void update(String query, ValidationStepResult result);
+
+  List<String> getImports(String graphVar);
+  boolean hasContext(String graphVar);
+
   void setContainerFile(ContainerFile container);
   void setContainerConfig(Object containerConfig);
   void setConfigFile(Object configFile);

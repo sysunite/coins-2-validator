@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -23,12 +24,12 @@ public class ConfigFileReverseTest {
     Path projectPath = Paths.get(getClass().getClassLoader().getResource("mix.ccr").getPath()).getParent().getParent().getParent();
 
 
-    ArrayList<ContainerFile> containers = new ArrayList();
+    ArrayList<File> containers = new ArrayList();
 //    containers.add(new ContainerFileImpl("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-sdk/testsuite/target/test-classes/A2/sample.ccr"));
-    containers.add(new ContainerFileImpl(getClass().getClassLoader().getResource("otl-2.1/01_NetwerkRuimteVoorbeeld_OTL21.ccr").getFile()));
-    containers.add(new ContainerFileImpl(getClass().getClassLoader().getResource("mix.ccr").getFile()));
+    containers.add(new File(getClass().getClassLoader().getResource("otl-2.1/01_NetwerkRuimteVoorbeeld_OTL21.ccr").getFile()));
+    containers.add(new File(getClass().getClassLoader().getResource("mix.ccr").getFile()));
 
 
-    log.warn("\n"+ ConfigFactory.describe(containers, projectPath));
+    log.warn("\n"+ ConfigFactory.getDefaultConfig(containers, projectPath));
   }
 }

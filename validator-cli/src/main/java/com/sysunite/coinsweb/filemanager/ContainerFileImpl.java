@@ -1,6 +1,5 @@
 package com.sysunite.coinsweb.filemanager;
 
-import com.sysunite.coinsweb.rdfutil.Utils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,26 +66,26 @@ public class ContainerFileImpl extends File implements ContainerFile {
     return orphanFiles.keySet();
   }
 
-  public File getContentFile(String filename) {
+  public DeleteOnCloseFileInputStream getContentFile(String filename) {
     return getFile(contentFiles.get(filename));
   }
-  public File getRepositoryFile(String filename) {
+  public DeleteOnCloseFileInputStream getRepositoryFile(String filename) {
     return getFile(repositoryFiles.get(filename));
   }
-  public File getWoaFile(String filename) {
+  public DeleteOnCloseFileInputStream getWoaFile(String filename) {
     return getFile(woaFiles.get(filename));
   }
-  public File getAttachmentFile(String filename) {
+  public DeleteOnCloseFileInputStream getAttachmentFile(String filename) {
     return getFile(attachmentFiles.get(filename));
   }
-  public File getOrphanFile(String filename) {
+  public DeleteOnCloseFileInputStream getOrphanFile(String filename) {
     return getFile(orphanFiles.get(filename));
   }
 
   HashMap<String, ArrayList<String>> repositoryFileNamespaces = new HashMap();
   public ArrayList<String> getRepositoryFileNamespaces(String filename) {
     if(!repositoryFileNamespaces.containsKey(filename)) {
-      repositoryFileNamespaces.put(filename, Utils.namespacesForFile(getRepositoryFile(filename)));
+      repositoryFileNamespaces.put(filename, DescribeFactoryImpl.namespacesForFile(getRepositoryFile(filename), filename));
     }
     return repositoryFileNamespaces.get(filename);
   }
@@ -107,7 +106,9 @@ public class ContainerFileImpl extends File implements ContainerFile {
     return orphanFiles.get(filename);
   }
 
-  public File getFile(Path zipPath) {
+
+
+  public DeleteOnCloseFileInputStream getFile(Path zipPath) {
 
     byte[] buffer = new byte[1024];
 
@@ -128,7 +129,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
 
         if(zePath.equals(zipPath)) {
           File file = File.createTempFile(RandomStringUtils.random(8, true, true), zipPath.getFileName().toString());
-          file.deleteOnExit();
           FileOutputStream fos = new FileOutputStream(file);
 
           int len;
@@ -140,7 +140,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
           zis.closeEntry();
           zis.close();
 
-          return file;
+          return new DeleteOnCloseFileInputStream(file);
         }
 
         ze = zis.getNextEntry();

@@ -4,8 +4,8 @@ import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.connector.ConnectorFactory;
 import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
+import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
-import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.parser.config.pojo.Environment;
@@ -54,7 +54,7 @@ public class GraphSetFactory {
    */
   public static HashMap<String, String> load(Graph[] originalGraphs, Connector connector, ContainerFile container, ConfigFile configFile) {
 
-    ArrayList<Graph> loadList = ConfigFactory.loadList(originalGraphs, container);
+    ArrayList<Graph> loadList = DescribeFactoryImpl.loadList(originalGraphs, container);
 
     // Keep a whitelist of keys that should not be loaded
     ArrayList<String> whitelist = new ArrayList();
@@ -108,12 +108,12 @@ public class GraphSetFactory {
     }
   }
 
-  public static void load(Graph graph, Connector connector, ContainerFile container, HashMap<String, String> mapping, ArrayList<String> blacklist) {
+  public static void load(Graph graph, Connector connector, ContainerFile container, HashMap<String, String> mapping, ArrayList<String> whitelist) {
 
     ArrayList<String> graphNames = new ArrayList();
     for(int i = 0; i < graph.getAs().size(); i++) {
       String key = graph.getAs().get(i);
-      if(!blacklist.contains(key)) {
+      if(!whitelist.contains(key)) {
         graphNames.add(mapping.get(key));
       }
     }

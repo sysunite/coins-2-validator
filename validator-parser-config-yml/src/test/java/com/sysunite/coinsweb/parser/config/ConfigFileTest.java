@@ -33,10 +33,6 @@ public class ConfigFileTest {
     ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("minimal-container.yml").getFile()));
     String yml = ConfigFactory.getDefaultConfigString(configFile);
     System.out.println(yml);
-
-    ConfigFactory.expandGraphConfig(configFile);
-    String ymlExpanded = ConfigFactory.getDefaultConfigString(configFile);
-    System.out.println(ymlExpanded);
   }
 
   @Test
@@ -45,10 +41,6 @@ public class ConfigFileTest {
     ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("minimal-virtual.yml").getFile()));
     String yml = ConfigFactory.getDefaultConfigString(configFile);
     System.out.println(yml);
-
-    ConfigFactory.expandGraphConfig(configFile);
-    String ymlExpanded = ConfigFactory.getDefaultConfigString(configFile);
-    System.out.println(ymlExpanded);
   }
 
   @Test
@@ -57,10 +49,6 @@ public class ConfigFileTest {
     ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("virtual-expanding-wildcards.yml").getFile()));
     String yml = ConfigFactory.getDefaultConfigString(configFile);
     System.out.println(yml);
-
-    ConfigFactory.expandGraphConfig(configFile);
-    String ymlExpanded = ConfigFactory.getDefaultConfigString(configFile);
-    System.out.println(ymlExpanded);
   }
 
   private static class ConnectorFactoryStub implements com.sysunite.coinsweb.connector.ConnectorFactory {

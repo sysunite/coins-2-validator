@@ -1,6 +1,7 @@
 package com.sysunite.coinsweb.parser.config.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import static com.sysunite.coinsweb.parser.Parser.validate;
 /**
  * @author bastbijl, Sysunite 2017
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(converter=EnvironmentSanitizer.class)
 public class Environment extends ConfigPart {
 
@@ -26,6 +28,7 @@ public class Environment extends ConfigPart {
   private Store store;
   private String loadingStrategy;
   private Mapping[] graphs;
+  private String tempPath;
 
   public Store getStore() {
     return store;
@@ -44,6 +47,9 @@ public class Environment extends ConfigPart {
     }
     return graphs;
   }
+  public String getTempPath() {
+    return tempPath;
+  }
 
   public void setStore(Store store) {
     this.store = store;
@@ -59,6 +65,9 @@ public class Environment extends ConfigPart {
     for(Mapping mapping : this.graphs) {
       mapping.setParent(this.getParent());
     }
+  }
+  public void setTempPath(String tempPath) {
+    this.tempPath = tempPath;
   }
 
   @Override

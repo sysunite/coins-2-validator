@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.parser.config.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -33,6 +34,7 @@ public class Step extends ConfigPart {
   public static StepFactory factory;
 
   private String type;
+  @JsonIgnore
   private ValidationStep validationStep;
 
   public String getType() {
@@ -103,8 +105,8 @@ class StepDeserializer extends StdDeserializer<Step> {
 
 
     if(Step.factory == null) {
-      log.warn("Please set the static field com.sysunite.coinsweb.parser.config.pojo.StepDeserializer.factory to some instance!");
-      throw new RuntimeException("Please set the static field com.sysunite.coinsweb.parser.config.pojo.StepDeserializer.factory to some instance!");
+      log.warn("Please set the static field com.sysunite.coinsweb.parser.config.pojo.Step.factory to some instance!");
+      throw new RuntimeException("Please set the static field com.sysunite.coinsweb.parser.config.pojo.Step.factory to some instance!");
     }
 
     if(!Step.factory.exists(step.getType())) {

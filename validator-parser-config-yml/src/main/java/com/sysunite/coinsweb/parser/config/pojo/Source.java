@@ -29,9 +29,9 @@ public class Source extends ConfigPart {
 
 
   private String type;
-  private String graphname;
   private String path;
   private String uri;
+  private String graphname;
 //  private Store store;
 
 

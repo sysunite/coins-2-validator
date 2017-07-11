@@ -2,10 +2,10 @@ package com.sysunite.coinsweb.parser.config.factory;
 
 
 import com.sysunite.coinsweb.filemanager.ContainerFile;
+import com.sysunite.coinsweb.filemanager.DeleteOnCloseFileInputStream;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Locator;
 import com.sysunite.coinsweb.parser.config.pojo.Source;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +14,7 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
@@ -41,29 +39,30 @@ public class FileFactory {
       return file;
     }
     if(Locator.ONLINE.equals(locator.getType())) {
-      try {
-        File file = File.createTempFile(RandomStringUtils.random(8, true, true),".ccr");
-        file.deleteOnExit();
-        URL url = new URL(locator.getUri());
-        URLConnection connection = url.openConnection();
-        InputStream input = connection.getInputStream();
-        byte[] buffer = new byte[4096];
-        int n;
-
-        OutputStream output = new FileOutputStream(file);
-        while ((n = input.read(buffer)) != -1) {
-          output.write(buffer, 0, n);
-        }
-        output.close();
-
-        return file;
-      } catch (MalformedURLException e) {
-        log.error(e.getMessage(), e);
-      } catch (FileNotFoundException e) {
-        log.error(e.getMessage(), e);
-      } catch (IOException e) {
-        log.error(e.getMessage(), e);
-      }
+      throw new RuntimeException("Please don't do this");
+//      try {
+//        File file = File.createTempFile(RandomStringUtils.random(8, true, true),".ccr");
+//        file.deleteOnExit();
+//        URL url = new URL(locator.getUri());
+//        URLConnection connection = url.openConnection();
+//        InputStream input = connection.getInputStream();
+//        byte[] buffer = new byte[4096];
+//        int n;
+//
+//        OutputStream output = new FileOutputStream(file);
+//        while ((n = input.read(buffer)) != -1) {
+//          output.write(buffer, 0, n);
+//        }
+//        output.close();
+//
+//        return file;
+//      } catch (MalformedURLException e) {
+//        log.error(e.getMessage(), e);
+//      } catch (FileNotFoundException e) {
+//        log.error(e.getMessage(), e);
+//      } catch (IOException e) {
+//        log.error(e.getMessage(), e);
+//      }
     }
     throw new RuntimeException("The locator could not be transformed to a File");
   }
@@ -119,36 +118,35 @@ public class FileFactory {
         log.error(e.getMessage(), e);
       }
     } else if(Source.CONTAINER.equals(source.getType())) {
-      try {
 
-        File fromContainer = container.getFile(Paths.get(source.getPath()));
-        FileInputStream stream = new FileInputStream(fromContainer);
-        return stream;
-      } catch (IOException e) {
-        log.error(e.getMessage(), e);
-      }
+
+      DeleteOnCloseFileInputStream stream = container.getFile(Paths.get(source.getPath()));
+      return stream;
+
     }
     throw new RuntimeException("File could not be loaded.");
 
   }
 
   public static String getFileHash(Source source, ContainerFile container) {
-    if(Source.FILE.equals(source.getType())) {
-      return getFileHash(Paths.get(source.getPath()));
-    } else if(Source.ONLINE.equals(source.getType())) {
-      return getHash(source.getUri());
-    } else if(Source.CONTAINER.equals(source.getType())) {
-      return getFileHash(container.getFile(Paths.get(source.getPath())).toPath());
-    }
+    try {
+      if (Source.FILE.equals(source.getType())) {
+        return getFileHash(new DeleteOnCloseFileInputStream(Paths.get(source.getPath()).toFile()));
+      } else if (Source.ONLINE.equals(source.getType())) {
+        return getHash(source.getUri());
+      } else if (Source.CONTAINER.equals(source.getType())) {
+        return getFileHash(container.getFile(Paths.get(source.getPath())));
+      }
+    } catch (FileNotFoundException e) {}
     throw new RuntimeException("File could not be loaded.");
   }
 
 
   public final static int NUM_HASH_CHARS = 8;
-  public static String getFileHash(Path zipPath) {
+  public static String getFileHash(FileInputStream inputStream) {
     try {
       MessageDigest md5 = MessageDigest.getInstance("md5");
-      DigestInputStream dis = new DigestInputStream(new FileInputStream(zipPath.toFile()), md5);
+      DigestInputStream dis = new DigestInputStream(inputStream, md5);
       byte buf[] = new byte[8 * 1024];
       while (dis.read(buf, 0, buf.length) > 0);
       dis.close();

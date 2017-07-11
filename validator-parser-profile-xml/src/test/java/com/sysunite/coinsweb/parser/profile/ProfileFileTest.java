@@ -14,6 +14,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
@@ -25,12 +26,6 @@ public class ProfileFileTest {
 
 
 
-
-
-  @Test
-  public void testSmall() throws IOException {
-    testTemplate("profile.format-demo.xml");
-  }
   @Test
   public void test960() throws IOException {
     testTemplate("profile.lite-9.60.xml");
@@ -38,6 +33,11 @@ public class ProfileFileTest {
   @Test
   public void test979() throws IOException {
     testTemplate("profile.lite-9.79.xml");
+  }
+  @Test
+  public void test981() throws IOException {
+    testTemplate("profile.lite-9.81.xml");
+    reSave("profile.lite-9.81.xml", "profile.lite-9.81-generated.xml");
   }
   public void testTemplate(String resourceFile) throws IOException {
 
@@ -68,6 +68,19 @@ public class ProfileFileTest {
       }
     }
   }
+  public void reSave(String resourceFile, String to) throws IOException {
+
+    XmlMapper objectMapper = new XmlMapper();
+    objectMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
+    objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+    ObjectWriter xmlWriter = objectMapper.writer(new IndentedCDATAPrettyPrinter());
+
+    InputStream file = getClass().getClassLoader().getResource(resourceFile).openStream();
+    ProfileFile profileFile = objectMapper.readValue(file, ProfileFile.class);
+
+    Path folder = Paths.get(new File(getClass().getClassLoader().getResource(resourceFile).getFile()).getParent());
+    xmlWriter.writeValue(folder.resolve(to).toFile(), profileFile);
+  }
 
   @Test
   public void writeProfileXml() throws IOException {
@@ -76,7 +89,6 @@ public class ProfileFileTest {
     XmlMapper objectMapper = new XmlMapper();
     objectMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-
     ObjectWriter xmlWriter = objectMapper.writer(new IndentedCDATAPrettyPrinter());
 
 

@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.steps;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
@@ -52,9 +53,14 @@ public class ContainerFileWriter implements ValidationStep {
     return reportItems;
   }
 
+  @JsonIgnore
   private ConfigFile configFile;
   @Override
   public void setParent(Object configFile) {
     this.configFile = (ConfigFile) configFile;
+    this.location.setParent(this.getParent());
+  }
+  public ConfigFile getParent() {
+    return this.configFile;
   }
 }

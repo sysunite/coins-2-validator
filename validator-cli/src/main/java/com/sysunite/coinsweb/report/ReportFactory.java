@@ -107,7 +107,7 @@ public class ReportFactory {
     for(String var : row.getBindingNames()) {
       Binding binding = row.getBinding(var);
       if(binding != null) {
-        data.put(var, binding.getValue().stringValue());
+        data.put(var, condense(binding.getValue().stringValue()));
       } else {
         data.put(var, "NO_VALUE");
       }
@@ -127,5 +127,12 @@ public class ReportFactory {
       log.error(e.getMessage(), e);
     }
     throw new RuntimeException("Something went wrong formatting a result");
+  }
+
+  private static String condense(String input) {
+    if(input.contains("#")) {
+      input = "<u><div class=\"condense\">" + input.replace("#", "</div>#") + "</u>";
+    }
+    return input;
   }
 }

@@ -1,8 +1,9 @@
 package com.sysunite.coinsweb.steps;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
+import com.sysunite.coinsweb.graphset.ContainerGraphSetImpl;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.rdfutil.Utils;
 import org.slf4j.Logger;
@@ -11,13 +12,13 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
 /**
  * @author bastbijl, Sysunite 2017
  */
-@JsonIgnoreProperties({"type"})
 public class FileSystemValidation implements ValidationStep {
 
   private static final Logger log = LoggerFactory.getLogger(FileSystemValidation.class);
@@ -45,9 +46,9 @@ public class FileSystemValidation implements ValidationStep {
       availableGraphs.addAll(container.getRepositoryFileNamespaces(repoFilePath));
     }
 
-    ArrayList<String> imports = new ArrayList();
-    if(!container.getContentFiles().isEmpty()) {
-      imports = Utils.imports(container.getContentFile(container.getContentFiles().iterator().next()));
+    List<String> imports = new ArrayList();
+    if(graphSet.hasContext(ContainerGraphSetImpl.INSTANCE_UNION_GRAPH)) {
+      imports = graphSet.getImports(ContainerGraphSetImpl.INSTANCE_UNION_GRAPH);
       for (String namespace : imports) {
 
         boolean found = false;
@@ -75,9 +76,21 @@ public class FileSystemValidation implements ValidationStep {
     return reportItems;
   }
 
+  @JsonIgnore
   private ConfigFile configFile;
   @Override
   public void setParent(Object configFile) {
     this.configFile = (ConfigFile) configFile;
+  }
+  public ConfigFile getParent() {
+    return this.configFile;
+  }
+
+  private String type = "FileSystemValidation";
+  public String getType() {
+    return type;
+  }
+  public void setType(String type) {
+    this.type = type;
   }
 }

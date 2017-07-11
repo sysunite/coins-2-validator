@@ -7,6 +7,7 @@ import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Locator;
+import com.sysunite.coinsweb.parser.config.pojo.Mapping;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.steps.profile.ValidationExecutor;
 
@@ -21,19 +22,33 @@ public class ProfileValidation implements ValidationStep {
 
 
 
+
+  private Mapping[] graphs;
   private Locator profile;
   private int maxResults;
+
+  public Mapping[] getGraphs() {
+    return graphs;
+  }
   public Locator getProfile() {
     return profile;
   }
   public int getMaxResults() {
     return maxResults;
   }
+
   public void setProfile(Locator profile) {
     this.profile = profile;
   }
   public void setMaxResults(int maxResults) {
     this.maxResults = maxResults;
+  }
+  public void setGraphs(Mapping[] graphs) {
+    this.graphs = graphs;
+    this.profile.setParent(this.getParent());
+    for(Mapping mapping : this.graphs) {
+      mapping.setParent(this.getParent());
+    }
   }
 
 
@@ -53,5 +68,12 @@ public class ProfileValidation implements ValidationStep {
   @Override
   public void setParent(Object configFile) {
     this.configFile = (ConfigFile) configFile;
+    this.profile.setParent(this.getParent());
+    for(Mapping mapping : this.graphs) {
+      mapping.setParent(this.getParent());
+    }
+  }
+  public ConfigFile getParent() {
+    return this.configFile;
   }
 }

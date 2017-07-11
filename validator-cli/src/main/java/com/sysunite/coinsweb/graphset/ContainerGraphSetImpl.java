@@ -14,10 +14,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -25,6 +22,10 @@ import java.util.Map;
 public class ContainerGraphSetImpl implements ContainerGraphSet {
 
   private static final Logger log = LoggerFactory.getLogger(ContainerGraphSetImpl.class);
+
+  public static final String INSTANCE_UNION_GRAPH = "INSTANCE_UNION_GRAPH";
+  public static final String SCHEMA_UNION_GRAPH = "SCHEMA_UNION_GRAPH";
+  public static final String FULL_UNION_GRAPH = "FULL_UNION_GRAPH";
 
   private boolean disabled;
   private Connector connector;
@@ -64,6 +65,15 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   /**
    * returns true if it least one result was found
    */
+  public TupleQueryResult select(String query) {
+
+    if(connector.requiresLoad()) {
+      load();
+    }
+
+    TupleQueryResult result = (TupleQueryResult) connector.query(query);
+    return result;
+  }
   public boolean select(String query, Object formatTemplate, ValidationStepResult validationStepResult) {
 
     boolean resultsFound = false;
@@ -107,11 +117,39 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     return contextMap;
   }
 
+  public boolean hasContext(String graphVar) {
+    return contextMap().containsKey(graphVar);
+  }
+
   public Map<String, Long> quadCount() {
     if(connector.requiresLoad()) {
       load();
     }
     return connector.quadCount();
+  }
+
+  public List<String> getImports(String graphVar) {
+
+    String context = contextMap().get(graphVar);
+
+    String query =
+
+      "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
+      "FROM NAMED <"+context+"> " +
+      "SELECT ?library " +
+      "WHERE { " +
+      "  ?s owl:imports ?library . " +
+      "}";
+
+    List<String> namespaces = new ArrayList<>();
+    TupleQueryResult result = select(query);
+    while (result.hasNext()) {
+      BindingSet row = result.next();
+      String namespace = row.getBinding("library").getValue().stringValue();
+      log.info("Found import: "+namespace);
+      namespaces.add(namespace);
+    }
+    return namespaces;
   }
 
 

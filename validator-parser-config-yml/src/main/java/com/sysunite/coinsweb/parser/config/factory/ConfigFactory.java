@@ -4,18 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
-import com.sysunite.coinsweb.filemanager.ContainerFile;
-import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.parser.config.pojo.*;
-import com.sysunite.coinsweb.rdfutil.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -24,6 +21,14 @@ import java.util.Scanner;
 public class ConfigFactory {
 
   private static final Logger log = LoggerFactory.getLogger(ConfigFactory.class);
+
+  private static DescribeFactory describeFactory = null;
+
+  public static void setDescribeFactory(DescribeFactory factory) {
+    ConfigFactory.describeFactory = factory;
+  }
+
+
 
   public static String getDefaultConfigString(ConfigFile configFile) {
 
@@ -63,11 +68,11 @@ public class ConfigFactory {
     throw new RuntimeException("Was not able to generate config.yml");
   }
 
-  public static ConfigFile getDefaultConfig(ArrayList<ContainerFile> containersList) {
+  public static ConfigFile getDefaultConfig(ArrayList<File> containersList) {
     Path localizeTo = containersList.get(0).toPath().getParent();
     return getDefaultConfig(containersList, localizeTo);
   }
-  public static ConfigFile getDefaultConfig(ArrayList<ContainerFile> containersList, Path localizeTo) {
+  public static ConfigFile getDefaultConfig(List<File> containersList, Path localizeTo) {
     ConfigFile configFile = new ConfigFile();
 
     configFile.setEnvironment(getDefaultEnvironment());
@@ -114,6 +119,7 @@ public class ConfigFactory {
 
     Environment environment = new Environment();
     environment.setStore(store);
+    environment.setLoadingStrategy(Environment.HASH_IN_GRAPHNAME);
 
     Mapping fullMapping = new Mapping();
     fullMapping.setVariable("FULL_UNION_GRAPH");
@@ -152,31 +158,40 @@ public class ConfigFactory {
     return reports.toArray(new Report[0]);
   }
 
-  public static Run getDefaultRun(ArrayList<ContainerFile> containersList, Path localizeTo) {
 
-
-    ArrayList<Container> containers = new ArrayList();
-    for(ContainerFile containerFile : containersList) {
-      containers.add(describe(containerFile, localizeTo));
-    }
-
-    Run run = new Run();
-
-    run.setContainers(containers.toArray(new Container[0]));
-    run.setSteps(getDefaultSteps());
-    run.setReports(getDefaultReports(localizeTo));
-
-    return run;
-  }
-
-  public static Container describe(ContainerFile containerFile, Path localizeTo) {
+  public static Container getDefaultContainer(File containerFile, Path localizeTo) {
 
     Locator locator = new Locator();
     locator.localizeTo(localizeTo);
     locator.setType("file");
     locator.setPath(containerFile.toString());
 
-    ArrayList<Graph> graphs = graphsInContainer(containerFile);
+    ArrayList<Graph> graphs;
+    if(describeFactory != null) {
+      graphs = describeFactory.graphsInContainer(containerFile);
+    } else {
+      graphs = new ArrayList();
+
+      Source instanceGraphSource = new Source();
+      instanceGraphSource.setType("container");
+      instanceGraphSource.setPath("bim"+File.separator+"*");
+      instanceGraphSource.setGraphname("\"*\"");
+
+      Graph instanceGraphPattern = new Graph();
+      instanceGraphPattern.setSource(instanceGraphSource);
+      instanceGraphPattern.setAs(new ArrayList<>(Arrays.asList("INSTANCE_UNION_GRAPH", "FULL_UNION_GRAPH")));
+      graphs.add(instanceGraphPattern);
+
+      Source librarySource = new Source();
+      librarySource.setType("container");
+      librarySource.setPath("bim"+File.separator+"repository"+File.separator+"*");
+      librarySource.setGraphname("\"*\"");
+
+      Graph libraryGraphPattern = new Graph();
+      libraryGraphPattern.setSource(librarySource);
+      libraryGraphPattern.setAs(new ArrayList<>(Arrays.asList("SCHEMA_UNION_GRAPH", "FULL_UNION_GRAPH")));
+      graphs.add(libraryGraphPattern);
+    }
 
     Container container = new Container();
     container.setType("container");
@@ -186,74 +201,21 @@ public class ConfigFactory {
     return container;
   }
 
+  public static Run getDefaultRun(List<File> containersList, Path localizeTo) {
 
 
-
-
-
-
-
-
-
-  public static ArrayList<Graph> graphsInContainer(ContainerFile containerFile) {
-    ArrayList<Graph> graphs = new ArrayList();
-    graphs.addAll(contentGraphsInContainer(containerFile));
-    graphs.addAll(libraryGraphsInContainer(containerFile));
-    return graphs;
-  }
-  public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile) {
-    return contentGraphsInContainer(containerFile, new ArrayList<>(Arrays.asList("INSTANCE_UNION_GRAPH", "FULL_UNION_GRAPH")));
-  }
-  public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile, ArrayList<String> content) {
-    ArrayList<Graph> graphs = new ArrayList();
-    for(String contentFile : containerFile.getContentFiles()) {
-
-      File file = containerFile.getContentFile(contentFile);
-      try {
-        for (String namespace : Utils.namespacesForFile(file)) {
-
-          Source source = new Source();
-          source.setType("container");
-          source.setPath(containerFile.getContentFilePath(contentFile).toString());
-          source.setGraphname(namespace);
-
-          Graph graph = new Graph();
-          graph.setSource(source);
-          graph.setAs(content);
-          graphs.add(graph);
-        }
-      } catch (RuntimeException e) {
-        log.warn(e.getMessage());
-      }
+    ArrayList<Container> containers = new ArrayList();
+    for(File containerFile : containersList) {
+      containers.add(getDefaultContainer(containerFile, localizeTo));
     }
-    return graphs;
-  }
-  public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile) {
-    return libraryGraphsInContainer(containerFile, new ArrayList<>(Arrays.asList("SCHEMA_UNION_GRAPH", "FULL_UNION_GRAPH")));
-  }
-  public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile, ArrayList<String> content) {
-    ArrayList<Graph> graphs = new ArrayList();
-    for(String repositoryFile : containerFile.getRepositoryFiles()) {
 
-      File file = containerFile.getRepositoryFile(repositoryFile);
-      try {
-        for(String namespace : Utils.namespacesForFile(file)) {
+    Run run = new Run();
 
-          Source source = new Source();
-          source.setType("container");
-          source.setPath(containerFile.getRepositoryFilePath(repositoryFile).toString());
-          source.setGraphname(namespace);
+    run.setContainers(containers.toArray(new Container[0]));
+    run.setSteps(getDefaultSteps());
+    run.setReports(getDefaultReports(localizeTo));
 
-          Graph graph = new Graph();
-          graph.setSource(source);
-          graph.setAs(content);
-          graphs.add(graph);
-        }
-      } catch (RuntimeException e) {
-        log.warn(e.getMessage());
-      }
-    }
-    return graphs;
+    return run;
   }
 
   public static void overrideContainers(ConfigFile configFile, int count, Path[] containerFiles) {
@@ -272,124 +234,4 @@ public class ConfigFactory {
     configFile.getRun().setContainers(overriddenContainerSet);
   }
 
-
-
-  public static void expandGraphConfig(ConfigFile configFile) {
-    for(Container container : configFile.getRun().getContainers()) {
-      ContainerFile containerFile = null;
-      if(!container.isVirtual()) {
-        containerFile = new ContainerFileImpl(FileFactory.toFile(container.getLocation()).getPath());
-      }
-      container.setGraphs(loadList(container.getGraphs(), containerFile).toArray(new Graph[0]));
-    }
-  }
-
-  public static ArrayList<Graph> loadList(Graph[] originalGraphs, ContainerFile container) {
-
-//    ArrayList<Graph> loadList = new ArrayList();
-
-    Graph allContentFile = null;
-    Graph allLibraryFile = null;
-
-    // Explicit graphs
-    ArrayList<String> explicitGraphs = new ArrayList();
-    for(Graph graph : originalGraphs) {
-      if(!graph.getSource().anyGraph()) {
-        String graphName = graph.getSource().getGraphname();
-        if(explicitGraphs.contains(graphName)) {
-          throw new RuntimeException("The namespace "+graphName+ " is being mentioned more than once, this is not allowed");
-        }
-        explicitGraphs.add(graphName);
-      }
-
-      if(Source.CONTAINER.equals(graph.getSource().getType())) {
-
-        // Keep track of fallback graph definitions
-        if (graph.getSource().anyContentFile()) {
-          if (allContentFile != null) {
-            throw new RuntimeException("Only one graph with content file asterisk allowed");
-          }
-          allContentFile = graph;
-        }
-        if (graph.getSource().anyLibraryFile()) {
-          if (allLibraryFile != null) {
-            throw new RuntimeException("Only one graph with content file asterisk allowed");
-          }
-          allLibraryFile = graph;
-        }
-      }
-    }
-
-    // Implicit graphs
-    ArrayList<Graph> loadList = new ArrayList();
-    ArrayList<String> implicitGraphs = new ArrayList();
-
-    if(allContentFile != null) {
-      for(Graph graph : ConfigFactory.contentGraphsInContainer(container, allContentFile.getAs())) {
-        String graphName = graph.getSource().getGraphname();
-        if(!explicitGraphs.contains(graphName)) {
-          log.info("Will load content file from wildcard definition");
-          if(implicitGraphs.contains(graphName)) {
-            throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: "+graphName);
-          }
-          implicitGraphs.add(graphName);
-          loadList.add(graph);
-        }
-      }
-    }
-
-    if(allLibraryFile != null) {
-      for(Graph graph : ConfigFactory.libraryGraphsInContainer(container, allLibraryFile.getAs())) {
-        String graphName = graph.getSource().getGraphname();
-        if(!explicitGraphs.contains(graphName)) {
-          log.info("Will load library file from wildcard definition");
-          if(implicitGraphs.contains(graphName)) {
-            throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: "+graphName);
-          }
-          implicitGraphs.add(graphName);
-          loadList.add(graph);
-        }
-      }
-    }
-
-    // If a graph points to a file or link online instead of a file in a container
-    for(Graph originalGraph : originalGraphs) {
-      if(originalGraph.getSource().anyGraph() &&
-        (Source.FILE.equals(originalGraph.getSource().getType()) || Source.ONLINE.equals(originalGraph.getSource().getType()))) {
-
-        File file = FileFactory.toFile(originalGraph.getSource().asLocator());
-        for(String graphName : Utils.namespacesForFile(file)) {
-          if(!explicitGraphs.contains(graphName)) {
-            log.info("Will load graph from file because of wildcard graph definition");
-            if(implicitGraphs.contains(graphName)) {
-              throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: "+graphName);
-            }
-            implicitGraphs.add(graphName);
-
-            Graph graph = originalGraph.clone();
-            graph.getSource().setGraphname(graphName);
-            loadList.add(graph);
-          }
-        }
-      }
-    }
-
-    for(Graph graph : originalGraphs) {
-      if(!graph.getSource().anyGraph()) {
-
-        // Check if the file in the container is available
-        if(Source.CONTAINER.equals(graph.getSource().getType())) {
-          try {
-            container.getFile(Paths.get(graph.getSource().getPath()));
-          } catch(RuntimeException e) {
-            throw e;
-          }
-        }
-
-        log.info("Will load explicitly defined file");
-        loadList.add(graph);
-      }
-    }
-    return loadList;
-  }
 }

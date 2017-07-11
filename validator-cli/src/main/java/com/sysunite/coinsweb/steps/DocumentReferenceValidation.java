@@ -1,17 +1,16 @@
 package com.sysunite.coinsweb.steps;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
+import com.sysunite.coinsweb.graphset.ContainerGraphSetImpl;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
-import com.sysunite.coinsweb.rdfutil.Utils;
-import org.eclipse.rdf4j.model.*;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,34 +31,39 @@ public class DocumentReferenceValidation implements ValidationStep {
 
     ArrayList<String> ids = new ArrayList();
 
-    if(!container.getContentFiles().isEmpty()) {
-      File file = container.getContentFile(container.getContentFiles().iterator().next());
+    if(graphSet.hasContext(ContainerGraphSetImpl.INSTANCE_UNION_GRAPH)) {
 
-      Model model = Utils.load(file);
-      ValueFactory factory = SimpleValueFactory.getInstance();
-      IRI InternalDocumentReference = factory.createIRI("http://www.coinsweb.nl/cbim-2.0.rdf#InternalDocumentReference");
-      IRI filePath = factory.createIRI("http://www.coinsweb.nl/cbim-2.0.rdf#filePath");
-      IRI datatypeValue = factory.createIRI("http://www.coinsweb.nl/cbim-2.0.rdf#datatypeValue");
+      String context = graphSet.contextMap().get(ContainerGraphSetImpl.INSTANCE_UNION_GRAPH);
 
-      for (Resource subject : model.filter(null, RDF.TYPE, InternalDocumentReference).subjects()) {
-        IRI instance = (IRI) subject;
-        ids.add(instance.toString());
-        for (Value object : model.filter(subject, filePath, null).objects()) {
-          if (object instanceof IRI) {
-            for (Value value : model.filter((IRI) object, datatypeValue, null).objects()) {
-              String fileName = value.stringValue();
+      String query =
 
-              boolean found = false;
-              for (String attachment : container.getAttachmentFiles()) {
-                if (Paths.get(attachment).toFile().getName().equals(fileName)) {
-                  found = true;
-                  break;
-                }
-              }
-              allReferencesAreSatisfied &= found;
-            }
+        "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
+        "PREFIX cbim: <http://www.coinsweb.nl/cbim-2.0.rdf#> " +
+        "FROM NAMED <"+context+"> " +
+        "SELECT ?document ?filePath ?value " +
+        "WHERE { " +
+        "  ?document  rdf:type            cbim:InternalDocumentReference . " +
+        "  ?document  cbim:filePath       ?filePath . " +
+        "  ?filePath  cbim:datatypeValue  ?value . " +
+        "}";
+
+      TupleQueryResult result = (TupleQueryResult)graphSet.select(query);
+      while (result.hasNext()) {
+        BindingSet row = result.next();
+        String document = row.getBinding("document").getValue().stringValue();
+        String filePath = row.getBinding("filePath").getValue().stringValue();
+        String value = row.getBinding("value").getValue().stringValue();
+
+        log.info("Found InternalDocumentReference "+document+" to file "+value);
+
+        boolean found = false;
+        for (String attachment : container.getAttachmentFiles()) {
+          if (Paths.get(attachment).toFile().getName().equals(value)) {
+            found = true;
+            break;
           }
         }
+        allReferencesAreSatisfied &= found;
       }
     }
 
@@ -74,9 +78,13 @@ public class DocumentReferenceValidation implements ValidationStep {
     return reportItems;
   }
 
+  @JsonIgnore
   private ConfigFile configFile;
   @Override
   public void setParent(Object configFile) {
     this.configFile = (ConfigFile) configFile;
+  }
+  public ConfigFile getParent() {
+    return this.configFile;
   }
 }

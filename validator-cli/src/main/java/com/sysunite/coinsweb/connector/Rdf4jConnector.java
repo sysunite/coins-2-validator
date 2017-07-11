@@ -128,6 +128,8 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
 
+
+
   public boolean containsContext(String context) {
     try (RepositoryConnection con = repository.getConnection()) {
       RepositoryResult<Resource> graphIterator = con.getContextIDs();

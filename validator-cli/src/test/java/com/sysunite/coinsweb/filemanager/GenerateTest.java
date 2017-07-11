@@ -1,4 +1,4 @@
-package com.sysunite.coinsweb.parser.config;
+package com.sysunite.coinsweb.filemanager;
 
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
@@ -26,13 +26,15 @@ public class GenerateTest {
   public static void before() {
     Store.factory = new ConnectorFactoryStub();
     Step.factory = new StepFactoryStub();
+
+    ConfigFactory.setDescribeFactory(new DescribeFactoryImpl());
   }
 
   @Test
   public void testMinimalContainer() {
 
     ArrayList<File> containers = new ArrayList();
-    containers.add(new File(getClass().getClassLoader().getResource("some.ccr").getFile()));
+    containers.add(new ContainerFileImpl(getClass().getClassLoader().getResource("some.ccr").getFile()));
 
     ConfigFile configFile = ConfigFactory.getDefaultConfig(containers);
     String yml = ConfigFactory.getDefaultConfigString(configFile);

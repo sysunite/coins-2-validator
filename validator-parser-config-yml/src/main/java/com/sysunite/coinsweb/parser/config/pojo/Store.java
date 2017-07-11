@@ -56,8 +56,8 @@ class StoreSanitizer extends StdConverter<Store, Store> {
   public Store convert(Store obj) {
 
     if(Store.factory == null) {
-      log.warn("Please set the static field com.sysunite.coinsweb.parser.config.pojo.StoreSanitizer.factory to some instance!");
-      throw new RuntimeException("Please set the static field com.sysunite.coinsweb.parser.config.pojo.StoreSanitizer.factory to some instance!");
+      log.warn("Please set the static field com.sysunite.coinsweb.parser.config.pojo.Store.factory to some instance!");
+      throw new RuntimeException("Please set the static field com.sysunite.coinsweb.parser.config.pojo.Store.factory to some instance!");
     }
 
     isNotNull(obj.getType());

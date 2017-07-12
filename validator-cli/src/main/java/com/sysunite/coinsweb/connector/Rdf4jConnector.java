@@ -56,7 +56,7 @@ public abstract class Rdf4jConnector implements Connector {
       TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
       return tupleQuery.evaluate();
     } catch (Exception e) {
-      log.error(e.getMessage(), e);
+      log.error("A problem with this select query (message: "+e.getLocalizedMessage()+"):\n"+queryString);
     }
     throw new RuntimeException("Was not able to build resultset for query: "+queryString);
   }
@@ -70,7 +70,7 @@ public abstract class Rdf4jConnector implements Connector {
       try {
         updateQuery.execute();
       } catch (Exception e) {
-        log.error(e.getMessage(), e);
+        log.error("A problem with this update query (message: "+e.getLocalizedMessage()+"):\n"+queryString);
       }
     } catch (Exception e) {
       log.error(e.getMessage(), e);

@@ -45,6 +45,8 @@ public abstract class Rdf4jConnector implements Connector {
   @Override
   public boolean testConnection() {
 
+
+
     return false;
   }
 
@@ -54,6 +56,7 @@ public abstract class Rdf4jConnector implements Connector {
     try (RepositoryConnection con = repository.getConnection()) {
 
       TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+      tupleQuery.setIncludeInferred(false);
       return tupleQuery.evaluate();
     } catch (Exception e) {
       log.error("A problem with this select query (message: "+e.getLocalizedMessage()+"):\n"+queryString);
@@ -67,6 +70,7 @@ public abstract class Rdf4jConnector implements Connector {
     try (RepositoryConnection con = repository.getConnection()) {
 
       Update updateQuery = con.prepareUpdate(QueryLanguage.SPARQL, queryString);
+      updateQuery.setIncludeInferred(false);
       try {
         updateQuery.execute();
       } catch (Exception e) {

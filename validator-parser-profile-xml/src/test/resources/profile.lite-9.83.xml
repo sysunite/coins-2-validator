@@ -1,6 +1,6 @@
 <profile>
-<name>COINS 2.0 Lite_0.9.82</name>
-<version>0.9.82</version>
+<name>COINS 2.0 Lite_0.9.83</name>
+<version>0.9.83</version>
 <author>Hans Schevers</author>
 <queryLanguage>SPARQL-1.1</queryLanguage>
 <bundles>
@@ -16,11 +16,15 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
- select distinct ?a ?b ?c 
- WHERE {Graph ${SCHEMA_GRAPH} {
-    ?a ?b ?c 
-filter (STRSTARTS(STR(?b),"http://www.w3.org/2002/07/owl#")). 
-filter (?b not in (owl:equivalentClass,owl:allValuesFrom,owl:oneOf,owl:cardinality,owl:disjointWith,owl:distinctMembers,owl:hasValue,owl:imports,owl:intersectionOf,owl:inverseOf,owl:maxCardinality,owl:maxQualifiedCardinality,owl:members,owl:minCardinality,owl:minQualifiedCardinality,owl:onClass,owl:onProperty,owl:qualifiedCardinality,owl:unionOf,owl:annotatedProperty,owl:annotatedSource,owl:annotatedTarget,owl:backwardCompatibleWith,owl:deprecated,owl:incompatibleWith,owl:priorVersion,owl:versionInfo,owl:versionIRI))}}]]>
+
+SELECT DISTINCT ?a ?b ?c 
+WHERE {
+  GRAPH ${SCHEMA_GRAPH} {
+    ?a ?b ?c  .
+    FILTER (STRSTARTS(STR(?b),"http://www.w3.org/2002/07/owl#")). 
+    FILTER (?b NOT IN (owl:equivalentClass,owl:allValuesFrom,owl:oneOf,owl:cardinality,owl:disjointWith,owl:DISTINCTMembers,owl:hasValue,owl:imports,owl:intersectionOf,owl:inverseOf,owl:maxCardinality,owl:maxQualifiedCardinality,owl:members,owl:minCardinality,owl:minQualifiedCardinality,owl:onClass,owl:onProperty,owl:qualifiedCardinality,owl:UnionOf,owl:annotatedProperty,owl:annotatedSource,owl:annotatedTarget,owl:backwardCompatibleWith,owl:deprecated,owl:incompatibleWith,owl:priorVersion,owl:versionInfo,owl:versionIRI))
+  }
+}]]>
 </sparql>
 </query>
 <query reference="COINS 2.0 Lite">
@@ -34,10 +38,15 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-select distinct ?a ?b ?c 
- WHERE {Graph ${SCHEMA_GRAPH}{
- ?a ?b ?c   filter (STRSTARTS(STR(?c),"http://www.w3.org/2002/07/owl#")).
-filter (?c not in (owl:AllDisjointClasses,owl:Annotation,owl:AnnotationProperty,owl:Class,owl:DatatypeProperty,owl:FunctionalProperty,owl:NamedIndividual,owl:ObjectProperty,owl:Ontology,owl:Restriction,owl:TransitiveProperty,owl:Thing,owl:topDataProperty,owl:topObjectProperty)) }}]]>
+
+SELECT DISTINCT ?a ?b ?c 
+WHERE {
+  GRAPH ${SCHEMA_GRAPH} {
+    ?a ?b ?c  .
+    FILTER (STRSTARTS(STR(?c),"http://www.w3.org/2002/07/owl#")) .
+    FILTER (?c NOT IN (owl:AllDisjointClasses,owl:Annotation,owl:AnnotationProperty,owl:Class,owl:DatatypeProperty,owl:FunctionalProperty,owl:NamedIndividual,owl:ObjectProperty,owl:Ontology,owl:Restriction,owl:TransitiveProperty,owl:Thing,owl:topDataProperty,owl:topObjectProperty))
+  }
+}]]>
 </sparql>
 </query>
 </queries>
@@ -52,16 +61,17 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-
-
-insert { graph ${SCHEMA_GRAPH} { ?prop a owl:ObjectProperty }}
-
-using ${SCHEMA_GRAPH}
+INSERT {
+  GRAPH ${SCHEMA_GRAPH} {
+    ?prop a owl:ObjectProperty .
+  }
+}
+USING ${SCHEMA_GRAPH}
 
  WHERE { ?prop rdfs:range ?class. 
  ?class a owl:Class.
-		filter (?class!=rdfs:Resource). 
- 	filter not exists{?prop a owl:ObjectProperty} 
+		FILTER (?class!=rdfs:Resource). 
+ 	FILTER NOT EXISTS{?prop a owl:ObjectProperty} 
 
 }
 ]]>
@@ -76,11 +86,12 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${SCHEMA_GRAPH} {?p1 rdfs:domain ?c  }}
-using ${SCHEMA_GRAPH}
+INSERT {
+GRAPH ${SCHEMA_GRAPH} {?p1 rdfs:domain ?c  }}
+USING ${SCHEMA_GRAPH}
 
  WHERE {  ?p2 rdfs:domain ?c . 
-   ?p1 rdfs:subPropertyOf ?p2 
+   ?p1 rdfs:subPropertyOf ?p2 .
 
 }
 ]]>
@@ -95,16 +106,17 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${SCHEMA_GRAPH} {?c1 rdfs:subClassOf ?c2}}
+INSERT {
+GRAPH ${SCHEMA_GRAPH} {?c1 rdfs:subClassOf ?c2}}
 
-using ${SCHEMA_GRAPH}
+USING ${SCHEMA_GRAPH}
 
 
  WHERE {  ?c1 owl:hasValue ?i .  
   ?c1 owl:onProperty ?p1 .  
   ?c2 owl:hasValue ?i . 
    ?c2 owl:onProperty ?p2 . 
-   ?p1 rdfs:subPropertyOf ?p2 
+   ?p1 rdfs:subPropertyOf ?p2 .
 
 }
 ]]>
@@ -119,9 +131,10 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${SCHEMA_GRAPH} {?c rdfs:subClassOf ?cl }}
+INSERT {
+GRAPH ${SCHEMA_GRAPH} {?c rdfs:subClassOf ?cl }}
 
-using ${SCHEMA_GRAPH}
+USING ${SCHEMA_GRAPH}
 
 
  WHERE {  ?c owl:intersectionOf /rdf:rest*/rdf:first ?cl 
@@ -139,9 +152,10 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${SCHEMA_GRAPH} {?p rdfs:range ?c2}}
+INSERT {
+GRAPH ${SCHEMA_GRAPH} {?p rdfs:range ?c2}}
 
-using ${SCHEMA_GRAPH}
+USING ${SCHEMA_GRAPH}
 
 
  WHERE {  ?p rdfs:range ?c1 .  
@@ -160,13 +174,14 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${SCHEMA_GRAPH} {?p1 rdfs:range ?c}}
+INSERT {
+GRAPH ${SCHEMA_GRAPH} {?p1 rdfs:range ?c}}
 
-using ${SCHEMA_GRAPH}
+USING ${SCHEMA_GRAPH}
 
 
  WHERE {    ?p2 rdfs:range ?c .	
-    ?p1 rdfs:subPropertyOf ?p2 
+    ?p1 rdfs:subPropertyOf ?p2 .
 
 }
 ]]>
@@ -181,9 +196,10 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${SCHEMA_GRAPH} {?c1 rdfs:subClassOf ?c3}}
+INSERT {
+GRAPH ${SCHEMA_GRAPH} {?c1 rdfs:subClassOf ?c3}}
 
-using ${SCHEMA_GRAPH}
+USING ${SCHEMA_GRAPH}
 
 
  WHERE {  ?c1 rdfs:subClassOf ?c2 . 
@@ -202,9 +218,10 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${SCHEMA_GRAPH} {?p1 rdfs:subPropertyOf ?p3}}
+INSERT {
+GRAPH ${SCHEMA_GRAPH} {?p1 rdfs:subPropertyOf ?p3}}
 
-using ${SCHEMA_GRAPH}
+USING ${SCHEMA_GRAPH}
 
 
  WHERE {  ?p1 rdfs:subPropertyOf ?p2 . 
@@ -223,9 +240,10 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${SCHEMA_GRAPH} {?c1 rdfs:subClassOf ?c2 }}
+INSERT {
+GRAPH ${SCHEMA_GRAPH} {?c1 rdfs:subClassOf ?c2 }}
 
-using ${SCHEMA_GRAPH}
+USING ${SCHEMA_GRAPH}
 
 
  WHERE {  ?c1 owl:someValuesFrom ?y1 .  
@@ -247,23 +265,24 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${SCHEMA_GRAPH} {?c1 rdfs:subClassOf ?c2  }}
+INSERT {
+GRAPH ${SCHEMA_GRAPH} {?c1 rdfs:subClassOf ?c2  }}
 
-using ${SCHEMA_GRAPH}
+USING ${SCHEMA_GRAPH}
 
 
  WHERE {  ?c1 owl:someValuesFrom ?y .  
   ?c1 owl:onProperty ?p1 .  
   ?c2 owl:someValuesFrom ?y .  
   ?c2 owl:onProperty ?p2 .  
-  ?p1 rdfs:subPropertyOf ?p2  
+  ?p1 rdfs:subPropertyOf ?p2  .
 
 }
 ]]>
 </sparql>
 </query>
 <query reference="scm-uni">
-<description>UnionClass subtyping entailment. Removed list:member dependency</description>
+<description>UNIONClass subtyping entailment. Removed list:member dependency</description>
 <sparql><![CDATA[
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -271,12 +290,13 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${SCHEMA_GRAPH} {?cl rdfs:subClassOf ?c   }}
+INSERT {
+GRAPH ${SCHEMA_GRAPH} {?cl rdfs:subClassOf ?c   }}
 
-using ${SCHEMA_GRAPH}
+USING ${SCHEMA_GRAPH}
 
 
- WHERE { ?c owl:unionOf  /rdf:rest*/rdf:first  ?cl   
+ WHERE { ?c owl:UnionOf  /rdf:rest*/rdf:first  ?cl   
 
 }
 ]]>
@@ -294,13 +314,14 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${DATA_GRAPH} {?x a ?c2}}
+INSERT {
+GRAPH ${DATA_GRAPH} {?x a ?c2}}
 
-using ${SCHEMA_GRAPH}
-using ${DATA_GRAPH}
+USING ${SCHEMA_GRAPH}
+USING ${DATA_GRAPH}
 
- WHERE { ?x a ?c1  
- ?c1 rdfs:subClassOf ?c2 
+ WHERE { ?x a ?c1   .
+ ?c1 rdfs:subClassOf ?c2 .
 
 }
 ]]>
@@ -315,12 +336,13 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${DATA_GRAPH} {?x ?p2 ?y }}
+INSERT {
+GRAPH ${DATA_GRAPH} {?x ?p2 ?y }}
 
-using ${SCHEMA_GRAPH}
-using ${DATA_GRAPH}
+USING ${SCHEMA_GRAPH}
+USING ${DATA_GRAPH}
 
- WHERE { ?p1 rdfs:subPropertyOf ?p2 
+ WHERE { ?p1 rdfs:subPropertyOf ?p2 .
   ?x ?p1 ?y .
 
 }
@@ -336,14 +358,15 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${DATA_GRAPH} {?x ?p ?z  }}
+INSERT {
+GRAPH ${DATA_GRAPH} {?x ?p ?z  }}
 
-using ${SCHEMA_GRAPH}
-using ${DATA_GRAPH}
+USING ${SCHEMA_GRAPH}
+USING ${DATA_GRAPH}
 
- WHERE {   ?p a owl:TransitiveProperty 
+ WHERE {   ?p a owl:TransitiveProperty .
     ?x ?p ?y .	
-    ?y ?p ?z  
+    ?y ?p ?z  .
 
 }
 ]]>
@@ -357,14 +380,15 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-insert {graph ${DATA_GRAPH} {?u a ?x  }}
+INSERT {
+GRAPH ${DATA_GRAPH} {?u a ?x  }}
 
-using ${SCHEMA_GRAPH}
-using ${DATA_GRAPH}
+USING ${SCHEMA_GRAPH}
+USING ${DATA_GRAPH}
 
  WHERE {  ?x owl:hasValue ?y . 
    ?x owl:onProperty ?p .
- ?u ?p ?y 
+ ?u ?p ?y .
 
 }
 ]]>
@@ -379,12 +403,14 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 
-insert {graph ${DATA_GRAPH} {?y ?p2 ?x}}
+INSERT {
+GRAPH ${DATA_GRAPH} {?y ?p2 ?x}}
 
-using ${SCHEMA_GRAPH}
-using ${DATA_GRAPH}
+USING ${SCHEMA_GRAPH}
+USING ${DATA_GRAPH}
 
- WHERE {      ?p1 owl:inverseOf ?p2 .  
+ WHERE {
+       ?p1 owl:inverseOf ?p2 .
      ?x ?p1 ?y .
 
 }
@@ -399,12 +425,13 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-insert {graph ${DATA_GRAPH} {?y ?p1 ?x }}
+INSERT {
+GRAPH ${DATA_GRAPH} {?y ?p1 ?x }}
 
-using ${SCHEMA_GRAPH}
-using ${DATA_GRAPH}
+USING ${SCHEMA_GRAPH}
+USING ${DATA_GRAPH}
 
- WHERE {       ?p1 owl:inverseOf ?p2 
+ WHERE {       ?p1 owl:inverseOf ?p2 .
     ?x ?p2 ?y .
 
 }
@@ -415,7 +442,7 @@ using ${DATA_GRAPH}
 </dataInference>
 <dataValidation  type="validation" reference="data validation" ><description>validation rules</description>
 <queries><query reference="COINS-minCar">
-<description>This rule validates if individuals conform to the minimum cardinality contraints for properties. Properties (datatype and objecttype) can have a minimum cardinality constraint via owl:minCardinality. This validation assesses the propertyvalues and determines if they comply with the minimum. If an individual has less propertyvalues then demanded then this will be reported. The exact amount of propertyvalues and the minimum demand will we reported.</description>
+<description>This rule validates if individuals conform to the minimum cardinality contraints for properties. Properties (DATATYPE and objecttype) can have a minimum cardinality constraint via owl:minCardinality. This validation assesses the propertyvalues and determines if they comply with the minimum. If an individual has less propertyvalues then demanded then this will be reported. The exact amount of propertyvalues and the minimum demand will we reported.</description>
 <resultFormat><![CDATA[ ${this} has ${aantal} properties of ${property}.  The minimum is ${min}. ]]></resultFormat>
 <sparql><![CDATA[
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -423,34 +450,34 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?this  ?min ?aantal ?property 
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+ SELECT DISTINCT ?this  ?min ?aantal ?property 
+FROM NAMED ${SCHEMA_GRAPH} 
+ FROM NAMED ${DATA_GRAPH} 
 
  WHERE {{
- select distinct ?this ?class ?min (count(distinct ?value) as ?aantal) ?property 
+ SELECT DISTINCT ?this ?class ?min (count(DISTINCT ?value) as ?aantal) ?property 
 
  WHERE { ?class owl:minCardinality ?min . 
    ?class a owl:Restriction .   
    ?class owl:onProperty ?property  
  {?this a ?class .
- 	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } 
- union 
+ 	FILTER NOT EXISTS {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } 
+ UNION 
  { ?this a ?class .
- 	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity> } 
+ 	FILTER NOT EXISTS {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity> } 
  optional{ ?this ?property ?value. 
- filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } }
+ FILTER NOT EXISTS {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } }
 
 }group by ?this ?class ?min ?property
 }
-filter(xsd:integer(?aantal)<xsd:integer(?min))
+FILTER(xsd:integer(?aantal)<xsd:integer(?min))
 
 }
 ]]>
 </sparql>
 </query>
 <query reference="COINS-CAREX">
-<description>This rule validates if individuals conform to the exactly cardinality contraints for properties. Properties (datatype and objecttype) can have an exact cardinality constraint via owl:cardinality. This validation assesses the propertyvalues and determines if they comply with the exact amount. If an individual has more or less propertyvalues then demanded then this will be reported. The amount of propertyvalues and the demand amount will we reported.</description>
+<description>This rule validates if individuals conform to the exactly cardinality contraints for properties. Properties (DATATYPE and objecttype) can have an exact cardinality constraint via owl:cardinality. This validation assesses the propertyvalues and determines if they comply with the exact amount. If an individual has more or less propertyvalues then demanded then this will be reported. The amount of propertyvalues and the demand amount will we reported.</description>
 <resultFormat><![CDATA[ ${this} has ${aantal} properties of ${property}.  Exactly ${min} is necessary. ]]></resultFormat>
 <sparql><![CDATA[
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -458,34 +485,34 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?this  ?min ?aantal ?property 
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+ SELECT DISTINCT ?this  ?min ?aantal ?property 
+FROM NAMED ${SCHEMA_GRAPH} 
+ FROM NAMED ${DATA_GRAPH} 
 
  WHERE {{
- select distinct ?this ?class ?min (count(distinct ?value) as ?aantal) ?property 
+ SELECT DISTINCT ?this ?class ?min (count(DISTINCT ?value) as ?aantal) ?property 
 
  WHERE {   ?class a owl:Restriction .   
   ?class owl:cardinality ?min . 
-   ?class owl:onProperty ?property  
+   ?class owl:onProperty ?property  .
  {?this a ?class .
- 	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } 
- union 
+ 	FILTER NOT EXISTS {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } 
+ UNION 
  { ?this a ?class .
- 	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity> } 
+ 	FILTER NOT EXISTS {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity> } 
  optional{ ?this ?property ?value. 
- filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } }
+ FILTER NOT EXISTS {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } }
 
 }group by ?this ?class ?min ?property
 }
-filter((xsd:integer(?aantal)<xsd:integer(?min)) || (xsd:integer(?aantal)>xsd:integer(?min)) )
+FILTER((xsd:integer(?aantal)<xsd:integer(?min)) || (xsd:integer(?aantal)>xsd:integer(?min)) )
 
 }
 ]]>
 </sparql>
 </query>
 <query reference="COINS-maxCar">
-<description>This rule validates if individuals conform to the maximum cardinality contraints for properties. Properties (datatype and objecttype) can have a maximum cardinality constraint via owl:minCardinality. This validation assesses the propertyvalues and determines if they comply with the maximum. If an individual has more propertyvalues then demanded then this will be reported. The exact amount of propertyvalues and the maximum demand will we reported.</description>
+<description>This rule validates if individuals conform to the maximum cardinality contraints for properties. Properties (DATATYPE and objecttype) can have a maximum cardinality constraint via owl:minCardinality. This validation assesses the propertyvalues and determines if they comply with the maximum. If an individual has more propertyvalues then demanded then this will be reported. The exact amount of propertyvalues and the maximum demand will we reported.</description>
 <resultFormat><![CDATA[ ${this} has ${aantal} properties of ${property}.  The maximum is ${min}. ]]></resultFormat>
 <sparql><![CDATA[
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -493,25 +520,25 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?this ?class ?min ?aantal ?property 
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+ SELECT DISTINCT ?this ?class ?min ?aantal ?property 
+FROM NAMED ${SCHEMA_GRAPH} 
+ FROM NAMED ${DATA_GRAPH} 
 
  WHERE {{
- select distinct ?this  ?min (count(distinct ?value) as ?aantal) ?property 
+ SELECT DISTINCT ?this  ?min (count(DISTINCT ?value) as ?aantal) ?property 
 
  WHERE {  ?class owl:maxCardinality ?min .  
   ?class a owl:Restriction .   
-   ?class owl:onProperty ?property   
+   ?class owl:onProperty ?property .
 #fuseki bugfix 
  ?this a ?class . 
-	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}  
+	FILTER NOT EXISTS {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}  
  ?this ?property ?value. 
- filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}	
+ FILTER NOT EXISTS {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}	
 
 }group by ?this ?class ?min ?property
 }
-filter(xsd:integer(?aantal)>xsd:integer(?min))
+FILTER(xsd:integer(?aantal)>xsd:integer(?min))
 
 }
 ]]>
@@ -526,26 +553,26 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?this  ?min ?aantal ?property  ?onClass
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+ SELECT DISTINCT ?this  ?min ?aantal ?property  ?onClass
+FROM NAMED ${SCHEMA_GRAPH} 
+ FROM NAMED ${DATA_GRAPH} 
 
  WHERE {{
- select distinct ?this ?class ?min (count(distinct ?value) as ?aantal) ?property ?onClass
+ SELECT DISTINCT ?this ?class ?min (count(DISTINCT ?value) as ?aantal) ?property ?onClass
 
  WHERE {  ?class a owl:Restriction .  
   ?class owl:onClass ?onClass . 
  ?class owl:qualifiedCardinality ?min . 
    ?class owl:onProperty ?property .
  {   ?this a ?class .	
-	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} }union {?this a ?class .	
-	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} 	
-	optional{   ?this ?property ?value.	filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}
+	FILTER NOT EXISTS {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} }UNION {?this a ?class .	
+	FILTER NOT EXISTS {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} 	
+	optional{   ?this ?property ?value.	FILTER NOT EXISTS {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}
   ?value a ?onClass } }
 
 }  group by ?this ?class ?min  ?property  ?onClass
 }
-filter((?aantal<?min) || (?aantal>?min) )
+FILTER((?aantal<?min) || (?aantal>?min) )
 
 }
 ]]>
@@ -560,24 +587,24 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?this ?class ?min ?aantal ?property 
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+ SELECT DISTINCT ?this ?class ?min ?aantal ?property 
+FROM NAMED ${SCHEMA_GRAPH} 
+ FROM NAMED ${DATA_GRAPH} 
 
  WHERE {{
- select distinct ?this ?class ?min  (count(distinct ?value) as ?aantal)	 ?property 
+ SELECT DISTINCT ?this ?class ?min  (count(DISTINCT ?value) as ?aantal)	 ?property 
 
  WHERE {    ?class a owl:Restriction .  
  ?class owl:onClass ?onClass.  
  ?class owl:maxQualifiedCardinality ?min .  
   ?class owl:onProperty ?property .
     ?this a ?class . 	
- filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} 	
- optional{ ?this ?property ?value. filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}.?value a ?onClass}		
+ FILTER NOT EXISTS {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} 	
+ optional{ ?this ?property ?value. FILTER NOT EXISTS {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}.?value a ?onClass}		
 
 }  group by  ?this ?class ?min  ?property  
 }
- filter((xsd:integer(?aantal)>xsd:integer(?min)) )  
+ FILTER((xsd:integer(?aantal)>xsd:integer(?min)) )  
 
 }
 ]]>
@@ -592,27 +619,27 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?this  ?min ?aantal ?property 
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+ SELECT DISTINCT ?this  ?min ?aantal ?property 
+FROM NAMED ${SCHEMA_GRAPH} 
+ FROM NAMED ${DATA_GRAPH} 
 
  WHERE {{
- select distinct ?this ?class ?min (count(distinct ?value) as ?aantal)  ?property 
+ SELECT DISTINCT ?this ?class ?min (count(DISTINCT ?value) as ?aantal)  ?property 
 
  WHERE {  ?class a owl:Restriction . 
   ?class owl:onClass ?onClass. 
   ?class owl:minQualifiedCardinality ?min .  
   ?class owl:onProperty ?property .
   {  ?this a ?class .	
-	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}  }union { ?this a ?class .	
-	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}	
+	FILTER NOT EXISTS {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}  }UNION { ?this a ?class .	
+	FILTER NOT EXISTS {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}	
 	optional{   ?this ?property ?value. 
  ?value a ?onClass. 
- filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} }	}  	
+ FILTER NOT EXISTS {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} }	}  	
 
 }  group by ?this ?class ?min  ?property  
 }
-filter((xsd:integer(?aantal)<xsd:integer(?min)) )  
+FILTER((xsd:integer(?aantal)<xsd:integer(?min)) )  
 
 }
 ]]>
@@ -627,28 +654,28 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?this  ?property ?aantal
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+ SELECT DISTINCT ?this  ?property ?aantal
+FROM NAMED ${SCHEMA_GRAPH} 
+ FROM NAMED ${DATA_GRAPH} 
 
  WHERE {{
- select distinct ?this ?property  (count(distinct ?value) as ?aantal) 
+ SELECT DISTINCT ?this ?property  (count(DISTINCT ?value) as ?aantal) 
 
- WHERE {   ?property a owl:FunctionalProperty
+ WHERE {   ?property a owl:FunctionalProperty .
  ?this ?property ?value. 
-	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} 
- filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}  
+	FILTER NOT EXISTS {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} 
+ FILTER NOT EXISTS {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}  
 
 } group by  ?this ?property  
 }
-filter(xsd:integer(?aantal)>1) 
+FILTER(xsd:integer(?aantal)>1) 
 
 }
 ]]>
 </sparql>
 </query>
 <query reference="COINS-DTVC">
-<description>This rule validates if a propertyvalue complies with its specified xsd: datatype (string,float, dateTime, etc). The individual, the propertyvalue and the property will be reported.</description>
+<description>This rule validates if a propertyvalue complies with its specified xsd: DATATYPE (string,float, dateTime, etc). The individual, the propertyvalue and the property will be reported.</description>
 <resultFormat><![CDATA[ ${value} is of the type ${dat} which is not valid for ${prop} for individual ${a}. It should be a ${range}. ]]></resultFormat>
 <sparql><![CDATA[
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -656,42 +683,42 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?a ?prop ?range ?value (Datatype(?value) as ?dat)
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+SELECT DISTINCT ?a ?prop ?range ?value (DATATYPE(?value) as ?dat)
+FROM NAMED ${SCHEMA_GRAPH} 
+FROM NAMED ${DATA_GRAPH} 
 
- WHERE {  ?prop  a owl:DatatypeProperty . 	
-		   ?prop rdfs:range ?range. 
-  ?a ?prop ?value
-filter (Datatype(?value) !=?range)
-
+WHERE {  
+  ?prop a owl:DatatypeProperty . 	
+  ?prop rdfs:range ?range. 
+  ?a ?prop ?value .
+  FILTER (DATATYPE(?value) != ?range)
 }
 ]]>
 </sparql>
 </query>
 <query reference="COINS-DPVL">
-<description>This rule validates if a datatype property has a datatype value (and thus not an objectvalue). The value, the property and the individual will be reported.</description>
-<resultFormat><![CDATA[ ${value} is not a valid value for datatype property ${prop} for individual ${a}]]></resultFormat>
+<description>This rule validates if a DATATYPE property has a DATATYPE value (and thus not an objectvalue). The value, the property and the individual will be reported.</description>
+<resultFormat><![CDATA[ ${value} is not a valid value for DATATYPE property ${prop} for individual ${a}]]></resultFormat>
 <sparql><![CDATA[
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?a ?prop ?value
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+SELECT DISTINCT ?a ?prop ?value
+FROM NAMED ${SCHEMA_GRAPH} 
+FROM NAMED ${DATA_GRAPH} 
 
- WHERE {  ?prop  a owl:DatatypeProperty 
-  ?a ?prop ?value. 
-	filter(!isLiteral(?value)) 
-
+WHERE {  
+  ?prop a owl:DatatypeProperty .
+  ?a ?prop ?value . 
+	FILTER(!isLiteral(?value)) 
 }
 ]]>
 </sparql>
 </query>
 <query reference="COINS-OPVU">
-<description>This rule validates if an objecttype property does not have a datatype value. The value, the property and the individual will be reported.</description>
+<description>This rule validates if an objecttype property does not have a DATATYPE value. The value, the property and the individual will be reported.</description>
 <resultFormat><![CDATA[ ${value} is not a valid value for object property ${prop} for individual ${a}]]></resultFormat>
 <sparql><![CDATA[
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -699,20 +726,20 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?a ?prop ?value
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+ SELECT DISTINCT ?a ?prop ?value
+FROM NAMED ${SCHEMA_GRAPH} 
+ FROM NAMED ${DATA_GRAPH} 
 
- WHERE {  ?prop  a owl:ObjectProperty 
+ WHERE {  ?prop  a owl:ObjectProperty .
   ?a ?prop ?value. 
-	filter(!isIRI(?value)) 
+	FILTER(!isIRI(?value)) 
 
 }
 ]]>
 </sparql>
 </query>
-<query reference="COINS-datatype-constraints">
-<description>Properties can be defined with a domain and range but these properties can be further restricted by a Class definition using an extra restriction on that property. This rule checks if datatype properties with extra constrictions meet these restrictions. The value, the property and the individual will be reported.</description>
+<query reference="COINS-DATATYPE-constraints">
+<description>Properties can be defined with a domain and range but these properties can be further restricted by a Class definition USING an extra restriction on that property. This rule checks if DATATYPE properties with extra constrictions meet these restrictions. The value, the property and the individual will be reported.</description>
 <resultFormat><![CDATA[value ${value} is not of the type ${xsd} for individual ${a} with prop ${prop} ]]></resultFormat>
 <sparql><![CDATA[
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -720,19 +747,19 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?value ?prop ?a ?xsd
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+ SELECT DISTINCT ?value ?prop ?a ?xsd
+FROM NAMED ${SCHEMA_GRAPH} 
+ FROM NAMED ${DATA_GRAPH} 
 
- WHERE {    ?prop  a owl:DatatypeProperty .  ?r a owl:Restriction . ?r owl:onProperty ?prop. ?r owl:allValuesFrom ?xsd 
- ?a a ?r. ?a ?prop ?value.  filter (Datatype(?value) !=?xsd). filter ( (Datatype(?value)=<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString>) && (?xsd=xsd:string))
+ WHERE {    ?prop  a owl:DatatypeProperty .  ?r a owl:Restriction . ?r owl:onProperty ?prop. ?r owl:allValuesFrom ?xsd .
+ ?a a ?r. ?a ?prop ?value.  FILTER (DATATYPE(?value) !=?xsd). FILTER ( (DATATYPE(?value)=<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString>) && (?xsd=xsd:string))
 
 }
 ]]>
 </sparql>
 </query>
 <query reference="COINS-dom">
-<description>Properties can be defined with a Domain. This domain will be interpreted as a restriction and consequently all individuals using this property have to be of the type compliant with the domain. The individual, the property and the propertyvalue will be reported when an individual does not comply with the domain definition of a property. </description>
+<description>Properties can be defined with a Domain. This domain will be interpreted as a restriction and consequently all individuals USING this property have to be of the type compliant with the domain. The individual, the property and the propertyvalue will be reported when an individual does not comply with the domain definition of a property. </description>
 <resultFormat><![CDATA[individual ${a} has a property ${prop} with value ${b}. ${a} is not of the correct type ]]></resultFormat>
 <sparql><![CDATA[
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -740,14 +767,17 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?a ?prop ?b 
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+SELECT DISTINCT ?a ?prop ?b 
+FROM NAMED ${SCHEMA_GRAPH} 
+FROM NAMED ${DATA_GRAPH}
 
- WHERE {     ?prop a owl:ObjectProperty. ?prop rdfs:domain ?domain.
-    ?a ?prop ?b
-filter not exists {{    ?a a ?domain}  union {  ?a a ?domain}}
-
+WHERE {
+  ?prop a owl:ObjectProperty . 
+  ?prop rdfs:domain ?domain .
+  ?a ?prop ?b .
+  FILTER NOT EXISTS {
+    { ?a a ?domain } UNION { ?a a ?domain }
+  }
 }
 ]]>
 </sparql>
@@ -761,14 +791,17 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?a ?prop ?b 
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+SELECT DISTINCT ?a ?prop ?b
+FROM NAMED ${SCHEMA_GRAPH} 
+FROM NAMED ${DATA_GRAPH}
 
- WHERE {     ?prop a owl:ObjectProperty. ?prop rdfs:range  ?range.
- ?a ?prop ?b
-filter not exists {{    ?b a ?range }  union {  ?b a ?range}}
-
+WHERE {
+  ?prop a owl:ObjectProperty .
+  ?prop rdfs:range ?range .
+  ?a ?prop ?b .
+  FILTER NOT EXISTS {
+    { ?b a ?range } UNION { ?b a ?range }
+  }
 }
 ]]>
 </sparql>
@@ -782,23 +815,26 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?res ?a ?prop ?value
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+SELECT DISTINCT ?res ?a ?prop ?value
+FROM NAMED ${SCHEMA_GRAPH} 
+FROM NAMED ${DATA_GRAPH} 
 
- WHERE { ?res  a owl:Restriction. ?res owl:hasValue ?value. ?res owl:onProperty ?prop
-{
- ?a a ?res
-} minus {
- ?a a ?res. ?a ?prop ?value 
-}
+WHERE { 
+  ?res  a owl:Restriction .
+  ?res owl:hasValue ?value .
+  ?res owl:onProperty ?prop .
+  ?a a ?res .
 
+  MINUS {
+    ?a a ?res .
+    ?a ?prop ?value .
+  }
 }
 ]]>
 </sparql>
 </query>
 <query reference="COINS-AVFOneOf">
-<description>This rule checks if individuals have the right dataproperty value for properties with an owl:oneOf restriction. This restriction restricts properties to only accept a propertyvalue of a pre-defined list (of datatypeproperties). This rule checks if the property values comply with the values in the list.</description>
+<description>This rule checks if individuals have the right dataproperty value for properties with an owl:oneOf restriction. This restriction restricts properties to only accept a propertyvalue of a pre-defined list (of DATATYPEproperties). This rule checks if the property values comply with the values in the list.</description>
 <resultFormat><![CDATA[ ${a} is not correct for property ${prop}]]></resultFormat>
 <sparql><![CDATA[
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -806,34 +842,32 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?res ?a ?prop 
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
+SELECT DISTINCT ?res ?a ?prop 
+FROM NAMED ${SCHEMA_GRAPH} 
+FROM NAMED ${DATA_GRAPH}
 
- WHERE {{
-{
- select distinct ?res ?a ?prop 
+WHERE {
+  ?res  a owl:Restriction .
+  ?res owl:allValuesFrom/owl:oneOf/rdf:rest*/rdf:first ?value .
+  ?res owl:onProperty ?prop .
+  ?a a ?res .
 
- WHERE { ?res  a owl:Restriction. ?res owl:allValuesFrom/owl:oneOf/rdf:rest*/rdf:first ?value. ?res owl:onProperty ?prop
- ?a a ?res
-
-}}
-} minus {
-{
- select distinct ?res ?a ?prop 
-
- WHERE { ?res  a owl:Restriction. ?res owl:allValuesFrom/owl:oneOf/rdf:rest*/rdf:first ?value. ?res owl:onProperty ?prop
-  ?a a ?res. ?a ?prop ?value
-
-}}
-}
-
+  MINUS {
+    SELECT DISTINCT ?res ?a ?prop
+    WHERE {
+      ?res  a owl:Restriction .
+      ?res owl:allValuesFrom/owl:oneOf/rdf:rest*/rdf:first ?value .
+      ?res owl:onProperty ?prop .
+      ?a a ?res .
+      ?a ?prop ?value .
+    }
+  }
 }
 ]]>
 </sparql>
 </query>
 <query reference="COINS-UO">
-<description>This rule checks if individuals comply to owl:unionOf restrictions. COINS interprets UnionOf as a restriction effectively making an class abstract and consequenly extra typing of an individual is necessary conforming the unionOf restrictions. </description>
+<description>This rule checks if individuals comply to owl:UnionOf restrictions. COINS interprets UnionOf as a restriction effectively making an class abstract and consequenly extra typing of an individual is necessary conforming the UnionOf restrictions. </description>
 <resultFormat><![CDATA[ ${a} does not fulfill all UnionOf restrictions]]></resultFormat>
 <sparql><![CDATA[
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -841,12 +875,16 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?a  
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
-
- WHERE {   {  ?restriction owl:unionOf  ?list.    ?a a ?restriction  } filter not exists { ?list rdf:rest*/rdf:first ?first. ?a a ?first } 
-
+SELECT DISTINCT ?a  
+FROM NAMED ${SCHEMA_GRAPH} 
+FROM NAMED ${DATA_GRAPH}
+WHERE {
+  ?restriction owl:UnionOf ?list .
+  ?a a ?restriction .
+  FILTER NOT EXISTS {
+    ?list rdf:rest*/rdf:first ?first .
+    ?a a ?first
+  }
 }
 ]]>
 </sparql>
@@ -860,13 +898,16 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?restriction ?a 
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
-
- WHERE {     ?restriction owl:intersectionOf  ?list. ?list rdf:rest*/rdf:first ?first
-    ?a a ?restriction. filter not exists {?a a ?first }
-
+SELECT DISTINCT ?restriction ?a
+FROM NAMED ${SCHEMA_GRAPH} 
+FROM NAMED ${DATA_GRAPH}
+WHERE {
+  ?restriction owl:intersectionOf ?list .
+  ?list rdf:rest*/rdf:first ?first .
+  ?a a ?restriction .
+  FILTER NOT EXISTS {
+    ?a a ?first .
+  }
 }
 ]]>
 </sparql>
@@ -880,18 +921,17 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?x ?c1 ?c2
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
-
- WHERE { ?y a owl:AllDisjointClasses .  
+SELECT DISTINCT ?x ?c1 ?c2
+FROM NAMED ${SCHEMA_GRAPH} 
+FROM NAMED ${DATA_GRAPH}
+WHERE {
+  ?y a owl:AllDisjointClasses .
   ?y owl:members ?members .  
-   ?members rdf:rest*/rdf:first ?c1 .	
-	    ?members rdf:rest*/rdf:first ?c2 .  	
-	    FILTER (?c1 != ?c2) .
- ?x a ?c1 . 	
- ?x a ?c2 
-
+  ?members rdf:rest*/rdf:first ?c1 .
+	?members rdf:rest*/rdf:first ?c2 .
+	FILTER (?c1 != ?c2) .
+  ?x a ?c1 .
+  ?x a ?c2 .
 }
 ]]>
 </sparql>
@@ -905,14 +945,13 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
- select distinct ?x ?c1 ?c2
-from named ${SCHEMA_GRAPH} 
- from named ${DATA_GRAPH} 
-
- WHERE { ?c1 owl:disjointWith ?c2 
-   ?x a ?c1 . 
+SELECT DISTINCT ?x ?c1 ?c2
+FROM NAMED ${SCHEMA_GRAPH} 
+FROM NAMED ${DATA_GRAPH}
+WHERE {
+  ?c1 owl:disjointWith ?c2 .
+  ?x a ?c1 .
   ?x a ?c2 .
-
 }
 ]]>
 </sparql>

@@ -74,10 +74,7 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
       imports = graphSet.getImports(getLookIn());
       for (String namespace : imports) {
 
-        boolean found = false;
-        for(String compare : availableGraphs) {
-          found |= Utils.withoutHash(compare).equals(Utils.withoutHash(namespace));
-        }
+        boolean found = Utils.containsNamespace(namespace, availableGraphs);
         if(!found) {
           log.info("Namespace to import "+ namespace+ " was not found in "+String.join(", ", availableGraphs));
         }

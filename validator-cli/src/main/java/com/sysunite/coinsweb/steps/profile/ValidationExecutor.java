@@ -30,6 +30,7 @@ import com.sysunite.coinsweb.graphset.QueryFactory;
 import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
+import com.sysunite.coinsweb.rdfutil.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,7 +187,7 @@ public class ValidationExecutor {
 
     long count = 0l;
     for(String graphName : current.keySet()) {
-      if(!previous.containsKey(graphName)) {
+      if(!Utils.containsNamespace(graphName, previous.keySet())) {
         count += current.get(graphName);
       } else {
         count += (current.get(graphName) - previous.get(graphName));

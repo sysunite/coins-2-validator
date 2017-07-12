@@ -6,6 +6,7 @@ import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.parser.config.pojo.Graph;
 import com.sysunite.coinsweb.parser.config.pojo.Source;
+import com.sysunite.coinsweb.rdfutil.Utils;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.Resource;
@@ -60,7 +61,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
     for(Graph graph : originalGraphs) {
       if(!graph.getSource().anyGraph()) {
         String graphName = graph.getSource().getGraphname();
-        if(explicitGraphs.contains(graphName)) {
+        if(Utils.containsNamespace(graphName, explicitGraphs)) {
           throw new RuntimeException("The namespace "+graphName+ " is being mentioned more than once, this is not allowed");
         }
         log.info("Reserve this namespace to load from explicitly mentioned source: "+graphName);
@@ -93,9 +94,9 @@ public class DescribeFactoryImpl implements DescribeFactory {
       for(Graph graph : contentGraphsInContainer(container, allContentFile.getAs())) {
         String graphName = graph.getSource().getGraphname();
         log.info("Found graph in content file: "+graphName);
-        if(!explicitGraphs.contains(graphName)) {
+        if(!Utils.containsNamespace(graphName, explicitGraphs)) {
           log.info("Will load content file from wildcard definition");
-          if(implicitGraphs.contains(graphName)) {
+          if(Utils.containsNamespace(graphName, implicitGraphs)) {
             throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: "+graphName);
           }
           implicitGraphs.add(graphName);
@@ -108,9 +109,9 @@ public class DescribeFactoryImpl implements DescribeFactory {
       for(Graph graph : libraryGraphsInContainer(container, allLibraryFile.getAs())) {
         String graphName = graph.getSource().getGraphname();
         log.info("Found graph in library file: "+graphName);
-        if(!explicitGraphs.contains(graphName)) {
+        if(!Utils.containsNamespace(graphName, explicitGraphs)) {
           log.info("Will load library file from wildcard definition");
-          if(implicitGraphs.contains(graphName)) {
+          if(Utils.containsNamespace(graphName, implicitGraphs)) {
             throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: "+graphName);
           }
           implicitGraphs.add(graphName);
@@ -128,9 +129,9 @@ public class DescribeFactoryImpl implements DescribeFactory {
         try {
           for (String graphName : DescribeFactoryImpl.namespacesForFile(file)) {
             log.info("Found graph in file/online: "+graphName);
-            if (!explicitGraphs.contains(graphName)) {
+            if (!Utils.containsNamespace(graphName, explicitGraphs)) {
               log.info("Will load graph from file because of wildcard graph definition");
-              if (implicitGraphs.contains(graphName)) {
+              if (Utils.containsNamespace(graphName, implicitGraphs)) {
                 throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: " + graphName);
               }
               implicitGraphs.add(graphName);

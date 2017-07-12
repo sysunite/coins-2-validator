@@ -1,0 +1,895 @@
+<profile>
+<name>COINS 2.0 Lite_0.9.82</name>
+<version>0.9.82</version>
+<author>Hans Schevers</author>
+<queryLanguage>SPARQL-1.1</queryLanguage>
+<bundles>
+<schemaValidation type="validation" reference="OTL profile check">
+<description>The OTL and other COINS 2 extensions can use RDF/OWL vocabulary.This check validates of all used RDF/OWL vocabulary can be handled by this profile. It contains 2 checks: one for owl predicates and one for owl objects</description><queries>
+<query reference="COINS 2.0 Lite">
+<description>This rule will check which rdfs and owl predicates are used and if they are support by this profile</description>
+<resultFormat><![CDATA[
+ The subject ${a} uses an unsupported predicate ${b} to object ${c}]]></resultFormat>
+
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+ select distinct ?a ?b ?c 
+ WHERE {Graph ${SCHEMA_GRAPH} {
+    ?a ?b ?c 
+filter (STRSTARTS(STR(?b),"http://www.w3.org/2002/07/owl#")). 
+filter (?b not in (owl:equivalentClass,owl:allValuesFrom,owl:oneOf,owl:cardinality,owl:disjointWith,owl:distinctMembers,owl:hasValue,owl:imports,owl:intersectionOf,owl:inverseOf,owl:maxCardinality,owl:maxQualifiedCardinality,owl:members,owl:minCardinality,owl:minQualifiedCardinality,owl:onClass,owl:onProperty,owl:qualifiedCardinality,owl:unionOf,owl:annotatedProperty,owl:annotatedSource,owl:annotatedTarget,owl:backwardCompatibleWith,owl:deprecated,owl:incompatibleWith,owl:priorVersion,owl:versionInfo,owl:versionIRI))}}]]>
+</sparql>
+</query>
+<query reference="COINS 2.0 Lite">
+<description>This rule will check which rdfs and owl objects are used and if they are support by this profile</description>
+<resultFormat><![CDATA[
+The subject ${a} has a predicate ${b} to an unsupported object ${c}]]></resultFormat>
+
+<sparql>
+<![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+select distinct ?a ?b ?c 
+ WHERE {Graph ${SCHEMA_GRAPH}{
+ ?a ?b ?c   filter (STRSTARTS(STR(?c),"http://www.w3.org/2002/07/owl#")).
+filter (?c not in (owl:AllDisjointClasses,owl:Annotation,owl:AnnotationProperty,owl:Class,owl:DatatypeProperty,owl:FunctionalProperty,owl:NamedIndividual,owl:ObjectProperty,owl:Ontology,owl:Restriction,owl:TransitiveProperty,owl:Thing,owl:topDataProperty,owl:topObjectProperty)) }}]]>
+</sparql>
+</query>
+</queries>
+</schemaValidation>
+<schemaInference  type="inference" reference="OTL schema inference">
+<description>Schema inferences</description>
+<queries><query reference="Scm-otp">
+<description>defining object Properties</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+with <${SCHEMA_GRAPH}>
+
+
+insert { ?prop a owl:ObjectProperty }
+
+using <${SCHEMA_GRAPH}>
+using <${DATA_GRAPH}>
+ WHERE { ?prop rdfs:range ?class. 
+ ?class a owl:Class.
+		filter (?class!=rdfs:Resource). 
+ 	filter not exists{?prop a owl:ObjectProperty} 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="scm-dom2">
+<description>entailment of domains for subproperties</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?p1 rdfs:domain ?c  }
+
+ WHERE {  ?p2 rdfs:domain ?c . 
+   ?p1 rdfs:subPropertyOf ?p2 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="scm-hv">
+<description>Entailment of restriction subclasses via the hasValue construct</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?c1 rdfs:subClassOf ?c2}
+
+ WHERE {  ?c1 owl:hasValue ?i .  
+  ?c1 owl:onProperty ?p1 .  
+  ?c2 owl:hasValue ?i . 
+   ?c2 owl:onProperty ?p2 . 
+   ?p1 rdfs:subPropertyOf ?p2 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="scm-int">
+<description>Restriction subclassing for hasValue restrictions. dependency on list:member removed </description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?c rdfs:subClassOf ?cl }
+
+ WHERE {  ?c owl:intersectionOf /rdf:rest*/rdf:first ?cl 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="Scm-rng1">
+<description>entailment of ranges for subclasses</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?p rdfs:range ?c2}
+
+ WHERE {  ?p rdfs:range ?c1 .  
+  ?c1 rdfs:subClassOf ?c2 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="Scm-rng2">
+<description>entailment of ranges for subproperties</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?p1 rdfs:range ?c}
+
+ WHERE {    ?p2 rdfs:range ?c .	
+    ?p1 rdfs:subPropertyOf ?p2 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="Scm-sco">
+<description>entailment of the subclass hierarchy</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?c1 rdfs:subClassOf ?c3}
+
+ WHERE {  ?c1 rdfs:subClassOf ?c2 . 
+   ?c2 rdfs:subClassOf ?c3 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="Scm-spo">
+<description>entailment of the subproperty hierarchy</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?p1 rdfs:subPropertyOf ?p3}
+
+ WHERE {  ?p1 rdfs:subPropertyOf ?p2 . 
+  ?p2 rdfs:subPropertyOf ?p3 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="scm-svf1">
+<description>Restriction subclassing based upon someValuesFrom</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?c1 rdfs:subClassOf ?c2 }
+
+ WHERE {  ?c1 owl:someValuesFrom ?y1 .  
+  ?c1 owl:onProperty ?p . 
+   ?c2 owl:someValuesFrom ?y2 .  
+  ?c2 owl:onProperty ?p .  
+  ?y1 rdfs:subClassOf ?y2 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="scm-svf2">
+<description>Restriction subclassing based upon someValuesFrom</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?c1 rdfs:subClassOf ?c2  }
+
+ WHERE {  ?c1 owl:someValuesFrom ?y .  
+  ?c1 owl:onProperty ?p1 .  
+  ?c2 owl:someValuesFrom ?y .  
+  ?c2 owl:onProperty ?p2 .  
+  ?p1 rdfs:subPropertyOf ?p2  
+
+}
+]]>
+</sparql>
+</query>
+<query reference="scm-uni">
+<description>UnionClass subtyping entailment. Removed list:member dependency</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?cl rdfs:subClassOf ?c   }
+
+ WHERE { ?c owl:unionOf  /rdf:rest*/rdf:first  ?cl   
+
+}
+]]>
+</sparql>
+</query>
+</queries>
+</schemaInference>
+<dataInference  type="inference" reference="coins container inference"><description>data inferences</description>
+<queries><query reference="CAXSCO">
+<description>Entailment of superclass typing</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?x a ?c2}
+
+ WHERE { ?x a ?c1  
+ ?c1 rdfs:subClassOf ?c2 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="Prp-spo1">
+<description>Entailment of subproperty values</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?x ?p2 ?y }
+
+ WHERE { ?p1 rdfs:subPropertyOf ?p2 
+  ?x ?p1 ?y .
+
+}
+]]>
+</sparql>
+</query>
+<query reference="Prp-trp">
+<description>Entailment of transitive property values</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?x ?p ?z  }
+
+ WHERE {   ?p a owl:TransitiveProperty 
+    ?x ?p ?y .	
+    ?y ?p ?z  
+
+}
+]]>
+</sparql>
+</query>
+<query reference="cls-hv1">
+<description>Default values entailment via the hasValue constraint</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?u a ?x  }
+
+ WHERE {  ?x owl:hasValue ?y . 
+   ?x owl:onProperty ?p .
+ ?u ?p ?y 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="Prp-inv">
+<description>Entailment of inverseOf values part 1</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?y ?p2 ?x}
+
+ WHERE {      ?p1 owl:inverseOf ?p2 .  
+     ?x ?p1 ?y .
+
+}
+]]>
+</sparql>
+</query>
+<query reference="Prp-inv2">
+<description>Entailment of inverse values part 2</description>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+insert {?y ?p1 ?x }
+
+ WHERE {       ?p1 owl:inverseOf ?p2 
+    ?x ?p2 ?y .
+
+}
+]]>
+</sparql>
+</query>
+</queries>
+</dataInference>
+<dataValidation  type="validation" reference="data validation" ><description>validation rules</description>
+<queries><query reference="COINS-minCar">
+<description>This rule validates if individuals conform to the minimum cardinality contraints for properties. Properties (datatype and objecttype) can have a minimum cardinality constraint via owl:minCardinality. This validation assesses the propertyvalues and determines if they comply with the minimum. If an individual has less propertyvalues then demanded then this will be reported. The exact amount of propertyvalues and the minimum demand will we reported.</description>
+<resultFormat><![CDATA[ ${this} has ${aantal} properties of ${property}.  The minimum is ${min}. ]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?this  ?min ?aantal ?property 
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {{
+ select distinct ?this ?class ?min (count(distinct ?value) as ?aantal) ?property 
+
+ WHERE { ?class owl:minCardinality ?min . 
+   ?class a owl:Restriction .   
+   ?class owl:onProperty ?property  
+ {?this a ?class .
+ 	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } 
+ union 
+ { ?this a ?class .
+ 	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity> } 
+ optional{ ?this ?property ?value. 
+ filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } }
+
+}group by ?this ?class ?min ?property
+}
+filter(xsd:integer(?aantal)<xsd:integer(?min))
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-CAREX">
+<description>This rule validates if individuals conform to the exactly cardinality contraints for properties. Properties (datatype and objecttype) can have an exact cardinality constraint via owl:cardinality. This validation assesses the propertyvalues and determines if they comply with the exact amount. If an individual has more or less propertyvalues then demanded then this will be reported. The amount of propertyvalues and the demand amount will we reported.</description>
+<resultFormat><![CDATA[ ${this} has ${aantal} properties of ${property}.  Exactly ${min} is necessary. ]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?this  ?min ?aantal ?property 
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {{
+ select distinct ?this ?class ?min (count(distinct ?value) as ?aantal) ?property 
+
+ WHERE {   ?class a owl:Restriction .   
+  ?class owl:cardinality ?min . 
+   ?class owl:onProperty ?property  
+ {?this a ?class .
+ 	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } 
+ union 
+ { ?this a ?class .
+ 	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity> } 
+ optional{ ?this ?property ?value. 
+ filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } }
+
+}group by ?this ?class ?min ?property
+}
+filter((xsd:integer(?aantal)<xsd:integer(?min)) || (xsd:integer(?aantal)>xsd:integer(?min)) )
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-maxCar">
+<description>This rule validates if individuals conform to the maximum cardinality contraints for properties. Properties (datatype and objecttype) can have a maximum cardinality constraint via owl:minCardinality. This validation assesses the propertyvalues and determines if they comply with the maximum. If an individual has more propertyvalues then demanded then this will be reported. The exact amount of propertyvalues and the maximum demand will we reported.</description>
+<resultFormat><![CDATA[ ${this} has ${aantal} properties of ${property}.  The maximum is ${min}. ]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?this ?class ?min ?aantal ?property 
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {{
+ select distinct ?this  ?min (count(distinct ?value) as ?aantal) ?property 
+
+ WHERE {  ?class owl:maxCardinality ?min .  
+  ?class a owl:Restriction .   
+   ?class owl:onProperty ?property   
+#fuseki bugfix 
+ ?this a ?class . 
+	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}  
+ ?this ?property ?value. 
+ filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}	
+
+}group by ?this ?class ?min ?property
+}
+filter(xsd:integer(?aantal)>xsd:integer(?min))
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-QCREx">
+<description>This rule validates if individuals conform to the specific cardinality constraints for objectproperties. ObjectProperties can be constraint with a cardinality constraint with a certain type. For example a Bridge can be constraint to have connections with exactly 2 Abutments. So the amount (2) is constraint and the type of object is constraints (Abutment). This rule counts the amounts of the correct values and validates this against the demanded cardinality. If the counted value differs from the demanded amount then this will be reported</description>
+<resultFormat><![CDATA[ ${this} has ${aantal} qualified properties of ${property} of type ${onClass}.  ${min} values is necessary. ]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?this  ?min ?aantal ?property  ?onClass
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {{
+ select distinct ?this ?class ?min (count(distinct ?value) as ?aantal) ?property ?onClass
+
+ WHERE {  ?class a owl:Restriction .  
+  ?class owl:onClass ?onClass . 
+ ?class owl:qualifiedCardinality ?min . 
+   ?class owl:onProperty ?property .
+ {   ?this a ?class .	
+	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} }union {?this a ?class .	
+	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} 	
+	optional{   ?this ?property ?value.	filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}
+  ?value a ?onClass } }
+
+}  group by ?this ?class ?min  ?property  ?onClass
+}
+filter((?aantal<?min) || (?aantal>?min) )
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-QCRMax">
+<description>This rule validates if individuals conform to the specific maximum cardinality constraints for objectproperties. ObjectProperties can be constraint with a cardinality constraint with a certain type. For example a Bridge can be constraint to have connections with a maximum of 2 Abutments. So the amount (2) is constraint and the type of object is constraints (Abutment). This rule counts the amounts of the correct values and validates this against the demanded cardinality. If the counted value is higher than the maximum amount then this will be reported.</description>
+<resultFormat><![CDATA[ ${this} has ${aantal} qualified properties of ${property} .  the maximum is ${min}. ]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?this ?class ?min ?aantal ?property 
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {{
+ select distinct ?this ?class ?min  (count(distinct ?value) as ?aantal)	 ?property 
+
+ WHERE {    ?class a owl:Restriction .  
+ ?class owl:onClass ?onClass.  
+ ?class owl:maxQualifiedCardinality ?min .  
+  ?class owl:onProperty ?property .
+    ?this a ?class . 	
+ filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} 	
+ optional{ ?this ?property ?value. filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}.?value a ?onClass}		
+
+}  group by  ?this ?class ?min  ?property  
+}
+ filter((xsd:integer(?aantal)>xsd:integer(?min)) )  
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-QCRMin">
+<description>This rule validates if individuals conform to the specific minimum cardinality constraints for objectproperties. ObjectProperties can be constraint with a cardinality constraint with a certain type. For example a Bridge can be constraint to have connections with a minimum of 2 Abutments. So the amount (2) is constraint and the type of object is constraints (Abutment). This rule counts the amounts of the correct values and validates this against the demanded cardinality. If the counted value is less than the minimum amount then this will be reported.</description>
+<resultFormat><![CDATA[ ${this} has ${aantal} qualified properties of ${property} .  the minimum is ${min}. ]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?this  ?min ?aantal ?property 
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {{
+ select distinct ?this ?class ?min (count(distinct ?value) as ?aantal)  ?property 
+
+ WHERE {  ?class a owl:Restriction . 
+  ?class owl:onClass ?onClass. 
+  ?class owl:minQualifiedCardinality ?min .  
+  ?class owl:onProperty ?property .
+  {  ?this a ?class .	
+	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}  }union { ?this a ?class .	
+	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}	
+	optional{   ?this ?property ?value. 
+ ?value a ?onClass. 
+ filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} }	}  	
+
+}  group by ?this ?class ?min  ?property  
+}
+filter((xsd:integer(?aantal)<xsd:integer(?min)) )  
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-FUP">
+<description>This rule interpretes owl:functionalProperty as a cardinality contraint of maximum 1. This means that all functionalProperties cannot have more than 1 value. This rule counts the values of functionalproperties. In case the counted amount is higher than 1, this will be reported. </description>
+<resultFormat><![CDATA[ ${this} has ${aantal} properties of ${property}.  Only 1 is allowed (functional property). ]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?this  ?property ?aantal
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {{
+ select distinct ?this ?property  (count(distinct ?value) as ?aantal) 
+
+ WHERE {   ?property a owl:FunctionalProperty
+ ?this ?property ?value. 
+	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} 
+ filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}  
+
+} group by  ?this ?property  
+}
+filter(xsd:integer(?aantal)>1) 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-DTVC">
+<description>This rule validates if a propertyvalue complies with its specified xsd: datatype (string,float, dateTime, etc). The individual, the propertyvalue and the property will be reported.</description>
+<resultFormat><![CDATA[ ${value} is of the type ${dat} which is not valid for ${prop} for individual ${a}. It should be a ${range}. ]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?a ?prop ?range ?value (Datatype(?value) as ?dat)
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {  ?prop  a owl:DatatypeProperty . 	
+		   ?prop rdfs:range ?range. 
+  ?a ?prop ?value
+filter (Datatype(?value) !=?range)
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-DPVL">
+<description>This rule validates if a datatype property has a datatype value (and thus not an objectvalue). The value, the property and the individual will be reported.</description>
+<resultFormat><![CDATA[ ${value} is not a valid value for datatype property ${prop} for individual ${a}]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?a ?prop ?value
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {  ?prop  a owl:DatatypeProperty 
+  ?a ?prop ?value. 
+	filter(!isLiteral(?value)) 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-OPVU">
+<description>This rule validates if an objecttype property does not have a datatype value. The value, the property and the individual will be reported.</description>
+<resultFormat><![CDATA[ ${value} is not a valid value for object property ${prop} for individual ${a}]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?a ?prop ?value
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {  ?prop  a owl:ObjectProperty 
+  ?a ?prop ?value. 
+	filter(!isIRI(?value)) 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-datatype-constraints">
+<description>Properties can be defined with a domain and range but these properties can be further restricted by a Class definition using an extra restriction on that property. This rule checks if datatype properties with extra constrictions meet these restrictions. The value, the property and the individual will be reported.</description>
+<resultFormat><![CDATA[value ${value} is not of the type ${xsd} for individual ${a} with prop ${prop} ]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?value ?prop ?a ?xsd
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {    ?prop  a owl:DatatypeProperty .  ?r a owl:Restriction . ?r owl:onProperty ?prop. ?r owl:allValuesFrom ?xsd 
+ ?a a ?r. ?a ?prop ?value.  filter (Datatype(?value) !=?xsd). filter ( (Datatype(?value)=<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString>) && (?xsd=xsd:string))
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-dom">
+<description>Properties can be defined with a Domain. This domain will be interpreted as a restriction and consequently all individuals using this property have to be of the type compliant with the domain. The individual, the property and the propertyvalue will be reported when an individual does not comply with the domain definition of a property. </description>
+<resultFormat><![CDATA[individual ${a} has a property ${prop} with value ${b}. ${a} is not of the correct type ]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?a ?prop ?b 
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {     ?prop a owl:ObjectProperty. ?prop rdfs:domain ?domain.
+    ?a ?prop ?b
+filter not exists {{    ?a a ?domain}  union {  ?a a ?domain}}
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-rng">
+<description>Properties can be defined with a Range. This Range will be interpreted as a restriction and consequently all individuals referred to by this property have to be of the type compliant with the range. The individual, the property and the propertyvalue will be reported when an individual does not comply with the Range definition of a property. </description>
+<resultFormat><![CDATA[individual ${a} has a property ${prop} with value ${b}. ${b} is not of the correct type]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?a ?prop ?b 
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {     ?prop a owl:ObjectProperty. ?prop rdfs:range  ?range.
+ ?a ?prop ?b
+filter not exists {{    ?b a ?range }  union {  ?b a ?range}}
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-HVC">
+<description>This rule checks if individuals have the right property value for properties with an owl:hasValue restriction. The owl:hasValue restriction allows you to restrict a property value. </description>
+<resultFormat><![CDATA[ ${value} is not set for object property ${prop} for individual ${a}]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?res ?a ?prop ?value
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE { ?res  a owl:Restriction. ?res owl:hasValue ?value. ?res owl:onProperty ?prop
+{
+ ?a a ?res
+} minus {
+ ?a a ?res. ?a ?prop ?value 
+}
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-AVFOneOf">
+<description>This rule checks if individuals have the right dataproperty value for properties with an owl:oneOf restriction. This restriction restricts properties to only accept a propertyvalue of a pre-defined list (of datatypeproperties). This rule checks if the property values comply with the values in the list.</description>
+<resultFormat><![CDATA[ ${a} is not correct for property ${prop}]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?res ?a ?prop 
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {{
+{
+ select distinct ?res ?a ?prop 
+
+ WHERE { ?res  a owl:Restriction. ?res owl:allValuesFrom/owl:oneOf/rdf:rest*/rdf:first ?value. ?res owl:onProperty ?prop
+ ?a a ?res
+
+}}
+} minus {
+{
+ select distinct ?res ?a ?prop 
+
+ WHERE { ?res  a owl:Restriction. ?res owl:allValuesFrom/owl:oneOf/rdf:rest*/rdf:first ?value. ?res owl:onProperty ?prop
+  ?a a ?res. ?a ?prop ?value
+
+}}
+}
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-UO">
+<description>This rule checks if individuals comply to owl:unionOf restrictions. COINS interprets UnionOf as a restriction effectively making an class abstract and consequenly extra typing of an individual is necessary conforming the unionOf restrictions. </description>
+<resultFormat><![CDATA[ ${a} does not fulfill all UnionOf restrictions]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?a  
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {   {  ?restriction owl:unionOf  ?list.    ?a a ?restriction  } filter not exists { ?list rdf:rest*/rdf:first ?first. ?a a ?first } 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="COINS-IS">
+<description>This rule checks if individuals comply to owl:intersectionOf restrictions. COINS interprets insersectionOf as a restriction effectively making an class abstract and consequently extra typing of an individual is necessary.</description>
+<resultFormat><![CDATA[ ${a} does not fulfill the Intersection restriction ${restriction} ]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?restriction ?a 
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE {     ?restriction owl:intersectionOf  ?list. ?list rdf:rest*/rdf:first ?first
+    ?a a ?restriction. filter not exists {?a a ?first }
+
+}
+]]>
+</sparql>
+</query>
+<query reference="Cax-adx">
+<description>This rule checks if individuals are not member of classes that are disjoint via the owl:allDisjointClasses list. An individual that belongs to 2 disjoint classes will be reported.</description>
+<resultFormat><![CDATA[instance ${x} is a member of ${c1} and of ${c2}. ${c1} and ${c2} are disjoint so instance ${x} cannot be a member of both classes ]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?x ?c1 ?c2
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE { ?y a owl:AllDisjointClasses .  
+  ?y owl:members ?members .  
+   ?members rdf:rest*/rdf:first ?c1 .	
+	    ?members rdf:rest*/rdf:first ?c2 .  	
+	    FILTER (?c1 != ?c2) .
+ ?x a ?c1 . 	
+ ?x a ?c2 
+
+}
+]]>
+</sparql>
+</query>
+<query reference="cax-dw">
+<description>This rule checks if individuals are not member of classes that are disjoint via the owl:disjointWithpredicate. An individual that belongs to 2 disjoint classes will be reported.</description>
+<resultFormat><![CDATA[instance ${x} is a member of ${c1} and of ${c2}. ${c1} and ${c2} are disjoint so instance ${x} cannot be a member of both classes. ]]></resultFormat>
+<sparql><![CDATA[
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+ select distinct ?x ?c1 ?c2
+from named <${SCHEMA_GRAPH}> 
+ from named <${DATA_GRAPH}> 
+
+ WHERE { ?c1 owl:disjointWith ?c2 
+   ?x a ?c1 . 
+  ?x a ?c2 .
+
+}
+]]>
+</sparql>
+</query>
+</queries>
+</dataValidation>
+</bundles>
+</profile>

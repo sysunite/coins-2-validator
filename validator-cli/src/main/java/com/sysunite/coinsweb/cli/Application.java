@@ -5,13 +5,22 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
 import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
-import com.sysunite.coinsweb.parser.config.pojo.Step;
+import com.sysunite.coinsweb.parser.config.pojo.StepDeserializer;
 import com.sysunite.coinsweb.parser.config.pojo.Store;
+import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
+import com.sysunite.coinsweb.parser.profile.util.IndentedCDATAPrettyPrinter;
 import com.sysunite.coinsweb.runner.Describe;
 import com.sysunite.coinsweb.runner.Validation;
 import com.sysunite.coinsweb.steps.StepFactoryImpl;
@@ -19,8 +28,9 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 /**
@@ -50,13 +60,24 @@ public class Application {
     if (options.writeLog()) {
       setLoggers("validator.log");
       log.info(")} COINS 2.0 validator - version " + CliOptions.getVersion());
+
+      try {
+        File temp = File.createTempFile("temp-file-name", ".tmp");
+        log.info("Using temp folder: "+temp.getParent());
+        temp.delete();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
     } else {
       setLoggers(null);
     }
 
 
+
+
     Store.factory = new ConnectorFactoryImpl();
-    Step.factory = new StepFactoryImpl();
+    StepDeserializer.factory = new StepFactoryImpl();
     ConfigFactory.setDescribeFactory(new DescribeFactoryImpl());
 
 
@@ -147,13 +168,13 @@ public class Application {
           log.info("Done reading config.yml from pipe");
         }
 
-
         if(options.hasConfigFile() && options.hasContainerFile() > 0) {
           ConfigFactory.overrideContainers(configFile, options.hasContainerFile(), options.getContainerFiles());
         }
 
         // Essential step to get rid of the wildcards in the configFile
-//        DescribeFactoryImpl.expandGraphConfig(configFile);
+        log.info("Will now expand any wildcard usage in the config.yml");
+        DescribeFactoryImpl.expandGraphConfig(configFile);
 
         if(options.ymlToConsole()) {
           System.out.print(ConfigFactory.getDefaultConfigString(configFile));
@@ -182,14 +203,18 @@ public class Application {
 
     if(filePath != null) {
 
-      File file = CliOptions.resolvePath(filePath).toFile();
+      Path fullPath = CliOptions.resolvePath(filePath);
       String filePathBase = filePath.substring(0, filePath.lastIndexOf("."));
       int i = 1;
-      while(file.exists()) {
+      while(fullPath.toFile().exists()) {
         filePath = filePathBase + "."+ (i++) + ".log";
-        file = CliOptions.resolvePath(filePath).toFile();
-        System.out.println("Try logfile "+file.getPath());
+        fullPath = CliOptions.resolvePath(filePath);
       }
+
+      Path userDir = Paths.get(System.getProperty("user.dir"));
+      Path localizedPath = userDir.relativize(fullPath);
+      CliOptions.printOutput("Writing log to "+localizedPath);
+
 
       PatternLayoutEncoder ple = new PatternLayoutEncoder();
       ple.setPattern("%date{yyyy-MM-dd HH:mm:ss} %level [%file:%line] %msg%n");
@@ -197,7 +222,7 @@ public class Application {
       ple.start();
 
       FileAppender<ILoggingEvent> fileAppender = new FileAppender();
-      fileAppender.setFile(filePath);
+      fileAppender.setFile(fullPath.toString());
       fileAppender.setEncoder(ple);
       fileAppender.setContext(lc);
       fileAppender.start();

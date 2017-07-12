@@ -1,7 +1,6 @@
 package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.filemanager.ContainerFile;
-import com.sysunite.coinsweb.steps.ValidationStepResult;
 
 import java.util.List;
 import java.util.Map;
@@ -12,11 +11,11 @@ import java.util.Map;
 public interface ContainerGraphSet {
 
   @Deprecated // this is too specific for containergraphset
-  boolean select(String query, Object formatTemplate, ValidationStepResult result);
+  boolean select(String query, Object formatTemplate, Object result);
   Object select(String query);
 
   @Deprecated // this is too specific for containergraphset
-  void update(String query, ValidationStepResult result);
+  void update(String query, Object result);
 
   List<String> getImports(String graphVar);
   boolean hasContext(String graphVar);

@@ -1,11 +1,8 @@
 package com.sysunite.coinsweb.steps;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
-import com.sysunite.coinsweb.graphset.ContainerGraphSetImpl;
-import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
+import com.sysunite.coinsweb.parser.config.pojo.ConfigPart;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
@@ -16,13 +13,35 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.sysunite.coinsweb.parser.Parser.isNotNull;
+
 /**
  * @author bastbijl, Sysunite 2017
  */
-@JsonIgnoreProperties({"type"})
-public class DocumentReferenceValidation implements ValidationStep {
+
+public class DocumentReferenceValidation extends ConfigPart implements ValidationStep {
 
   private static final Logger log = LoggerFactory.getLogger(DocumentReferenceValidation.class);
+
+  private String type = "DocumentReferenceValidation";
+  public String getType() {
+    return type;
+  }
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  private String lookIn;
+  public String getLookIn() {
+    return lookIn;
+  }
+  public void setLookIn(String lookIn) {
+    this.lookIn = lookIn;
+  }
+
+  public void checkConfig() {
+    isNotNull(lookIn);
+  }
 
   @Override
   public Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet) {
@@ -31,21 +50,21 @@ public class DocumentReferenceValidation implements ValidationStep {
 
     ArrayList<String> ids = new ArrayList();
 
-    if(graphSet.hasContext(ContainerGraphSetImpl.INSTANCE_UNION_GRAPH)) {
+    if(graphSet.hasContext(getLookIn())) {
 
-      String context = graphSet.contextMap().get(ContainerGraphSetImpl.INSTANCE_UNION_GRAPH);
+      String context = graphSet.contextMap().get(getLookIn());
 
       String query =
 
         "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
         "PREFIX cbim: <http://www.coinsweb.nl/cbim-2.0.rdf#> " +
-        "FROM NAMED <"+context+"> " +
         "SELECT ?document ?filePath ?value " +
-        "WHERE { " +
+        "FROM NAMED <"+context+"> " +
+        "WHERE { graph ?g { " +
         "  ?document  rdf:type            cbim:InternalDocumentReference . " +
         "  ?document  cbim:filePath       ?filePath . " +
         "  ?filePath  cbim:datatypeValue  ?value . " +
-        "}";
+        "}}";
 
       TupleQueryResult result = (TupleQueryResult)graphSet.select(query);
       while (result.hasNext()) {
@@ -78,13 +97,6 @@ public class DocumentReferenceValidation implements ValidationStep {
     return reportItems;
   }
 
-  @JsonIgnore
-  private ConfigFile configFile;
-  @Override
-  public void setParent(Object configFile) {
-    this.configFile = (ConfigFile) configFile;
-  }
-  public ConfigFile getParent() {
-    return this.configFile;
-  }
+
+
 }

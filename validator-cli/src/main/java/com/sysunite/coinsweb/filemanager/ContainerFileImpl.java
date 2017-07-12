@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.filemanager;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,7 +121,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
       Path zePath;
 
       while(ze != null) {
-        zePath = Paths.get(ze.getName());
+        zePath = Paths.get(FilenameUtils.separatorsToSystem(ze.getName()));
 
         if(ze.isDirectory()) {
           ze = zis.getNextEntry();
@@ -165,7 +166,8 @@ public class ContainerFileImpl extends File implements ContainerFile {
       ZipInputStream zis = new ZipInputStream(new FileInputStream(this));
       ZipEntry ze = zis.getNextEntry();
 
-
+      int logCount = 0;
+      final int MAX_LOG_COUNT = 10;
       boolean noFolderSeenYet = true;
       while(ze != null) {
 
@@ -176,7 +178,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
         }
 
         // Skip file names that start with a dot
-        Path zipPath = Paths.get(ze.getName());
+        Path zipPath = Paths.get(FilenameUtils.separatorsToSystem(ze.getName()));
         if(zipPath.getFileName().toString().startsWith(".")) {
           ze = zis.getNextEntry();
           continue;
@@ -187,32 +189,32 @@ public class ContainerFileImpl extends File implements ContainerFile {
           normalizedPath = leadingPath.relativize(normalizedPath);
         }
 
-        log.info("Scan "+normalizedPath);
+        if(++logCount < MAX_LOG_COUNT)
+          log.info("Scan " + normalizedPath);
+        else if(logCount == MAX_LOG_COUNT)
+          log.info("Scan ...");
+
 
         // bim
         if(normalizedPath.startsWith(bimPath)) {
           Path inside = bimPath.relativize(normalizedPath);
           if(!inside.startsWith(repositoryPath)) {
-//            String filename = inside.getFileName().toString();
             contentFiles.put(inside.toString(), zipPath);
 
           // bim/repository
           } else {
             inside = repositoryPath.relativize(inside);
-//            String filename = repositoryPath.relativize(inside).getFileName().toString();
             repositoryFiles.put(inside.toString(), zipPath);
           }
 
         // woa
         } else if(normalizedPath.startsWith(woaPath)) {
           Path inside = woaPath.relativize(normalizedPath);
-//          String filename = woaPath.relativize(normalizedPath).getFileName().toString();
           woaFiles.put(inside.toString(), zipPath);
 
         // doc
         } else if(normalizedPath.startsWith(attachmentPath)) {
           Path inside = attachmentPath.relativize(normalizedPath);
-//          String filename = attachmentPath.relativize(normalizedPath).getFileName().toString();
           attachmentFiles.put(inside.toString(), zipPath);
 
         // handle leading path
@@ -221,7 +223,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
             leadingPath = normalizedPath.subpath(0, 1);
             continue;
           } else {
-//            String filename = normalizedPath.getFileName().toString();
             orphanFiles.put(normalizedPath.toString(), zipPath);
           }
         }
@@ -241,8 +242,5 @@ public class ContainerFileImpl extends File implements ContainerFile {
     }
     scanned = true;
   }
-
-
-
 
 }

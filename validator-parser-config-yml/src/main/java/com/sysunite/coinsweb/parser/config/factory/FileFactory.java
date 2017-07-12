@@ -68,6 +68,8 @@ public class FileFactory {
   }
 
   public static InputStream toInputStream(Locator locator) {
+    String triedReference = "null";
+
     if(Locator.FILE.equals(locator.getType())) {
       try {
         File file;
@@ -76,56 +78,50 @@ public class FileFactory {
         } else {
           file =  new File(locator.getPath());
         }
+        triedReference = file.toString();
         return new FileInputStream(file);
-      } catch (IOException e) {
-        log.error(e.getMessage(), e);
-      }
+      } catch (IOException e) {}
     }
     if(Locator.ONLINE.equals(locator.getType())) {
       try {
         URL url = new URL(locator.getUri());
+        triedReference = url.toString();
         return url.openStream();
       } catch (MalformedURLException e) {
-        log.error(e.getMessage(), e);
-      } catch (IOException e) {
-        log.error(e.getMessage(), e);
-      }
+      } catch (IOException e) {}
     }
 
-    throw new RuntimeException("File could not be loaded.");
+    throw new RuntimeException("File could not be loaded "+triedReference);
   }
 
   public static InputStream toInputStream(Source source, ContainerFile container) {
-    if(Source.FILE.equals(source.getType())) {
+    String triedReference = "null";
+    if (Source.FILE.equals(source.getType())) {
       try {
         File file;
-        if(source.getParent() != null) {
+        if (source.getParent() != null) {
           file = source.getParent().resolve(source.getPath()).toFile();
         } else {
-          file =  new File(source.getPath());
+          file = new File(source.getPath());
         }
+        triedReference = file.toString();
         return new FileInputStream(file);
       } catch (IOException e) {
-        log.error(e.getMessage(), e);
       }
-    } else if(Source.ONLINE.equals(source.getType())) {
+    } else if (Source.ONLINE.equals(source.getType())) {
       try {
         URL url = new URL(source.getUri());
         return url.openStream();
       } catch (MalformedURLException e) {
-        log.error(e.getMessage(), e);
       } catch (IOException e) {
-        log.error(e.getMessage(), e);
       }
-    } else if(Source.CONTAINER.equals(source.getType())) {
-
+    } else if (Source.CONTAINER.equals(source.getType())) {
 
       DeleteOnCloseFileInputStream stream = container.getFile(Paths.get(source.getPath()));
+      triedReference = "in container: "+Paths.get(source.getPath());
       return stream;
-
     }
-    throw new RuntimeException("File could not be loaded.");
-
+    throw new RuntimeException("File could not be loaded "+triedReference);
   }
 
   public static String getFileHash(Source source, ContainerFile container) {

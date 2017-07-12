@@ -3,7 +3,7 @@ package com.sysunite.coinsweb.filemanager;
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
-import com.sysunite.coinsweb.parser.config.pojo.Step;
+import com.sysunite.coinsweb.parser.config.pojo.StepDeserializer;
 import com.sysunite.coinsweb.parser.config.pojo.Store;
 import com.sysunite.coinsweb.steps.ValidationStep;
 import org.junit.BeforeClass;
@@ -24,7 +24,7 @@ public class ConfigFileTest {
   @BeforeClass
   public static void before() {
     Store.factory = new ConnectorFactoryStub();
-    Step.factory = new StepFactoryStub();
+    StepDeserializer.factory = new StepFactoryStub();
 
     ConfigFactory.setDescribeFactory(new DescribeFactoryImpl());
   }
@@ -32,7 +32,7 @@ public class ConfigFileTest {
   @Test
   public void testMinimalContainer() {
 
-    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("minimal-container.yml").getFile()));
+    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("config/minimal-container.yml").getFile()));
     String yml = ConfigFactory.getDefaultConfigString(configFile);
     System.out.println(yml);
 
@@ -44,7 +44,7 @@ public class ConfigFileTest {
   @Test
   public void testMinimalVirtual() {
 
-    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("minimal-virtual.yml").getFile()));
+    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("config/minimal-virtual.yml").getFile()));
     String yml = ConfigFactory.getDefaultConfigString(configFile);
     System.out.println(yml);
 
@@ -56,7 +56,7 @@ public class ConfigFileTest {
   @Test
   public void testVirtualExpandingWildcards() {
 
-    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("virtual-expanding-wildcards.yml").getFile()));
+    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("config/virtual-expanding-wildcards.yml").getFile()));
     String yml = ConfigFactory.getDefaultConfigString(configFile);
     System.out.println(yml);
 
@@ -89,12 +89,12 @@ public class ConfigFileTest {
     }
 
     @Override
-    public Class<? extends ValidationStep> get(String key) {
+    public ValidationStep[] getDefaultSteps() {
       return null;
     }
 
     @Override
-    public ValidationStep getValidationStep() {
+    public Class<? extends ValidationStep> get(String key) {
       return null;
     }
   }

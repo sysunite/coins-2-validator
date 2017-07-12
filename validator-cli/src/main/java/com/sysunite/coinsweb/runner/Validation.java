@@ -1,6 +1,5 @@
 package com.sysunite.coinsweb.runner;
 
-import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.filemanager.VirtualContainerFileImpl;
@@ -9,7 +8,6 @@ import com.sysunite.coinsweb.graphset.GraphSetFactory;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.parser.config.pojo.*;
 import com.sysunite.coinsweb.report.ReportFactory;
-import com.sysunite.coinsweb.steps.StepFactoryImpl;
 import com.sysunite.coinsweb.steps.ValidationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,13 +61,13 @@ public class Validation {
       containerItems.put("stepNames", new ArrayList<String>());
       containerItems.put("steps", new HashMap<String, Boolean>());
 
-      for (Step step : configFile.getRun().getSteps()) {
+      for (ValidationStep step : configFile.getRun().getSteps()) {
 
-        ValidationStep validationStep = step.getValidationStep();
+
 
         log.info("Will now execute validator with type "+step.getType());
 
-        Map<String, Object> items = validationStep.execute(containerFile, graphSet);
+        Map<String, Object> items = step.execute(containerFile, graphSet);
         if (!items.containsKey("valid")) {
           throw new RuntimeException("Validator " + step.getType() + " dit not return the field \"valid\"");
         }
@@ -113,12 +111,6 @@ public class Validation {
         }
         payload = html;
       }
-      if(Report.DEBUG.equals(report.getType())) {
-        if(html == null) {
-          html = ReportFactory.buildDebug(reportItems);
-        }
-        payload = html;
-      }
 
       if(Locator.FILE.equals(report.getLocation().getType()) && payload != null) {
         ReportFactory.saveReport(payload, configFile.resolve(report.getLocation().getPath()));
@@ -127,7 +119,5 @@ public class Validation {
         ReportFactory.postReport(payload, report.getLocation().getUri());
       }
     }
-
-
   }
 }

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -62,10 +63,47 @@ public class Utils {
   }
 
   public static String withoutHash(String input) {
+    if(input == null) {
+      return null;
+    }
     while(input.endsWith("#")) {
       input = input.substring(0, input.length()-1);
     }
     return input;
   }
+
+  public static String withoutHashOrSlash(String input) {
+    if(input == null) {
+      return null;
+    }
+    while(input.endsWith("#") || input.endsWith("/")) {
+      input = input.substring(0, input.length()-1);
+    }
+    return input;
+  }
+
+  public static boolean equalNamespace(String ns1, String ns2) {
+    if(ns1 == null || ns2 == null || ns1.isEmpty() || ns2.isEmpty()) {
+      return false;
+    }
+    return withoutHashOrSlash(ns1).equals(withoutHashOrSlash(ns2));
+  }
+
+  public static boolean containsNamespace(String ns, Iterable<String> set) {
+    if(ns == null || ns.isEmpty() || set == null) {
+      return false;
+    }
+    ns = withoutHashOrSlash(ns);
+    Iterator<String> iterator = set.iterator();
+    while(iterator.hasNext()) {
+      if(ns.equals(withoutHashOrSlash(iterator.next()))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+
+
 
 }

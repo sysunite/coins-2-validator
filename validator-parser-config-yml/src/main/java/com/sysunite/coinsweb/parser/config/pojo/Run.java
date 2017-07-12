@@ -2,6 +2,7 @@ package com.sysunite.coinsweb.parser.config.pojo;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
+import com.sysunite.coinsweb.steps.ValidationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,13 +18,14 @@ public class Run extends ConfigPart {
   private static final Logger log = LoggerFactory.getLogger(Run.class);
 
   private Container[] containers;
-  private Step[] steps;
+  @JsonDeserialize(using=StepDeserializer.class)
+  private ValidationStep[] steps;
   private Report[] reports;
 
   public Container[] getContainers() {
     return containers;
   }
-  public Step[] getSteps() {
+  public ValidationStep[] getSteps() {
     return steps;
   }
   public Report[] getReports() {
@@ -39,9 +41,9 @@ public class Run extends ConfigPart {
     }
   }
 
-  public void setSteps(Step[] steps) {
+  public void setSteps(ValidationStep[] steps) {
     this.steps = steps;
-    for(Step step : this.steps) {
+    for(ValidationStep step : this.steps) {
       step.setParent(this.getParent());
     }
   }
@@ -54,12 +56,12 @@ public class Run extends ConfigPart {
   }
 
   @Override
-  public void setParent(ConfigFile parent) {
+  public void setParent(Object parent) {
     super.setParent(parent);
     for(Container container : this.containers) {
       container.setParent(this.getParent());
     }
-    for(Step step : this.steps) {
+    for(ValidationStep step : this.steps) {
       step.setParent(this.getParent());
     }
     for(Report report : this.reports) {

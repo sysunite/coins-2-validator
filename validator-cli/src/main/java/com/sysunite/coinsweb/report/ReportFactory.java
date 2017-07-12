@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.report;
 
+import com.sysunite.coinsweb.cli.CliOptions;
 import freemarker.core.InvalidReferenceException;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -94,6 +95,16 @@ public class ReportFactory {
   }
 
   public static void saveReport(String payload, Path path) {
+
+    String filePath = path.toString();
+    String filePathBase = filePath.substring(0, filePath.lastIndexOf("."));
+    String fileExtension = filePath.substring(filePath.lastIndexOf("."));
+    int i = 1;
+    while(path.toFile().exists()) {
+      filePath = filePathBase + "."+ (i++) + fileExtension;
+      path = CliOptions.resolvePath(filePath);
+    }
+
     try {
       FileUtils.writeStringToFile(path.toFile(), payload, "UTF-8");
     } catch (IOException e) {

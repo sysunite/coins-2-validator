@@ -5,7 +5,6 @@ import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.report.ReportFactory;
-import com.sysunite.coinsweb.steps.ValidationStepResult;
 import com.sysunite.coinsweb.steps.profile.QueryResult;
 import com.sysunite.coinsweb.steps.profile.ValidationQueryResult;
 import freemarker.template.Template;
@@ -23,16 +22,13 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
   private static final Logger log = LoggerFactory.getLogger(ContainerGraphSetImpl.class);
 
-  public static final String INSTANCE_UNION_GRAPH = "INSTANCE_UNION_GRAPH";
-  public static final String SCHEMA_UNION_GRAPH = "SCHEMA_UNION_GRAPH";
-  public static final String FULL_UNION_GRAPH = "FULL_UNION_GRAPH";
+
 
   private boolean disabled;
   private Connector connector;
   private ContainerFile container;
   private Container containerConfig;
   private ConfigFile configFile;
-  private HashMap<String, String> graphs;
   private HashMap<String, String> contextMap;
 
 
@@ -41,10 +37,9 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     this.disabled = true;
   }
 
-  public ContainerGraphSetImpl(Connector connector, HashMap<String, String> graphs) {
+  public ContainerGraphSetImpl(Connector connector) {
     this.disabled = false;
     this.connector = connector;
-    this.graphs = graphs;
   }
 
   private void load() {
@@ -74,7 +69,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     TupleQueryResult result = (TupleQueryResult) connector.query(query);
     return result;
   }
-  public boolean select(String query, Object formatTemplate, ValidationStepResult validationStepResult) {
+  public boolean select(String query, Object formatTemplate, Object validationStepResult) {
 
     boolean resultsFound = false;
 
@@ -132,14 +127,16 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
     String context = contextMap().get(graphVar);
 
+    log.info("Look for imports in context "+context);
+
     String query =
 
       "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
-      "FROM NAMED <"+context+"> " +
       "SELECT ?library " +
-      "WHERE { " +
+      "FROM NAMED <"+context+"> " +
+      "WHERE { graph ?g { " +
       "  ?s owl:imports ?library . " +
-      "}";
+      "}}";
 
     List<String> namespaces = new ArrayList<>();
     TupleQueryResult result = select(query);
@@ -154,7 +151,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
 
 
-  public void update(String query, ValidationStepResult validationStepResult) {
+  public void update(String query, Object validationStepResult) {
 
     if(connector.requiresLoad()) {
       load();
@@ -194,7 +191,9 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
   @Override
   public void close() {
-    connector.cleanup();
+    if(!connector.requiresLoad()) {
+      connector.cleanup();
+    }
   }
 
 }

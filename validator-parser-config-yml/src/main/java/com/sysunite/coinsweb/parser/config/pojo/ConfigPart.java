@@ -8,13 +8,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public abstract class ConfigPart {
 
   @JsonIgnore
-  private ConfigFile parent;
+  protected ConfigFile parent;
 
 
   public ConfigFile getParent() {
     return parent;
   }
-  public void setParent(ConfigFile parent) {
+  public void setParent(Object parent) {
     if(parent == null) {
       return;
     }
@@ -23,6 +23,6 @@ public abstract class ConfigPart {
         throw new RuntimeException("This ConfigPart was already part of some other ConfigFile, please clone it");
       }
     }
-    this.parent = parent;
+    this.parent = (ConfigFile) parent;
   }
 }

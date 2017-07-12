@@ -70,7 +70,7 @@ public class Container extends ConfigPart {
   }
 
   @Override
-  public void setParent(ConfigFile parent) {
+  public void setParent(Object parent) {
     super.setParent(parent);
     if(this.location != null) {
       this.location.setParent(this.getParent());

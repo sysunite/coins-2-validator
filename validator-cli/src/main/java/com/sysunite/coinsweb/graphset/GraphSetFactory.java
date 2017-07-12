@@ -31,13 +31,10 @@ public class GraphSetFactory {
       return new ContainerGraphSetImpl();
     }
 
-
-    HashMap<String, String> graphs = containerConfig.getParent().getEnvironment().getMapping();
-
     log.info("Construct graphset and lazy load connector");
     ConnectorFactory factory = new ConnectorFactoryImpl();
     Connector connector = factory.build(environment);
-    ContainerGraphSet graphSet = new ContainerGraphSetImpl(connector, graphs);
+    ContainerGraphSet graphSet = new ContainerGraphSetImpl(connector);
     graphSet.setContainerFile(container);
     graphSet.setContainerConfig(containerConfig);
     graphSet.setConfigFile(containerConfig.getParent());
@@ -91,15 +88,12 @@ public class GraphSetFactory {
       }
 
 
-
-
       for (Graph graph : loadList) {
         load(graph, connector, container, sortedHashMapping, whitelist);
       }
       return sortedHashMapping;
 
     } else {
-
 
       for (Graph graph : loadList) {
         load(graph, connector, container, mapping, whitelist);

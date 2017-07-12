@@ -71,7 +71,7 @@ public class Environment extends ConfigPart {
   }
 
   @Override
-  public void setParent(ConfigFile parent) {
+  public void setParent(Object parent) {
     super.setParent(parent);
     if(this.store != null) {
       this.store.setParent(this.getParent());

@@ -39,17 +39,18 @@ public class DescribeFactoryImpl implements DescribeFactory {
 
   public static void expandGraphConfig(ConfigFile configFile) {
     for(Container container : configFile.getRun().getContainers()) {
+      log.info("Expand graph settings for container of type "+container.getType());
       ContainerFile containerFile = null;
       if(!container.isVirtual()) {
         containerFile = new ContainerFileImpl(FileFactory.toFile(container.getLocation()).getPath());
       }
-      container.setGraphs(loadList(container.getGraphs(), containerFile).toArray(new Graph[0]));
+      Graph[] expandedGraphs = loadList(container.getGraphs(), containerFile).toArray(new Graph[0]);
+      container.setGraphs(expandedGraphs);
     }
   }
 
+  // container can be null for a virtual container
   public static ArrayList<Graph> loadList(Graph[] originalGraphs, ContainerFile container) {
-
-//    ArrayList<Graph> loadList = new ArrayList();
 
     Graph allContentFile = null;
     Graph allLibraryFile = null;
@@ -62,6 +63,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
         if(explicitGraphs.contains(graphName)) {
           throw new RuntimeException("The namespace "+graphName+ " is being mentioned more than once, this is not allowed");
         }
+        log.info("Reserve this namespace to load from explicitly mentioned source: "+graphName);
         explicitGraphs.add(graphName);
       }
 
@@ -76,7 +78,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
         }
         if (graph.getSource().anyLibraryFile()) {
           if (allLibraryFile != null) {
-            throw new RuntimeException("Only one graph with content file asterisk allowed");
+            throw new RuntimeException("Only one graph with library file asterisk allowed");
           }
           allLibraryFile = graph;
         }
@@ -90,6 +92,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
     if(allContentFile != null) {
       for(Graph graph : contentGraphsInContainer(container, allContentFile.getAs())) {
         String graphName = graph.getSource().getGraphname();
+        log.info("Found graph in content file: "+graphName);
         if(!explicitGraphs.contains(graphName)) {
           log.info("Will load content file from wildcard definition");
           if(implicitGraphs.contains(graphName)) {
@@ -104,6 +107,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
     if(allLibraryFile != null) {
       for(Graph graph : libraryGraphsInContainer(container, allLibraryFile.getAs())) {
         String graphName = graph.getSource().getGraphname();
+        log.info("Found graph in library file: "+graphName);
         if(!explicitGraphs.contains(graphName)) {
           log.info("Will load library file from wildcard definition");
           if(implicitGraphs.contains(graphName)) {
@@ -123,6 +127,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
         File file = FileFactory.toFile(originalGraph.getSource().asLocator());
         try {
           for (String graphName : DescribeFactoryImpl.namespacesForFile(file)) {
+            log.info("Found graph in file/online: "+graphName);
             if (!explicitGraphs.contains(graphName)) {
               log.info("Will load graph from file because of wildcard graph definition");
               if (implicitGraphs.contains(graphName)) {
@@ -141,6 +146,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
       }
     }
 
+    // Now load the explicit graphs
     for(Graph graph : originalGraphs) {
       if(!graph.getSource().anyGraph()) {
 
@@ -178,6 +184,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
     for(String contentFile : containerFile.getContentFiles()) {
 
       DeleteOnCloseFileInputStream inputStream = containerFile.getContentFile(contentFile);
+      log.info("Look for graphs in content file "+contentFile);
       try {
         for (String namespace : namespacesForFile(inputStream, contentFile)) {
 
@@ -205,6 +212,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
     for(String repositoryFile : containerFile.getRepositoryFiles()) {
 
       DeleteOnCloseFileInputStream inputStream = containerFile.getRepositoryFile(repositoryFile);
+      log.info("Look for graphs in content file "+repositoryFile);
       try {
         for (String namespace : namespacesForFile(inputStream, repositoryFile)) {
 

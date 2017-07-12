@@ -1,10 +1,9 @@
 package com.sysunite.coinsweb.steps;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
-import com.sysunite.coinsweb.graphset.ContainerGraphSetImpl;
-import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
+import com.sysunite.coinsweb.parser.config.pojo.ConfigPart;
 import com.sysunite.coinsweb.rdfutil.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,13 +14,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.sysunite.coinsweb.parser.Parser.isNotNull;
+
 
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class FileSystemValidation implements ValidationStep {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class FileSystemValidation extends ConfigPart implements ValidationStep {
 
   private static final Logger log = LoggerFactory.getLogger(FileSystemValidation.class);
+
+
+  private String type = "FileSystemValidation";
+  public String getType() {
+    return type;
+  }
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  private String lookIn;
+  public String getLookIn() {
+    return lookIn;
+  }
+  public void setLookIn(String lookIn) {
+    this.lookIn = lookIn;
+  }
+
+  public void checkConfig() {
+    isNotNull(lookIn);
+  }
 
   @Override
   public Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet) {
@@ -47,8 +70,8 @@ public class FileSystemValidation implements ValidationStep {
     }
 
     List<String> imports = new ArrayList();
-    if(graphSet.hasContext(ContainerGraphSetImpl.INSTANCE_UNION_GRAPH)) {
-      imports = graphSet.getImports(ContainerGraphSetImpl.INSTANCE_UNION_GRAPH);
+    if(graphSet.hasContext(getLookIn())) {
+      imports = graphSet.getImports(getLookIn());
       for (String namespace : imports) {
 
         boolean found = false;
@@ -76,21 +99,6 @@ public class FileSystemValidation implements ValidationStep {
     return reportItems;
   }
 
-  @JsonIgnore
-  private ConfigFile configFile;
-  @Override
-  public void setParent(Object configFile) {
-    this.configFile = (ConfigFile) configFile;
-  }
-  public ConfigFile getParent() {
-    return this.configFile;
-  }
 
-  private String type = "FileSystemValidation";
-  public String getType() {
-    return type;
-  }
-  public void setType(String type) {
-    this.type = type;
-  }
+
 }

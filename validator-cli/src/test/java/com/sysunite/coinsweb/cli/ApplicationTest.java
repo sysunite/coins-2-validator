@@ -17,9 +17,17 @@ public class ApplicationTest {
 
   @Test
   public void runConfigFull() {
-    File file = new File(getClass().getClassLoader().getResource("otl-1.7.1/config-full.yml").getFile());
-    log.info("Read "+file.getPath());
+    File file = new File(getClass().getClassLoader().getResource("config/minimal-container.yml").getFile());
+    System.setProperty("user.dir", file.getParent());
     String[] args = {"run", file.getPath(), "-l"};
+    Application.main(args);
+  }
+
+  @Test
+  public void parseAndFormatProfileXml() {
+    File file = new File(getClass().getClassLoader().getResource("profile.lite-9.82.xml").getFile());
+    System.setProperty("user.dir", file.getParent());
+    String[] args = {"describe", file.getPath(), "-l"};
     Application.main(args);
   }
 

@@ -9,6 +9,12 @@ import java.util.Map;
  * @author bastbijl, Sysunite 2017
  */
 public interface ValidationStep {
-  Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet);
+
+  // Pojo part
+  String getType();
+  void checkConfig();
   void setParent(Object configFile);
+
+  // Logic part
+  Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet);
 }

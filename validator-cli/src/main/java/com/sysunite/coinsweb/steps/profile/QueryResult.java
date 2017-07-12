@@ -26,7 +26,6 @@ package com.sysunite.coinsweb.steps.profile;
 
 
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
-import com.sysunite.coinsweb.steps.ValidationStepResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +36,7 @@ import java.util.Map;
 /**
  * @author Bastiaan Bijl, Sysunite 2016
  */
-public abstract class QueryResult implements ValidationStepResult {
+public abstract class QueryResult {
 
   private static final Logger log = LoggerFactory.getLogger(QueryResult.class);
 

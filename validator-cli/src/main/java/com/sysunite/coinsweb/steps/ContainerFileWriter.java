@@ -1,10 +1,8 @@
 package com.sysunite.coinsweb.steps;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
-import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
+import com.sysunite.coinsweb.parser.config.pojo.ConfigPart;
 import com.sysunite.coinsweb.parser.config.pojo.Locator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +16,20 @@ import java.util.Map;
 /**
  * @author bastbijl, Sysunite 2017
  */
-@JsonIgnoreProperties({"type"})
-public class ContainerFileWriter implements ValidationStep {
+public class ContainerFileWriter extends ConfigPart implements ValidationStep {
 
   private static final Logger log = LoggerFactory.getLogger(ContainerFileWriter.class);
+
+
+  private String type = "ContainerFileWriter";
+  public String getType() {
+    return type;
+  }
+  public void setType(String type) {
+    this.type = type;
+  }
+
+
 
   private Locator location;
   public Locator getLocation() {
@@ -29,6 +37,9 @@ public class ContainerFileWriter implements ValidationStep {
   }
   public void setLocation(Locator location) {
     this.location = location;
+  }
+
+  public void checkConfig() {
   }
 
   @Override
@@ -53,14 +64,6 @@ public class ContainerFileWriter implements ValidationStep {
     return reportItems;
   }
 
-  @JsonIgnore
-  private ConfigFile configFile;
-  @Override
-  public void setParent(Object configFile) {
-    this.configFile = (ConfigFile) configFile;
-    this.location.setParent(this.getParent());
-  }
-  public ConfigFile getParent() {
-    return this.configFile;
-  }
+
+
 }

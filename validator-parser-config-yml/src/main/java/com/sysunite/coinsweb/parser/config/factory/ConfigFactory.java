@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
 import com.sysunite.coinsweb.parser.config.pojo.*;
+import com.sysunite.coinsweb.steps.ValidationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +14,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -38,30 +38,11 @@ public class ConfigFactory {
     .disable(Feature.WRITE_DOC_START_MARKER)
     );
 
-    // Todo: find a nicer way to do this
-    String validationSnippet = "profile:\n" +
-    "  type: file\n" +
-    "  path: profile.lite-9.60.xml\n" +
-    "maxResults: 0";
-
     try {
       String yml = mapper.writeValueAsString(configFile);
-      String result = "";
 
-      Scanner scanner = new Scanner(yml);
+      return yml;
 
-      while (scanner.hasNextLine()) {
-        String line = scanner.nextLine();
-
-        if (line.trim().startsWith("- type: ProfileValidation")) {
-          result += line + System.lineSeparator();
-          result += "    " + validationSnippet.trim().replace("\n", "\n    ") + "\n";
-        } else {
-          result += line + System.lineSeparator();
-        }
-      }
-      scanner.close();
-      return result;
     } catch (JsonProcessingException e) {
       log.error(e.getLocalizedMessage(), e);
     }
@@ -81,35 +62,28 @@ public class ConfigFactory {
     return configFile;
   }
 
-  public static Step[] getDefaultSteps() {
-    ArrayList<Step> steps = new ArrayList();
+  public static ValidationStep[] getDefaultSteps() {
 
-    Step fileSystemValidation = new Step();
+    if(StepDeserializer.factory != null && StepDeserializer.factory.getDefaultSteps() != null) {
+      return StepDeserializer.factory.getDefaultSteps();
+    }
+
+    // If the factory is not registered, generate using stubs
+    ArrayList<ValidationStep> steps = new ArrayList();
+
+    StepStub fileSystemValidation = new StepStub();
     fileSystemValidation.setType("FileSystemValidation");
     steps.add(fileSystemValidation);
 
-    Step documentReferenceValidation = new Step();
+    StepStub documentReferenceValidation = new StepStub();
     documentReferenceValidation.setType("DocumentReferenceValidation");
     steps.add(documentReferenceValidation);
 
-
-//      Path profileLocation = localizeTo.resolve("profile.lite-9.60.xml");
-//
-//      Locator validationLocator = new Locator();
-//      validationLocator.localizeTo(localizeTo);
-//      validationLocator.setType("file");
-//      validationLocator.setPath(profileLocation.toString());
-//      ProfileValidation validation = new ProfileValidation();
-//      validation.setConfigFile(configFile);
-//      validation.setProfile(validationLocator);
-//      String validationSnippet = mapper.writeValueAsString(validation);
-
-
-    Step profileValidation = new Step();
+    StepStub profileValidation = new StepStub();
     profileValidation.setType("ProfileValidation");
     steps.add(profileValidation);
 
-    return steps.toArray(new Step[0]);
+    return steps.toArray(new StepStub[0]);
   }
 
   public static Environment getDefaultEnvironment() {
@@ -143,7 +117,7 @@ public class ConfigFactory {
 
     ArrayList<Report> reports = new ArrayList();
 
-    Path reportLocation = localizeTo.resolve("report.xml");
+    Path reportLocation = localizeTo.resolve("report.html");
 
     Locator reportLocator = new Locator();
     reportLocator.localizeTo(localizeTo);
@@ -151,7 +125,7 @@ public class ConfigFactory {
     reportLocator.setPath(reportLocation.toString());
 
     Report report = new Report();
-    report.setType("debug");
+    report.setType(Report.HTML);
     report.setLocation(reportLocator);
     reports.add(report);
 
@@ -175,7 +149,7 @@ public class ConfigFactory {
       Source instanceGraphSource = new Source();
       instanceGraphSource.setType("container");
       instanceGraphSource.setPath("bim"+File.separator+"*");
-      instanceGraphSource.setGraphname("\"*\"");
+      instanceGraphSource.setGraphname("*");
 
       Graph instanceGraphPattern = new Graph();
       instanceGraphPattern.setSource(instanceGraphSource);
@@ -185,7 +159,7 @@ public class ConfigFactory {
       Source librarySource = new Source();
       librarySource.setType("container");
       librarySource.setPath("bim"+File.separator+"repository"+File.separator+"*");
-      librarySource.setGraphname("\"*\"");
+      librarySource.setGraphname("*");
 
       Graph libraryGraphPattern = new Graph();
       libraryGraphPattern.setSource(librarySource);

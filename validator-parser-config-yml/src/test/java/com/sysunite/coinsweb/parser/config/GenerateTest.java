@@ -3,7 +3,7 @@ package com.sysunite.coinsweb.parser.config;
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
-import com.sysunite.coinsweb.parser.config.pojo.Step;
+import com.sysunite.coinsweb.parser.config.pojo.StepDeserializer;
 import com.sysunite.coinsweb.parser.config.pojo.Store;
 import com.sysunite.coinsweb.steps.ValidationStep;
 import org.junit.BeforeClass;
@@ -25,7 +25,7 @@ public class GenerateTest {
   @BeforeClass
   public static void before() {
     Store.factory = new ConnectorFactoryStub();
-    Step.factory = new StepFactoryStub();
+    StepDeserializer.factory = new StepFactoryStub();
   }
 
   @Test
@@ -66,12 +66,12 @@ public class GenerateTest {
     }
 
     @Override
-    public Class<? extends ValidationStep> get(String key) {
+    public ValidationStep[] getDefaultSteps() {
       return null;
     }
 
     @Override
-    public ValidationStep getValidationStep() {
+    public Class<? extends ValidationStep> get(String key) {
       return null;
     }
   }

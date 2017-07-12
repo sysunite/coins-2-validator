@@ -48,7 +48,7 @@ public class Graph extends ConfigPart {
   }
 
   @Override
-  public void setParent(ConfigFile parent) {
+  public void setParent(Object parent) {
     super.setParent(parent);
     this.source.setParent(this.getParent());
   }

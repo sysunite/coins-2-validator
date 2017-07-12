@@ -133,6 +133,17 @@ public class CliOptions {
     return hasMode() && RUN_MODE.equals(cmd.getArgs()[0].trim());
   }
 
+  public boolean hasProfileFile() {
+    if(cmd.getArgs().length < 2) {
+      return false;
+    }
+    Path path = CliOptions.resolvePath(cmd.getArgs()[1]);
+    return path.toFile().exists() && path.toFile().isFile() && isProfileFile(path);
+  }
+  public Path getProfileFile() {
+    return (!hasProfileFile()) ? null : CliOptions.resolvePath(cmd.getArgs()[1]);
+  }
+
   public boolean hasConfigFile() {
     if(cmd.getArgs().length < 2) {
       return false;
@@ -145,41 +156,26 @@ public class CliOptions {
   }
 
   public int hasContainerFile() {
-    int count = 0;
-    int i = 1;
-    if(hasConfigFile()) {
-      i = 2;
-    }
-    while(cmd.getArgs().length > i) {
-      Path path = CliOptions.resolvePath(cmd.getArgs()[i]);
-      if(path.toFile().exists() && path.toFile().isFile() && isContainerFile(path)) {
-        count++;
-      } else {
-        throw new RuntimeException("Could not locate this container file "+path.toString());
-      }
-      i++;
-    }
-    return count;
+    return getContainerFiles().length;
   }
   public Path getContainerFile(int i) {
-    if(i >= hasContainerFile()) {
+    Path[] containerPaths = getContainerFiles();
+    if(i >= containerPaths.length) {
       return null;
     }
-    if(hasConfigFile()) {
-      i++;
-    }
-    return CliOptions.resolvePath(cmd.getArgs()[i+1]);
+    return containerPaths[i];
   }
   public Path[] getContainerFiles() {
-    Path[] result = new Path[hasContainerFile()];
-    for(int i = 0; i < hasContainerFile(); i++) {
-      int skip = 0;
-      if(hasConfigFile()) {
-        skip++;
-      }
-      result[i] = CliOptions.resolvePath(cmd.getArgs()[i+skip+1]);
+    ArrayList<Path> containerPaths = new ArrayList();
+    for(int i = 1; i < cmd.getArgs().length; i++) {
+      try {
+        Path path = CliOptions.resolvePath(cmd.getArgs()[i]);
+        if (path.toFile().exists() && path.toFile().isFile() && isContainerFile(path)) {
+          containerPaths.add(path);
+        }
+      } catch (Exception e) {}
     }
-    return result;
+    return containerPaths.toArray(new Path[0]);
   }
 
 
@@ -216,6 +212,10 @@ public class CliOptions {
 
   public static boolean isConfigFile(Path path) {
     return path.toString().endsWith(".yml") || path.toString().endsWith(".yaml");
+  }
+
+  public static boolean isProfileFile(Path path) {
+    return path.toString().endsWith(".xml");
   }
 
 }

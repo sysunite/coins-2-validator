@@ -17,7 +17,6 @@ public class Report extends ConfigPart {
 
   public static final String XML = "xml";
   public static final String HTML = "html";
-  public static final String DEBUG = "debug";
 
   private String type;
   private Locator location;
@@ -30,7 +29,7 @@ public class Report extends ConfigPart {
   }
 
   public void setType(String type) {
-    validate(type, "xml", "html", "debug");
+    validate(type, XML, HTML);
     this.type = type;
   }
   public void setLocation(Locator location) {
@@ -41,7 +40,7 @@ public class Report extends ConfigPart {
 
 
   @Override
-  public void setParent(ConfigFile parent) {
+  public void setParent(Object parent) {
     super.setParent(parent);
     if(this.location != null) {
       this.location.setParent(parent);

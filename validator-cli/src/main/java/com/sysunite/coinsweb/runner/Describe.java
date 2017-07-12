@@ -1,7 +1,6 @@
 package com.sysunite.coinsweb.runner;
 
 import com.sysunite.coinsweb.cli.CliOptions;
-import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
 import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import org.slf4j.Logger;
@@ -30,7 +29,6 @@ public class Describe {
     }
 
     ConfigFile configFile = ConfigFactory.getDefaultConfig(containers, localizeTo);
-//    DescribeFactoryImpl.expandGraphConfig(configFile);  todo: does this make sense here?
     String yml = ConfigFactory.getDefaultConfigString(configFile);
     return yml;
   }

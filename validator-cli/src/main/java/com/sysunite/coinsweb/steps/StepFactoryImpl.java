@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.steps;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,8 +14,8 @@ public class StepFactoryImpl implements StepFactory {
   {
     register = new HashMap();
     register.put("FileSystemValidation", FileSystemValidation.class);
-    register.put("ProfileValidation", ProfileValidation.class);
     register.put("DocumentReferenceValidation", DocumentReferenceValidation.class);
+    register.put("ProfileValidation", ProfileValidation.class);
     register.put("ContainerFileWriter", ContainerFileWriter.class);
   }
 
@@ -25,7 +26,18 @@ public class StepFactoryImpl implements StepFactory {
     return register.get(key);
   }
 
-  public ValidationStep getValidationStep() {
-    return null;
+  public ValidationStep[] getDefaultSteps() {
+    ArrayList<ValidationStep> steps = new ArrayList();
+
+    FileSystemValidation fileSystemValidation = new FileSystemValidation();
+    steps.add(fileSystemValidation);
+
+    DocumentReferenceValidation profileValidation = new DocumentReferenceValidation();
+    steps.add(profileValidation);
+
+    ProfileValidation documentReferenceValidation = new ProfileValidation();
+    steps.add(documentReferenceValidation);
+
+    return steps.toArray(new ValidationStep[0]);
   }
 }

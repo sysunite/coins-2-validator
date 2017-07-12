@@ -19,6 +19,17 @@
     h2 {
       margin-top: 200px !important;
     }
+    div.condense {
+      display:inline-block;
+      width: 18px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: bottom;
+    }
+    ul {
+      font-size: 12pt;
+    }
   </style>
 </head>
 
@@ -61,7 +72,7 @@ Variables posted to this report page
   <#assign contentFiles = containerFile.contentFiles />
 
   <a name="${container.code}"></a>
-  <h2>Container #${i+1}</h2>
+  <h3>Container #${i+1}</h3>
   <table>
     <tr><th>name</th><td>${containerFile.getName()}</td></tr>
     <tr><th>size</th><td>${containerFile.length() / 1024 / 1024} Mb</td></tr>
@@ -154,7 +165,7 @@ Variables posted to this report page
   <!-- Validation Details -->
   <#list stepNames as stepName>
     <a name="${container.code}_${stepName}"></a>
-    <h3><#if steps[stepName]>✅ <#else>⛔️ </#if> ${stepName}</h3>
+    <h4><#if steps[stepName]>✅ <#else>⛔️ </#if> ${stepName}</h4>
 
     <#if stepName=="FileSystemValidation">
       <table>
@@ -192,7 +203,7 @@ Variables posted to this report page
             <#if query.validationQuery>
 
 
-                <tr><td>${query.reference}</td><td>${query.description}</td><td><#if query.passed>✅<#else>⛔️</#if></td></tr>
+                <tr><th>${query.reference}</th><td>${query.description}</td><td><#if query.passed>✅<#else>⛔️</#if></td></tr>
 
                     <#if query.formattedResults?has_content>
                       <tr><td colspan="3">
@@ -210,7 +221,7 @@ Variables posted to this report page
             <#if query.inferenceQuery>
 
 
-              <tr><td>${query.reference}</td><td>${query.description}</td><td>${query.quadsAdded}</td></tr>
+              <tr><th>${query.reference}</th><td>${query.description}</td><td>${query.quadsAdded}</td></tr>
 
 
 

@@ -139,7 +139,7 @@ public class GraphDB extends Rdf4jConnector {
     "            owlim:in-memory-literal-properties \"true\" ;\n" +
     "            owlim:enable-literal-index \"true\" ;\n" +
     "            owlim:check-for-inconsistencies \"false\" ;\n" +
-    "            owlim:disable-sameAs  \"false\" ;\n" +
+    "            owlim:disable-sameAs  \"true\" ;\n" +
     "            owlim:query-timeout  \"0\" ;\n" +
     "            owlim:query-limit-results  \"0\" ;\n" +
     "            owlim:throw-QueryEvaluationException-on-timeout \"false\" ;\n" +
@@ -151,6 +151,8 @@ public class GraphDB extends Rdf4jConnector {
     "http://www.ontotext.com/owlim/ces#metadataConfig\" ;\n" +
     "        ]\n" +
     "    ].";
+
+    // see http://graphdb.ontotext.com/documentation/free/using-graphdb-with-the-rdf4j-api.html
 
     TreeModel graph = new TreeModel();
     InputStream config = new ByteArrayInputStream(repoTurtle.getBytes(StandardCharsets.UTF_8));

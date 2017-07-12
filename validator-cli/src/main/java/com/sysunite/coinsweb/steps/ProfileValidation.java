@@ -9,6 +9,8 @@ import com.sysunite.coinsweb.parser.config.pojo.ConfigPart;
 import com.sysunite.coinsweb.parser.config.pojo.Locator;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.steps.profile.ValidationExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,8 @@ import java.util.Map;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProfileValidation extends ConfigPart implements ValidationStep {
+
+  private static final Logger log = LoggerFactory.getLogger(ProfileValidation.class);
 
   private String type = "ProfileValidation";
   private Locator profile;

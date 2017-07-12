@@ -186,7 +186,7 @@ public class Application {
         System.exit(0);
 
       } catch (RuntimeException e) {
-        log.error(e.getMessage());
+        log.error(e.getMessage(), e);
         CliOptions.printOutput("Stopped with error");
         System.exit(1);
       }

@@ -166,6 +166,13 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     ((QueryResult) validationStepResult).setExecutedQuery(query);
   }
 
+  public void update(String query) {
+    if(connector.requiresLoad()) {
+      load();
+    }
+    connector.update(query);
+  }
+
   @Override
   public void setContainerFile(ContainerFile container) {
     this.container = container;
@@ -196,4 +203,13 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     }
   }
 
+  @Override
+  public String graphExists(String graphVar) {
+
+    String context = contextMap().get(graphVar);
+    if(!connector.requiresLoad()) {
+      connector.cleanup();
+    }
+    return connector.graphExists(context);
+  }
 }

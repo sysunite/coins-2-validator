@@ -31,12 +31,12 @@ import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
 import com.sysunite.coinsweb.rdfutil.Utils;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Bastiaan Bijl
@@ -70,21 +70,21 @@ public class ValidationExecutor {
       defaultPrefixes = profile.getQueryConfiguration().cleanDefaultPrefixes();
     }
 
-
-    // Assumption is that there are certain graphs available, check this
+    log.info("Using contextMap: ");
     Map<String, String> validationGraphs = new HashMap<>();
-    for(String code : graphSet.contextMap().keySet()) {
-      validationGraphs.put(code, '<'+graphSet.contextMap().get(code)+'>');
-    }
+    Set<String> executedInferences = new HashSet();
+    for(String graphVar : graphSet.contextMap().keySet()) {
 
-    for(String code : validationGraphs.keySet()) {
-      String graphName = validationGraphs.get(code);
-      if(!graphSet.select("SELECT * WHERE { GRAPH "+graphName+" {?s ?p ?o}} LIMIT 1", null, null)) {
-//        throw new RuntimeException("Store not loaded properly, this context is empty: "+graphName);
+      String context = graphSet.contextMap().get(graphVar);
+      String uploadDate = graphSet.graphExists(graphVar);
+      if(uploadDate == null) {
+        throw new RuntimeException("The graph "+graphVar+" ("+context+") is not available in the store");
       }
+      log.info(graphVar + " > "+context);
+      validationGraphs.put(graphVar, '<'+context+'>');
+      executedInferences.addAll(getFinishedInferences(graphVar));
     }
 
-//    Runtime runtime = Runtime.getRuntime();
 
     HashMap<String, HashMap<String, QueryResult>> bundleResults = new HashMap();
 
@@ -93,7 +93,16 @@ public class ValidationExecutor {
       boolean containsUpdate = false;
       boolean someTripleWasAdded = false;
 
+      String inferenceCode = profile.getVersion()+"/"+bundle.getReference();
+      log.info("Check if >>"+inferenceCode+"<< was executed before");
+      if(Bundle.INFERENCE.equals(bundle.getType()) && executedInferences.contains(inferenceCode)) {
+        log.info("Skip running inference bundle "+inferenceCode+" because it was executed some time before");
+        continue;
+      }
+
+
       Map<String, Long> previous = graphSet.quadCount();
+      Map<String, Long> beforeBundle = previous;
       HashMap<String, QueryResult> resultMap = new HashMap();
 
       log.info("\uD83D\uDC1A Will perform bundle \""+bundle.getReference()+"\"");
@@ -141,7 +150,6 @@ public class ValidationExecutor {
               someTripleWasAdded = true;
             }
 
-
           }
           if (resultCarrier instanceof ValidationQueryResult) {
 
@@ -151,13 +159,21 @@ public class ValidationExecutor {
             ((ValidationQueryResult)resultCarrier).setPassed(hasNoResults);
 
             valid &= hasNoResults;
-
           }
-
         }
 
         run++;
       } while(containsUpdate && someTripleWasAdded);
+
+      // Store that this  inference bundle was executed
+      if(Bundle.INFERENCE.equals(bundle.getType())) {
+        Map<String, Long> bundleTotal = quadsAddedPerGraph(beforeBundle, previous);
+        for(String graphName : bundleTotal.keySet()) {
+          if(bundleTotal.get(graphName) > 0l) {
+            storeFinishedInferences(graphName, inferenceCode);
+          }
+        }
+      }
 
       bundleResults.put(bundle.getReference(), resultMap);
     }
@@ -173,25 +189,81 @@ public class ValidationExecutor {
   }
 
 
-  public static long quadsAdded(Map<String, Long> previous, Map<String, Long> current) {
-    if(current == null || current.isEmpty()) {
-      return 0l;
+  public List<String> getFinishedInferences(String graphVar) {
+
+    String context = graphSet.contextMap().get(graphVar);
+
+    String query =
+
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "SELECT ?inferenceCode " +
+    "FROM NAMED <"+context+"> " +
+    "WHERE { graph ?g { " +
+    "  <"+context+"> val:bundle ?inferenceCode . " +
+    "}}";
+
+    List<String> inferenceCodes = new ArrayList<>();
+    TupleQueryResult result = (TupleQueryResult) graphSet.select(query);
+    while (result.hasNext()) {
+      BindingSet row = result.next();
+      String inferenceCode = row.getBinding("inferenceCode").getValue().stringValue();
+      inferenceCodes.add(inferenceCode);
+      log.info("The inference >>"+inferenceCode+"<< was previously executed for "+context);
     }
-    if(previous == null || previous.isEmpty()) {
-      long count = 0l;
-      for(Long graphCount : current.values()) {
-        count += graphCount;
-      }
-      return count;
+    return inferenceCodes;
+  }
+
+  public void storeFinishedInferences(String context, String inferenceCode) {
+
+    log.info("Store inferenceCode "+inferenceCode+" for "+context);
+
+    String query =
+
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "INSERT DATA { GRAPH <"+context+"> { <"+context+"> val:bundle \""+inferenceCode+"\" . }}";
+
+    graphSet.update(query);
+  }
+
+
+
+
+  public static Map<String, Long> quadsAddedPerGraph(Map<String, Long> previous, Map<String, Long> current) {
+
+    HashMap<String, Long> result = new HashMap();
+    if(current == null && previous == null) {
+      return result;
     }
 
-    long count = 0l;
-    for(String graphName : current.keySet()) {
-      if(!Utils.containsNamespace(graphName, previous.keySet())) {
-        count += current.get(graphName);
-      } else {
-        count += (current.get(graphName) - previous.get(graphName));
+    if(current == null) {
+      for(String graphName : previous.keySet()) {
+        result.put(graphName, - previous.get(graphName));
       }
+    }
+
+    if(previous == null) {
+      return current;
+    }
+
+    for(String graphName : current.keySet()) {
+      if(Utils.containsNamespace(graphName, previous.keySet())) {
+        result.put(graphName, current.get(graphName) - previous.get(graphName)); // todo: reading this graphName from previous might be scary
+      }
+    }
+    for(String graphName : previous.keySet()) {
+      if(!Utils.containsNamespace(graphName, current.keySet())) {
+        result.put(graphName, - previous.get(graphName));
+      }
+    }
+
+    return result;
+  }
+
+  public static long quadsAdded(Map<String, Long> previous, Map<String, Long> current) {
+    long count = 0l;
+    Map<String, Long> results = quadsAddedPerGraph(previous, current);
+    for(String graphName : results.keySet()) {
+      count += Math.abs(results.get(graphName)); // negative values also count as change
     }
     return count;
   }

@@ -16,6 +16,7 @@ public interface ContainerGraphSet {
 
   @Deprecated // this is too specific for containergraphset
   void update(String query, Object result);
+  void update(String query);
 
   List<String> getImports(String graphVar);
   boolean hasContext(String graphVar);
@@ -28,4 +29,5 @@ public interface ContainerGraphSet {
 
   void close();
 
+  String graphExists(String graphVar);
 }

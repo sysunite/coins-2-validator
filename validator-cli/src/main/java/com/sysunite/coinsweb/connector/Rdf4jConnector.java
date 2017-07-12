@@ -1,12 +1,10 @@
 package com.sysunite.coinsweb.connector;
 
+import com.sysunite.coinsweb.graphset.QueryFactory;
 import com.sysunite.coinsweb.rdfutil.Utils;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.query.QueryLanguage;
-import org.eclipse.rdf4j.query.TupleQuery;
-import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
+import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -18,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
@@ -97,10 +96,48 @@ public abstract class Rdf4jConnector implements Connector {
         throw new RuntimeException("Could not determine the type of file this is: " + file.getName());
       }
       con.add(file, null, format.get(), getContexts(contexts));
+      for(String context : contexts) {
+        storeGraphExists(context);
+      }
 
     } catch (IOException e) {
       log.error(e.getMessage(), e);
     }
+  }
+
+
+  public String graphExists(String context) {
+
+    String query =
+
+    "PREFIX val: <"+ QueryFactory.VALIDATOR_NS+"> " +
+    "SELECT ?creationDate " +
+    "FROM NAMED <"+context+"> " +
+    "WHERE { graph ?g { " +
+    "  <"+context+"> val:uploaded ?creationDate . " +
+    "}}";
+
+    String creationDate = null;
+    TupleQueryResult result = query(query);
+    if (result.hasNext()) {
+      BindingSet row = result.next();
+      creationDate = row.getBinding("creationDate").getValue().stringValue();
+    }
+    return creationDate;
+  }
+
+  private void storeGraphExists(String context) {
+
+    String timestamp = new Timestamp(System.currentTimeMillis()).toString();
+
+    log.info("Store graphExists "+timestamp+" for "+context);
+
+    String query =
+
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "INSERT DATA { GRAPH <"+context+"> { <"+context+"> val:uploaded \""+timestamp+"\" . }}";
+
+    update(query);
   }
 
   @Override
@@ -112,6 +149,9 @@ public abstract class Rdf4jConnector implements Connector {
         throw new RuntimeException("Could not determine the type of file this is: " + fileName);
       }
       con.add(inputStream, baseUri, format.get(), getContexts(contexts.toArray(new String[0])));
+      for(String context : contexts) {
+        storeGraphExists(context);
+      }
 
     } catch (IOException e) {
       log.error(e.getMessage(), e);

@@ -23,4 +23,6 @@ public interface Connector {
 
   boolean requiresLoad();
   void setAllLoaded();
+
+  String graphExists(String context);
 }

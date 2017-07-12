@@ -28,7 +28,7 @@ public class QueryFactory {
   private static final Logger log = LoggerFactory.getLogger(QueryFactory.class);
 
 
-
+  public static final String VALIDATOR_NS = "http://validator#";
 
 
   public static String buildQuery(Query query, Map<String, String> data) {

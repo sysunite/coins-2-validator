@@ -70,11 +70,41 @@ public class Application {
     }
 
     if(options.describeMode()) {
+      log.info("Running in describe mode");
       try {
 
-        String yml = Describe.run(options.absolutePaths(), containers);
-        if(options.ymlToConsole()) {
-          System.out.print(yml);
+        if(options.hasContainerFile() > 0) {
+          String yml = Describe.run(options.absolutePaths(), containers);
+          if (options.ymlToConsole()) {
+            System.out.print(yml);
+          }
+        } else if(options.hasProfileFile()) {
+          try {
+            XmlMapper objectMapper = new XmlMapper();
+            objectMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            ObjectWriter xmlWriter = objectMapper.writer(new IndentedCDATAPrettyPrinter());
+
+            InputStream file = new FileInputStream(options.getProfileFile().toFile());
+            ProfileFile profileFile = objectMapper.readValue(file, ProfileFile.class);
+
+            ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
+            xmlWriter.writeValue(bufferStream, profileFile);
+            String xml = bufferStream.toString("UTF-8");
+            System.out.println(xml);
+          } catch (JsonMappingException e) {
+            e.printStackTrace();
+          } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+          } catch (JsonParseException e) {
+            e.printStackTrace();
+          } catch (JsonGenerationException e) {
+            e.printStackTrace();
+          } catch (FileNotFoundException e) {
+            e.printStackTrace();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
         }
 
         log.info("Finished successfully, quitting");
@@ -89,6 +119,7 @@ public class Application {
     }
 
     if(options.runMode()) {
+      log.info("Running in run mode");
       try {
 
         File file;

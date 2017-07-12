@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.parser.profile.pojo;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.sysunite.coinsweb.parser.profile.util.Markdown;
 import org.slf4j.Logger;
@@ -26,7 +27,8 @@ public class Bundle {
   @JacksonXmlProperty(localName = "description")
   private String description;
 
-  @JacksonXmlProperty(localName = "queries")
+  @JacksonXmlProperty(localName = "query")
+  @JacksonXmlElementWrapper(localName="queries")
   private ArrayList<Query> queries;
 
 

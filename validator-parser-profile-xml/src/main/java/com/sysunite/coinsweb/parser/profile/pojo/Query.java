@@ -19,7 +19,7 @@ import java.io.IOException;
 /**
  * @author bastbijl, Sysunite 2017
  */
-@JacksonXmlRootElement(localName = "step")
+@JacksonXmlRootElement(localName = "query")
 public class Query {
 
   private static final Logger log = LoggerFactory.getLogger(Query.class);

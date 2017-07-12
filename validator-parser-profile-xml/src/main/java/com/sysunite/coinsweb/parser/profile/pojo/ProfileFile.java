@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import org.slf4j.Logger;
@@ -41,7 +42,8 @@ public class ProfileFile {
   @JacksonXmlProperty(localName = "queryConfiguration")
   private QueryConfiguration queryConfiguration;
 
-  @JacksonXmlProperty(localName = "bundles")
+  @JacksonXmlProperty(localName = "bundle")
+  @JacksonXmlElementWrapper(localName="bundles")
   private ArrayList<Bundle> bundles;
 
   public static ProfileFile parse(InputStream input) {

@@ -6,12 +6,12 @@
 
   <groupId>com.sysunite.coinsweb</groupId>
   <artifactId>coins-2-validator</artifactId>
-  <version>1.0.3</version>
+  <version>1.0.4-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <validator.version>1.0.3</validator.version>
+    <validator.version>1.0.4-SNAPSHOT</validator.version>
   </properties>
 
   <modules>

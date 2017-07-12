@@ -104,6 +104,8 @@ public class GraphDB extends Rdf4jConnector {
         manager.removeRepository(repositoryId);
       }
     }
+
+    initialized = false;
   }
 
 

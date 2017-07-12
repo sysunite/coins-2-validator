@@ -84,6 +84,7 @@ public abstract class Rdf4jConnector implements Connector {
   public void cleanup() {
     try (RepositoryConnection con = repository.getConnection()) {
       con.clear();
+      initialized = false;
     }
   }
 

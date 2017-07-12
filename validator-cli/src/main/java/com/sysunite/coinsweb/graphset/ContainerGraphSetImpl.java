@@ -208,7 +208,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
     String context = contextMap().get(graphVar);
     if(!connector.requiresLoad()) {
-      connector.cleanup();
+      load();
     }
     return connector.graphExists(context);
   }

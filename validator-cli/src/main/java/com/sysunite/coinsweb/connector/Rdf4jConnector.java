@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.connector;
 
+import com.sysunite.coinsweb.rdfutil.Utils;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -135,7 +136,7 @@ public abstract class Rdf4jConnector implements Connector {
       RepositoryResult<Resource> graphIterator = con.getContextIDs();
       while(graphIterator.hasNext()) {
         Resource graphName = graphIterator.next();
-        if(graphName.toString().equals(context)) {
+        if(Utils.withoutHashOrSlash(graphName.toString()).equals(Utils.withoutHashOrSlash(context))) {
           return true;
         }
       }

@@ -45,22 +45,22 @@ public class GraphSetFactory {
    * @param originalGraphs
    * @param connector
    */
-  public static HashMap<String, String> load(Graph[] originalGraphs, Connector connector, ContainerFile container, ConfigFile configFile) {
+  public static HashMap<GraphVar, String> load(Graph[] originalGraphs, Connector connector, ContainerFile container, ConfigFile configFile) {
 
     connector.init();
 
     ArrayList<Graph> loadList = DescribeFactoryImpl.loadList(originalGraphs, container);
 
     // Keep a whitelist of keys that should not be loaded
-    ArrayList<String> whitelist = new ArrayList();
+    ArrayList<GraphVar> whitelist = new ArrayList();
 
     // Map source graphname to target graphname
-    HashMap<String, String> mapping = configFile.getEnvironment().getMapping();
+    HashMap<GraphVar, String> mapping = configFile.getEnvironment().getMapping();
     if(Environment.HASH_IN_GRAPHNAME.equals(configFile.getEnvironment().getLoadingStrategy())) {
 
-      HashMap<String, ArrayList<String>> keyToHashArray = new HashMap();
+      HashMap<GraphVar, ArrayList<String>> keyToHashArray = new HashMap();
       for (Graph graph : loadList) {
-        for(String key : graph.getAs()) {
+        for(GraphVar key : graph.getAs()) {
           if(!keyToHashArray.containsKey(key)) {
             keyToHashArray.put(key, new ArrayList());
           }
@@ -71,8 +71,8 @@ public class GraphSetFactory {
           }
         }
       }
-      HashMap<String, String> sortedHashMapping = new HashMap();
-      for(String key : keyToHashArray.keySet()) {
+      HashMap<GraphVar, String> sortedHashMapping = new HashMap();
+      for(GraphVar key : keyToHashArray.keySet()) {
         sort(keyToHashArray.get(key));
         String fullNamespace = mapping.get(key)+"-"+String.join("-", keyToHashArray.get(key));
         log.info("Use for "+ key + " graphname "+ fullNamespace);
@@ -100,11 +100,11 @@ public class GraphSetFactory {
     }
   }
 
-  public static void load(Graph graph, Connector connector, ContainerFile container, HashMap<String, String> mapping, ArrayList<String> whitelist) {
+  public static void load(Graph graph, Connector connector, ContainerFile container, HashMap<GraphVar, String> mapping, ArrayList<GraphVar> whitelist) {
 
     ArrayList<String> graphNames = new ArrayList();
     for(int i = 0; i < graph.getAs().size(); i++) {
-      String key = graph.getAs().get(i);
+      GraphVar key = graph.getAs().get(i);
       if(!whitelist.contains(key)) {
         graphNames.add(mapping.get(key));
       }

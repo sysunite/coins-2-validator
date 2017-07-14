@@ -19,12 +19,12 @@ public class Mapping extends ConfigPart {
   private static final Logger log = LoggerFactory.getLogger(Mapping.class);
 
   private String graphname;
-  private String variable;
+  private GraphVarImpl variable;
 
   public String getGraphname() {
     return graphname;
   }
-  public String getVariable() {
+  public GraphVarImpl getVariable() {
     return variable;
   }
 
@@ -33,7 +33,7 @@ public class Mapping extends ConfigPart {
     this.graphname = graphname;
   }
 
-  public void setVariable(String variable) {
+  public void setVariable(GraphVarImpl variable) {
     this.variable = variable;
   }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
+import com.sysunite.coinsweb.graphset.GraphVar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,8 +41,8 @@ public class Environment extends ConfigPart {
     return graphs;
   }
   @JsonIgnore
-  public HashMap<String, String> getMapping() {
-    HashMap<String, String> graphs = new HashMap();
+  public HashMap<GraphVar, String> getMapping() {
+    HashMap<GraphVar, String> graphs = new HashMap();
     for(Mapping mapping : getGraphs()) {
       graphs.put(mapping.getVariable(), mapping.getGraphname());
     }

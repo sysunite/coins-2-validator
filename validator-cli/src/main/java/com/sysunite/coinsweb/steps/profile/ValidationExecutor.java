@@ -26,13 +26,13 @@ package com.sysunite.coinsweb.steps.profile;
 
 
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
+import com.sysunite.coinsweb.graphset.GraphVar;
 import com.sysunite.coinsweb.graphset.QueryFactory;
 import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
 import com.sysunite.coinsweb.rdfutil.Utils;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,18 +70,20 @@ public class ValidationExecutor {
       defaultPrefixes = profile.getQueryConfiguration().cleanDefaultPrefixes();
     }
 
-    log.info("Using contextMap: ");
+    log.info("Using contextMap ("+graphSet.contextMap().keySet().size()+"):");
     Map<String, String> validationGraphs = new HashMap<>();
     Set<String> executedInferences = new HashSet();
-    for(String graphVar : graphSet.contextMap().keySet()) {
 
+    for(GraphVar graphVar : graphSet.contextMap().keySet()) {
       String context = graphSet.contextMap().get(graphVar);
+      log.info(graphVar + " > "+context);
+
       String uploadDate = graphSet.graphExists(graphVar);
       if(uploadDate == null) {
         throw new RuntimeException("The graph "+graphVar+" ("+context+") is not available in the store");
       }
-      log.info(graphVar + " > "+context);
-      validationGraphs.put(graphVar, '<'+context+'>');
+
+      validationGraphs.put(graphVar.toString(), '<'+context+'>');
       executedInferences.addAll(getFinishedInferences(graphVar));
     }
 
@@ -197,7 +199,7 @@ public class ValidationExecutor {
   }
 
 
-  public List<String> getFinishedInferences(String graphVar) {
+  public List<String> getFinishedInferences(GraphVar graphVar) {
 
     String context = graphSet.contextMap().get(graphVar);
 

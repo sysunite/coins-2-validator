@@ -12,19 +12,19 @@ public interface ContainerGraphSet {
 
   @Deprecated // this is too specific for containergraphset
   boolean select(String query, Object formatTemplate, Object result);
-  Object select(String query);
+  List<Object> select(String query);
 
   @Deprecated // this is too specific for containergraphset
   void update(String query, Object result);
   void update(String query);
 
-  List<String> getImports(String graphVar);
-  boolean hasContext(String graphVar);
+  List<String> getImports(GraphVar graphVar);
+  boolean hasContext(GraphVar graphVar);
 
   void setContainerFile(ContainerFile container);
   void setContainerConfig(Object containerConfig);
   void setConfigFile(Object configFile);
-  Map<String, String> contextMap();
+  Map<GraphVar, String> contextMap();
   Map<String, Long> quadCount();
 
   void cleanup();
@@ -33,4 +33,6 @@ public interface ContainerGraphSet {
 
   boolean requiresLoad();
   void setAllLoaded();
+
+  String graphExists(GraphVar graphVar);
 }

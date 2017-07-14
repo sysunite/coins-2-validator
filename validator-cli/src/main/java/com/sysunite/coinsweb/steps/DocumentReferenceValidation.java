@@ -3,14 +3,15 @@ package com.sysunite.coinsweb.steps;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigPart;
+import com.sysunite.coinsweb.parser.config.pojo.GraphVarImpl;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
@@ -31,11 +32,11 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
     this.type = type;
   }
 
-  private String lookIn;
-  public String getLookIn() {
+  private GraphVarImpl lookIn;
+  public GraphVarImpl getLookIn() {
     return lookIn;
   }
-  public void setLookIn(String lookIn) {
+  public void setLookIn(GraphVarImpl lookIn) {
     this.lookIn = lookIn;
   }
 

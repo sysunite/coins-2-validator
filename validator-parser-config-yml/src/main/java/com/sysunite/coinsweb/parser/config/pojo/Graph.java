@@ -22,19 +22,19 @@ public class Graph extends ConfigPart {
   private static final Logger log = LoggerFactory.getLogger(Graph.class);
 
   private Source source;
-  private ArrayList<String> as;
+  private ArrayList<GraphVarImpl> as;
 
   public Source getSource() {
     return source;
   }
-  public ArrayList<String> getAs() {
+  public ArrayList<GraphVarImpl> getAs() {
     return as;
   }
 
   public void setSource(Source source) {
     this.source = source;
   }
-  public void setAs(ArrayList<String> as) {
+  public void setAs(ArrayList<GraphVarImpl> as) {
     this.as = as;
   }
 
@@ -42,7 +42,7 @@ public class Graph extends ConfigPart {
   public Graph clone() {
     Graph clone = new Graph();
     clone.setSource(this.getSource().clone());
-    clone.setAs((ArrayList<String>)this.getAs().clone());
+    clone.setAs((ArrayList<GraphVarImpl>)this.getAs().clone());
     clone.setParent(this.getParent());
     return clone;
   }

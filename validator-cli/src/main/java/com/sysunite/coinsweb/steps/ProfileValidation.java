@@ -3,6 +3,7 @@ package com.sysunite.coinsweb.steps;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
+import com.sysunite.coinsweb.graphset.GraphVar;
 import com.sysunite.coinsweb.graphset.QueryFactory;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigPart;
@@ -12,8 +13,8 @@ import com.sysunite.coinsweb.steps.profile.ValidationExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -59,10 +60,10 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     ProfileFile profileFile = ProfileFile.parse(FileFactory.toInputStream(profile));
 
     // Check if the vars used in the profile are available
-    List<String> usedVars = QueryFactory.usedVars(profileFile);
-    for(String var : usedVars) {
-      if(!graphSet.hasContext(var)) {
-        throw new RuntimeException("The specified profile requires the graph variable "+var+" to be available, please specify it in the config.yml");
+    Set<GraphVar> usedVars = QueryFactory.usedVars(profileFile);
+    for(GraphVar graphVar : usedVars) {
+      if(!graphSet.hasContext(graphVar)) {
+        throw new RuntimeException("The specified profile requires "+graphVar+", please specify it in the config.yml");
       }
     }
 

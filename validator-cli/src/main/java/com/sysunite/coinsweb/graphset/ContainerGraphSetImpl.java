@@ -30,7 +30,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   private ContainerFile container;
   private Container containerConfig;
   private ConfigFile configFile;
-  private HashMap<String, String> contextMap;
+  private HashMap<GraphVar, String> contextMap;
 
 
 
@@ -101,14 +101,14 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     return resultsFound;
   }
 
-  public Map<String, String> contextMap() {
+  public Map<GraphVar, String> contextMap() {
     if(requiresLoad()) {
       load();
     }
     return contextMap;
   }
 
-  public boolean hasContext(String graphVar) {
+  public boolean hasContext(GraphVar graphVar) {
     return contextMap().containsKey(graphVar);
   }
 
@@ -119,7 +119,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     return connector.quadCount();
   }
 
-  public List<String> getImports(String graphVar) {
+  public List<String> getImports(GraphVar graphVar) {
 
     String context = contextMap().get(graphVar);
 
@@ -204,12 +204,11 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   }
 
   @Override
-  public String graphExists(String graphVar) {
-
-    String context = contextMap().get(graphVar);
-    if(!connector.requiresLoad()) {
+  public String graphExists(GraphVar graphVar) {
+    if(requiresLoad()) {
       load();
     }
+    String context = contextMap().get(graphVar);
     return connector.graphExists(context);
   }
 

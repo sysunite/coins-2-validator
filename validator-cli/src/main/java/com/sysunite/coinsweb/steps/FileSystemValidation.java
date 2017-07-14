@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigPart;
+import com.sysunite.coinsweb.parser.config.pojo.GraphVarImpl;
 import com.sysunite.coinsweb.rdfutil.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,11 +35,11 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
     this.type = type;
   }
 
-  private String lookIn;
-  public String getLookIn() {
+  private GraphVarImpl lookIn;
+  public GraphVarImpl getLookIn() {
     return lookIn;
   }
-  public void setLookIn(String lookIn) {
+  public void setLookIn(GraphVarImpl lookIn) {
     this.lookIn = lookIn;
   }
 

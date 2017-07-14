@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -96,15 +95,15 @@ public class ConfigFactory {
     environment.setLoadingStrategy(Environment.HASH_IN_GRAPHNAME);
 
     Mapping fullMapping = new Mapping();
-    fullMapping.setVariable("FULL_UNION_GRAPH");
+    fullMapping.setVariable(new GraphVarImpl("FULL_UNION_GRAPH"));
     fullMapping.setGraphname("http://full/union");
 
     Mapping instancesMapping = new Mapping();
-    instancesMapping.setVariable("INSTANCE_UNION_GRAPH");
+    instancesMapping.setVariable(new GraphVarImpl("INSTANCE_UNION_GRAPH"));
     instancesMapping.setGraphname("http://instances/union");
 
     Mapping libraryMapping = new Mapping();
-    libraryMapping.setVariable("SCHEMA_UNION_GRAPH");
+    libraryMapping.setVariable(new GraphVarImpl("SCHEMA_UNION_GRAPH"));
     libraryMapping.setGraphname("http://library/union");
 
     Mapping[] mappings = {fullMapping, instancesMapping, libraryMapping};
@@ -153,7 +152,10 @@ public class ConfigFactory {
 
       Graph instanceGraphPattern = new Graph();
       instanceGraphPattern.setSource(instanceGraphSource);
-      instanceGraphPattern.setAs(new ArrayList<>(Arrays.asList("INSTANCE_UNION_GRAPH", "FULL_UNION_GRAPH")));
+      ArrayList<GraphVarImpl> dataList = new ArrayList();
+      dataList.add(new GraphVarImpl("INSTANCE_UNION_GRAPH"));
+      dataList.add(new GraphVarImpl("FULL_UNION_GRAPH"));
+      instanceGraphPattern.setAs(dataList);
       graphs.add(instanceGraphPattern);
 
       Source librarySource = new Source();
@@ -163,7 +165,10 @@ public class ConfigFactory {
 
       Graph libraryGraphPattern = new Graph();
       libraryGraphPattern.setSource(librarySource);
-      libraryGraphPattern.setAs(new ArrayList<>(Arrays.asList("SCHEMA_UNION_GRAPH", "FULL_UNION_GRAPH")));
+      ArrayList<GraphVarImpl> schemaList = new ArrayList();
+      schemaList.add(new GraphVarImpl("SCHEMA_UNION_GRAPH"));
+      schemaList.add(new GraphVarImpl("FULL_UNION_GRAPH"));
+      libraryGraphPattern.setAs(schemaList);
       graphs.add(libraryGraphPattern);
     }
 
@@ -199,6 +204,7 @@ public class ConfigFactory {
 
     Container blueprint = configFile.getRun().getContainers()[0];
     Container[] overriddenContainerSet = new Container[count];
+    log.info("Use specified container config to load overriding container paths:");
     for(int i = 0; i < count; i++) {
       overriddenContainerSet[i] = blueprint.clone();
       String location = containerFiles[i].toString();

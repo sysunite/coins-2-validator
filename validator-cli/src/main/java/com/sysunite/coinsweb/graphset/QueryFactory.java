@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.graphset;
 
+import com.sysunite.coinsweb.parser.config.pojo.GraphVarImpl;
 import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
@@ -43,20 +44,18 @@ public class QueryFactory {
     return finalQuery;
   }
 
-  public static List<String> usedVars(ProfileFile profileFile) {
-    HashSet<String> result = new HashSet();
+  public static Set<GraphVar> usedVars(ProfileFile profileFile) {
+    HashSet<GraphVar> result = new HashSet();
     Pattern pattern = Pattern.compile("(?<=\\$\\{)([^\\}]+)(?=\\})");
     for(Bundle bundle : profileFile.getBundles()) {
       for(Query query : bundle.getQueries()) {
         Matcher matcher = pattern.matcher(query.cleanQuery());
         while(matcher.find()) {
-          result.add(matcher.group());
+          result.add(new GraphVarImpl(matcher.group()));
         }
       }
     }
-    ArrayList<String> list = new ArrayList();
-    list.addAll(result);
-    return list;
+    return result;
   }
 
 

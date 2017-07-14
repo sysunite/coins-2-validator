@@ -67,7 +67,7 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
       }
     }
 
-    ValidationExecutor executor = new ValidationExecutor(profileFile, graphSet);
+    ValidationExecutor executor = new ValidationExecutor(profileFile, graphSet, getMaxResults());
 
     // Execute the validation
     return executor.validate();

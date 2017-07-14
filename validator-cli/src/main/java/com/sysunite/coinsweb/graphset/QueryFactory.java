@@ -14,10 +14,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,14 +32,20 @@ public class QueryFactory {
 
 
   public static String buildQuery(Query query, Map<String, String> data) {
-    return buildQuery(query, data, null);
+    return buildQuery(query, data, null, 0);
   }
   public static String buildQuery(Query query, Map<String, String> data, String prefixes) {
+    return buildQuery(query, data, prefixes, 0);
+  }
+  public static String buildQuery(Query query, Map<String, String> data, String prefixes, int maxResults) {
     String cleanQuery = query.cleanQuery();
     if(prefixes != null && !prefixes.isEmpty()) {
       cleanQuery = prefixes + '\n' + cleanQuery;
     }
     String finalQuery = parseFreemarker(cleanQuery, data);
+    if(maxResults > 0) {
+      finalQuery += " LIMIT " + maxResults;
+    }
     return finalQuery;
   }
 

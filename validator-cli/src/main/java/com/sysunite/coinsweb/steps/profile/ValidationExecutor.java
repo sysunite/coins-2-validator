@@ -49,10 +49,12 @@ public class ValidationExecutor {
 
   private ProfileFile profile;
   private ContainerGraphSet graphSet;
+  private int maxResults;
 
-  public ValidationExecutor(ProfileFile profile, ContainerGraphSet graphSet) {
-   this.profile = profile;
-   this.graphSet = graphSet;
+  public ValidationExecutor(ProfileFile profile, ContainerGraphSet graphSet, int maxResults) {
+    this.profile = profile;
+    this.graphSet = graphSet;
+    this.maxResults = maxResults;
   }
 
   public Map<String, Object> validate() {
@@ -153,11 +155,10 @@ public class ValidationExecutor {
             if(quadsAdded > 0) {
               someTripleWasAdded = true;
             }
-
           }
           if (resultCarrier instanceof ValidationQueryResult) {
 
-            String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes);
+            String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes, maxResults);
             graphSet.select(queryString, query.getFormatTemplate(), resultCarrier);
             boolean hasNoResults = ((ValidationQueryResult)resultCarrier).getFormattedResults().isEmpty();
             ((ValidationQueryResult)resultCarrier).setPassed(hasNoResults);

@@ -55,7 +55,7 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   @Override
-  public TupleQueryResult query(String queryString) {
+  public List<Object> query(String queryString) {
     if(!initialized) {
       init();
     }
@@ -64,7 +64,12 @@ public abstract class Rdf4jConnector implements Connector {
 
       TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
       tupleQuery.setIncludeInferred(false);
-      return tupleQuery.evaluate();
+
+      List<Object> resultList;
+      try (TupleQueryResult result = tupleQuery.evaluate()) {
+        resultList = QueryResults.asList(result);
+      }
+      return resultList;
     } catch (Exception e) {
       log.error("A problem with this select query (message: "+e.getLocalizedMessage()+"):\n"+queryString);
     }
@@ -147,9 +152,9 @@ public abstract class Rdf4jConnector implements Connector {
     "}}";
 
     String creationDate = null;
-    TupleQueryResult result = query(query);
-    if (result.hasNext()) {
-      BindingSet row = result.next();
+    List<Object> result = query(query);
+    if (!result.isEmpty()) {
+      BindingSet row = (BindingSet) result.get(0);
       creationDate = row.getBinding("creationDate").getValue().stringValue();
     }
     return creationDate;

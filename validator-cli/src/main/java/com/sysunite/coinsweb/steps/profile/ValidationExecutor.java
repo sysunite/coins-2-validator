@@ -211,10 +211,9 @@ public class ValidationExecutor {
     "}}";
 
     List<String> inferenceCodes = new ArrayList<>();
-    TupleQueryResult result = (TupleQueryResult) graphSet.select(query);
-    while (result.hasNext()) {
-      BindingSet row = result.next();
-      String inferenceCode = row.getBinding("inferenceCode").getValue().stringValue();
+    List<Object> result = graphSet.select(query);
+    for(Object bindingSet : result) {
+      String inferenceCode = ((BindingSet)bindingSet).getBinding("inferenceCode").getValue().stringValue();
       inferenceCodes.add(inferenceCode);
       log.info("The inference >>"+inferenceCode+"<< was previously executed for "+context);
     }

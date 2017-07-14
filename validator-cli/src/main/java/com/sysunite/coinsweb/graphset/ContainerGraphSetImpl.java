@@ -9,7 +9,6 @@ import com.sysunite.coinsweb.steps.profile.QueryResult;
 import com.sysunite.coinsweb.steps.profile.ValidationQueryResult;
 import freemarker.template.Template;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,13 +57,13 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   /**
    * returns true if it least one result was found
    */
-  public TupleQueryResult select(String query) {
+  public List<Object> select(String query) {
 
     if(requiresLoad()) {
       load();
     }
 
-    TupleQueryResult result = (TupleQueryResult) connector.query(query);
+    List<Object> result = connector.query(query);
     return result;
   }
   public boolean select(String query, Object formatTemplate, Object validationStepResult) {
@@ -78,18 +77,17 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     long start = new Date().getTime();
 
     ArrayList<String> formattedResults = new ArrayList<>();
-    TupleQueryResult result = (TupleQueryResult) connector.query(query);
+    List<Object> result = connector.query(query);
 
-    if(!result.hasNext()) {
+    if(result.isEmpty()) {
       log.info("No results, which is good");
     } else {
       log.info("Results were found, this is bad");
       resultsFound = true;
 
       if(formatTemplate != null) {
-        while (result.hasNext()) {
-          BindingSet row = result.next();
-          formattedResults.add(ReportFactory.formatResult(row, (Template) formatTemplate));
+        for(Object bindingSet : result) {
+          formattedResults.add(ReportFactory.formatResult((BindingSet)bindingSet, (Template) formatTemplate));
         }
       }
     }
@@ -137,10 +135,10 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
       "}}";
 
     List<String> namespaces = new ArrayList<>();
-    TupleQueryResult result = select(query);
-    while (result.hasNext()) {
-      BindingSet row = result.next();
-      String namespace = row.getBinding("library").getValue().stringValue();
+    List<Object> result = select(query);
+    for (Object bindingSet : result) {
+
+      String namespace = ((BindingSet)bindingSet).getBinding("library").getValue().stringValue();
       log.info("Found import: "+namespace);
       namespaces.add(namespace);
     }

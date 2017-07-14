@@ -66,12 +66,11 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
         "  ?filePath  cbim:datatypeValue  ?value . " +
         "}}";
 
-      TupleQueryResult result = (TupleQueryResult)graphSet.select(query);
-      while (result.hasNext()) {
-        BindingSet row = result.next();
-        String document = row.getBinding("document").getValue().stringValue();
-        String filePath = row.getBinding("filePath").getValue().stringValue();
-        String value = row.getBinding("value").getValue().stringValue();
+      List<Object> result = graphSet.select(query);
+      for(Object bindingSet : result) {
+        String document = ((BindingSet)bindingSet).getBinding("document").getValue().stringValue();
+        String filePath = ((BindingSet)bindingSet).getBinding("filePath").getValue().stringValue();
+        String value = ((BindingSet)bindingSet).getBinding("value").getValue().stringValue();
 
         log.info("Found InternalDocumentReference "+document+" to file "+value);
 

@@ -52,43 +52,91 @@ public class Validation {
     // For each container file execute steps
     for(Container containerConfig : configFile.getRun().getContainers()) {
 
-
+      // Init containerFile
       ContainerFile containerFile;
       if(containerConfig.isVirtual()) {
         log.info("\uD83D\uDCCF Validate a virtual file");
         containerFile = new VirtualContainerFileImpl();
       } else {
-        log.info("Validate "+containerConfig.getLocation().toString());
-        containerFile = new ContainerFileImpl(FileFactory.toFile(containerConfig.getLocation()).getPath());
+        String containerFilePath = containerConfig.getLocation().toString();
+        log.info("\uD83D\uDCD0 Validate "+containerFilePath);
+
+        // Check basic sanity of file by scanning it
+        try {
+          containerFile = new ContainerFileImpl(FileFactory.toFile(containerConfig.getLocation()).getPath());
+          containerFile.scan();
+        } catch (RuntimeException e) {
+          Map<String, Object> containerItems = new HashMap();
+          containerItems.put("fileNotFound", true);
+          containerItems.put("alledgedName", containerFilePath);
+          containerItems.put("valid", false);
+          containers.put(containerConfig.getCode(), containerItems);
+          log.info("Skipping normal path because container file could not be found, up to the next");
+          continue;
+        }
+      }
+
+      // Report if namespace collision in container prevents the expanding
+      try {
+        // Essential step to get rid of the wildcards in the configFile
+        log.info("Will now expand any wildcard usage in the config.yml section of this file");
+        DescribeFactoryImpl.expandGraphConfig(containerConfig);
+
+      } catch (RuntimeException e) {
+        Map<String, Object> containerItems = new HashMap();
+        containerItems.put("fileNotFound", false);
+        containerItems.put("file", containerFile);
+        containerItems.put("namespaceConflict", true);
+        containerItems.put("availableNamespaces", availableNamespaces(containerFile));
+        containerItems.put("stepNames", new ArrayList<String>());
+        containerItems.put("steps", new HashMap<String, Boolean>());
+        containerItems.put("stepsFailed", new HashMap<String, Boolean>());
+        containerItems.put("valid", false);
+        containers.put(containerConfig.getCode(), containerItems);
+        log.info("Skipping normal path because container file could not be found, up to the next");
+        continue;
       }
 
 
       // Init graphSet
       ContainerGraphSet graphSet = GraphSetFactory.lazyLoad(containerFile, containerConfig, connector);
+
+      // Fill dataMap for report
       Map<String, Object> containerItems = new HashMap();
+      containerItems.put("fileNotFound", false);
       containerItems.put("file", containerFile);
-      HashMap<String, String> availableNamespaces = new HashMap();
-      for(String libraryFile : containerFile.getRepositoryFiles()) {
-        availableNamespaces.put(libraryFile, String.join(", ", containerFile.getRepositoryFileNamespaces(libraryFile)));
-      }
-      containerItems.put("availableNamespaces", availableNamespaces);
+      containerItems.put("namespaceConflict", false);
+      containerItems.put("availableNamespaces", availableNamespaces(containerFile));
       containerItems.put("stepNames", new ArrayList<String>());
       containerItems.put("steps", new HashMap<String, Boolean>());
+      containerItems.put("stepsFailed", new HashMap<String, Boolean>());
 
+      // Execute the steps
       for (ValidationStep step : configFile.getRun().getSteps()) {
 
+        log.info("\uD83D\uDD2C Will now execute validationStep of type "+step.getType());
 
+        try {
+          Map<String, Object> items = step.execute(containerFile, graphSet);
+          if (!items.containsKey("valid")) {
+            throw new RuntimeException("Validator " + step.getType() + " dit not return the field \"valid\"");
+          }
+          boolean valid = (boolean) items.remove("valid");
+          ((ArrayList<String>) containerItems.get("stepNames")).add(step.getType());
+          ((Map<String, Boolean>) containerItems.get("steps")).put(step.getType(), valid);
+          ((Map<String, Boolean>) containerItems.get("stepsFailed")).put(step.getType(), false);
+          containerItems.putAll(items);
+        } catch(RuntimeException e) {
 
-        log.info("Will now execute validator with type "+step.getType());
+          log.warn("Executing failed validationStep of type "+step.getType());
+          log.warn(e.getMessage());
 
-        Map<String, Object> items = step.execute(containerFile, graphSet);
-        if (!items.containsKey("valid")) {
-          throw new RuntimeException("Validator " + step.getType() + " dit not return the field \"valid\"");
+          // Default config for failed validations
+          boolean valid = false;
+          ((ArrayList<String>) containerItems.get("stepNames")).add(step.getType());
+          ((Map<String, Boolean>) containerItems.get("steps")).put(step.getType(), valid);
+          ((Map<String, Boolean>) containerItems.get("stepsFailed")).put(step.getType(), true);
         }
-        boolean valid = (boolean) items.remove("valid");
-        ((ArrayList<String>) containerItems.get("stepNames")).add(step.getType());
-        ((Map<String, Boolean>) containerItems.get("steps")).put(step.getType(), valid);
-        containerItems.putAll(items);
       }
 
       // Cleanup
@@ -136,5 +184,13 @@ public class Validation {
         ReportFactory.postReport(payload, report.getLocation().getUri());
       }
     }
+  }
+
+  private static HashMap<String, String> availableNamespaces(ContainerFile containerFile) {
+    HashMap<String, String> availableNamespaces = new HashMap();
+    for(String libraryFile : containerFile.getRepositoryFiles()) {
+      availableNamespaces.put(libraryFile, String.join(", ", containerFile.getRepositoryFileNamespaces(libraryFile)));
+    }
+    return availableNamespaces;
   }
 }

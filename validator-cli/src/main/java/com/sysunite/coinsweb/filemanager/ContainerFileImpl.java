@@ -158,6 +158,10 @@ public class ContainerFileImpl extends File implements ContainerFile {
 
   public void scan() {
 
+    if(!exists()) {
+      throw new RuntimeException("Container file could not be found");
+    }
+
     Path leadingPath = null;
 
     try {
@@ -205,6 +209,9 @@ public class ContainerFileImpl extends File implements ContainerFile {
           } else {
             inside = repositoryPath.relativize(inside);
             repositoryFiles.put(inside.toString(), zipPath);
+
+            // Do this to detect errors upfront
+            getRepositoryFileNamespaces(inside.toString());
           }
 
         // woa
@@ -239,7 +246,9 @@ public class ContainerFileImpl extends File implements ContainerFile {
 
     } catch(IOException e) {
       log.error(e.getMessage(), e);
+      throw new RuntimeException("Something went wrong scanning the container file");
     }
+
     scanned = true;
   }
 

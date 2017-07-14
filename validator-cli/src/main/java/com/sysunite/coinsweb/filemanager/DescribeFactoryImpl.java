@@ -2,10 +2,7 @@ package com.sysunite.coinsweb.filemanager;
 
 import com.sysunite.coinsweb.parser.config.factory.DescribeFactory;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
-import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
-import com.sysunite.coinsweb.parser.config.pojo.Container;
-import com.sysunite.coinsweb.parser.config.pojo.Graph;
-import com.sysunite.coinsweb.parser.config.pojo.Source;
+import com.sysunite.coinsweb.parser.config.pojo.*;
 import com.sysunite.coinsweb.rdfutil.Utils;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Namespace;
@@ -40,14 +37,18 @@ public class DescribeFactoryImpl implements DescribeFactory {
 
   public static void expandGraphConfig(ConfigFile configFile) {
     for(Container container : configFile.getRun().getContainers()) {
-      log.info("Expand graph settings for container of type "+container.getType());
-      ContainerFile containerFile = null;
-      if(!container.isVirtual()) {
-        containerFile = new ContainerFileImpl(FileFactory.toFile(container.getLocation()).getPath());
-      }
-      Graph[] expandedGraphs = loadList(container.getGraphs(), containerFile).toArray(new Graph[0]);
-      container.setGraphs(expandedGraphs);
+      expandGraphConfig(container);
     }
+  }
+  public static void expandGraphConfig(Container container) {
+
+    log.info("Expand graph settings for container of type "+container.getType());
+    ContainerFile containerFile = null;
+    if(!container.isVirtual()) {
+      containerFile = new ContainerFileImpl(FileFactory.toFile(container.getLocation()).getPath());
+    }
+    Graph[] expandedGraphs = loadList(container.getGraphs(), containerFile).toArray(new Graph[0]);
+    container.setGraphs(expandedGraphs);
   }
 
   // container can be null for a virtual container
@@ -178,9 +179,9 @@ public class DescribeFactoryImpl implements DescribeFactory {
     return graphs;
   }
   public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile) {
-    return contentGraphsInContainer(containerFile, new ArrayList<>(Arrays.asList("INSTANCE_UNION_GRAPH", "FULL_UNION_GRAPH")));
+    return contentGraphsInContainer(containerFile, new ArrayList<>(Arrays.asList(new GraphVarImpl("INSTANCE_UNION_GRAPH"), new GraphVarImpl("FULL_UNION_GRAPH"))));
   }
-  public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile, ArrayList<String> content) {
+  public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content) {
     ArrayList<Graph> graphs = new ArrayList();
     for(String contentFile : containerFile.getContentFiles()) {
 
@@ -206,9 +207,9 @@ public class DescribeFactoryImpl implements DescribeFactory {
     return graphs;
   }
   public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile) {
-    return libraryGraphsInContainer(containerFile, new ArrayList<>(Arrays.asList("SCHEMA_UNION_GRAPH", "FULL_UNION_GRAPH")));
+    return libraryGraphsInContainer(containerFile, new ArrayList<>(Arrays.asList(new GraphVarImpl("SCHEMA_UNION_GRAPH"), new GraphVarImpl("FULL_UNION_GRAPH"))));
   }
-  public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile, ArrayList<String> content) {
+  public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content) {
     ArrayList<Graph> graphs = new ArrayList();
     for(String repositoryFile : containerFile.getRepositoryFiles()) {
 

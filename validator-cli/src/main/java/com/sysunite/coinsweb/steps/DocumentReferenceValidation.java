@@ -88,6 +88,11 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
 
 
     boolean valid = allReferencesAreSatisfied;
+    if(valid) {
+      log.info("\uD83E\uDD47 valid");
+    } else {
+      log.info("\uD83E\uDD48 invalid");
+    }
 
     Map<String, Object> reportItems = new HashMap();
 

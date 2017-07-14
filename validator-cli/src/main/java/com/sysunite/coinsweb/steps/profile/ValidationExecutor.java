@@ -93,13 +93,15 @@ public class ValidationExecutor {
       boolean containsUpdate = false;
       boolean someTripleWasAdded = false;
 
-      String inferenceCode = profile.getVersion()+"/"+bundle.getReference();
-      log.info("Check if >>"+inferenceCode+"<< was executed before");
-      if(Bundle.INFERENCE.equals(bundle.getType()) && executedInferences.contains(inferenceCode)) {
-        log.info("Skip running inference bundle "+inferenceCode+" because it was executed some time before");
-        continue;
+      String inferenceCode = profile.getName()+"/"+profile.getVersion()+"/"+bundle.getReference();
+      if(Bundle.INFERENCE.equals(bundle.getType())) {
+        if(executedInferences.contains(inferenceCode)) {
+          log.info("Check if >>" + inferenceCode + "<< was executed before, it was");
+          continue;
+        } else {
+          log.info("Check if >>" + inferenceCode + "<< was executed before, it was not");
+        }
       }
-
 
       Map<String, Long> previous = graphSet.quadCount();
       Map<String, Long> beforeBundle = previous;
@@ -180,6 +182,12 @@ public class ValidationExecutor {
 
 
     // Prepare data to transfer to the template
+    if(valid) {
+      log.info("\uD83E\uDD47 valid");
+    } else {
+      log.info("\uD83E\uDD48 invalid");
+    }
+
     Map<String, Object> reportItems = new HashMap();
 
     reportItems.put("valid",         valid);
@@ -215,7 +223,7 @@ public class ValidationExecutor {
 
   public void storeFinishedInferences(String context, String inferenceCode) {
 
-    log.info("Store inferenceCode "+inferenceCode+" for "+context);
+    log.info("Store inferenceCode >>"+inferenceCode+"<< for "+context);
 
     String query =
 

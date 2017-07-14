@@ -91,7 +91,7 @@ public class FileFactory {
       } catch (IOException e) {}
     }
 
-    throw new RuntimeException("File could not be loaded "+triedReference);
+    throw new RuntimeException("Locator of type "+locator.getType()+" could not be read as inputStream: "+triedReference);
   }
 
   public static InputStream toInputStream(Source source, ContainerFile container) {
@@ -121,7 +121,7 @@ public class FileFactory {
       triedReference = "in container: "+Paths.get(source.getPath());
       return stream;
     }
-    throw new RuntimeException("File could not be loaded "+triedReference);
+    throw new RuntimeException("Source of type "+source.getType()+" could not be read as inputStream: "+triedReference);
   }
 
   public static String getFileHash(Source source, ContainerFile container) {
@@ -135,6 +135,8 @@ public class FileFactory {
       }
     } catch (FileNotFoundException e) {}
     throw new RuntimeException("File could not be loaded.");
+
+    throw new RuntimeException("File from source of type "+source.getType()+" could not be loaded to calculate hash.");
   }
 
 

@@ -28,6 +28,7 @@ public class Validation {
 
 
 
+    log.info("Entered first phase of run, \uD83D\uDD0E iterate over containers");
 
 
 
@@ -43,7 +44,7 @@ public class Validation {
 
       ContainerFile containerFile;
       if(containerConfig.isVirtual()) {
-        log.info("Validate a virtual file");
+        log.info("\uD83D\uDCCF Validate a virtual file");
         containerFile = new VirtualContainerFileImpl();
       } else {
         log.info("Validate "+containerConfig.getLocation().toString());

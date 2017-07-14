@@ -84,14 +84,13 @@ public class Application {
     // Get containers
     ArrayList<File> containers = new ArrayList();
     for(int i = 0; i < options.hasContainerFile(); i++) {
-      log.info("Try to read container file");
       File containerFile = new ContainerFileImpl(options.getContainerFile(i).toFile().toString());
-      log.info("Done reading container file");
       containers.add(containerFile);
     }
+    log.info("Gathered "+containers.size()+" container files");
 
     if(options.describeMode()) {
-      log.info("Running in describe mode");
+      log.info("\uD83C\uDFC4\uD83C\uDFFB Running in describe mode");
       try {
 
         if(options.hasContainerFile() > 0) {
@@ -140,7 +139,7 @@ public class Application {
     }
 
     if(options.runMode()) {
-      log.info("Running in run mode");
+      log.info("\uD83C\uDFC4 Running in run mode");
       try {
 
         File file;
@@ -172,15 +171,13 @@ public class Application {
           ConfigFactory.overrideContainers(configFile, options.hasContainerFile(), options.getContainerFiles());
         }
 
-        // Essential step to get rid of the wildcards in the configFile
-        log.info("Will now expand any wildcard usage in the config.yml");
-        DescribeFactoryImpl.expandGraphConfig(configFile);
+        Validation.run(configFile);
 
+        // Optionally print the config.yml that was executed eventually
         if(options.ymlToConsole()) {
           System.out.print(ConfigFactory.getDefaultConfigString(configFile));
         }
 
-        Validation.run(configFile);
         log.info("Finished successfully, quitting");
         CliOptions.printOutput("Finished successfully");
         System.exit(0);

@@ -83,6 +83,11 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
     }
 
     boolean valid = oneRepoFile && noSubsInBim && noOrphans && allImportsImportable;
+    if(valid) {
+      log.info("\uD83E\uDD47 valid");
+    } else {
+      log.info("\uD83E\uDD48 invalid");
+    }
 
     Map<String, Object> reportItems = new HashMap();
 

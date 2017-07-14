@@ -138,7 +138,7 @@ public class CliOptions {
       return false;
     }
     Path path = CliOptions.resolvePath(cmd.getArgs()[1]);
-    return path.toFile().exists() && path.toFile().isFile() && isProfileFile(path);
+    return isProfileFile(path); //path.toFile().exists() && path.toFile().isFile() &&
   }
   public Path getProfileFile() {
     return (!hasProfileFile()) ? null : CliOptions.resolvePath(cmd.getArgs()[1]);
@@ -149,7 +149,7 @@ public class CliOptions {
       return false;
     }
     Path path = CliOptions.resolvePath(cmd.getArgs()[1]);
-    return path.toFile().exists() && path.toFile().isFile() && isConfigFile(path);
+    return isConfigFile(path); // path.toFile().exists() && path.toFile().isFile() &&
   }
   public Path getConfigFile() {
     return (!hasConfigFile()) ? null : CliOptions.resolvePath(cmd.getArgs()[1]);
@@ -170,7 +170,7 @@ public class CliOptions {
     for(int i = 1; i < cmd.getArgs().length; i++) {
       try {
         Path path = CliOptions.resolvePath(cmd.getArgs()[i]);
-        if (path.toFile().exists() && path.toFile().isFile() && isContainerFile(path)) {
+        if(isContainerFile(path)) { //path.toFile().exists() && path.toFile().isFile() &&
           containerPaths.add(path);
         }
       } catch (Exception e) {}

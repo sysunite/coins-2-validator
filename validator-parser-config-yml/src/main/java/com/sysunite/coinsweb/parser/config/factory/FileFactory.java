@@ -125,16 +125,23 @@ public class FileFactory {
   }
 
   public static String getFileHash(Source source, ContainerFile container) {
-    try {
-      if (Source.FILE.equals(source.getType())) {
-        return getFileHash(new DeleteOnCloseFileInputStream(Paths.get(source.getPath()).toFile()));
-      } else if (Source.ONLINE.equals(source.getType())) {
-        return getHash(source.getUri());
-      } else if (Source.CONTAINER.equals(source.getType())) {
-        return getFileHash(container.getFile(Paths.get(source.getPath())));
+
+    if (Source.FILE.equals(source.getType())) {
+      try {
+        File file;
+        if (source.getParent() != null) {
+          file = source.getParent().resolve(source.getPath()).toFile();
+        } else {
+          file = new File(source.getPath());
+        }
+        return getFileHash(new FileInputStream(file));
+      } catch (IOException e) {
       }
-    } catch (FileNotFoundException e) {}
-    throw new RuntimeException("File could not be loaded.");
+    } else if (Source.ONLINE.equals(source.getType())) {
+      return getHash(source.getUri());
+    } else if (Source.CONTAINER.equals(source.getType())) {
+      return getFileHash(container.getFile(Paths.get(source.getPath())));
+    }
 
     throw new RuntimeException("File from source of type "+source.getType()+" could not be loaded to calculate hash.");
   }

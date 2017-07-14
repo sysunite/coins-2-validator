@@ -1,8 +1,6 @@
 package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.connector.Connector;
-import com.sysunite.coinsweb.connector.ConnectorFactory;
-import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
@@ -25,15 +23,13 @@ public class GraphSetFactory {
 
   private static final Logger log = LoggerFactory.getLogger(GraphSetFactory.class);
 
-  public static ContainerGraphSet lazyLoad(ContainerFile container, Container containerConfig) {
+  public static ContainerGraphSet lazyLoad(ContainerFile container, Container containerConfig, Connector connector) {
     Environment environment = containerConfig.getParent().getEnvironment();
     if("none".equals(environment.getStore().getType())) {
       return new ContainerGraphSetImpl();
     }
 
-    log.info("Construct graphset and lazy load connector");
-    ConnectorFactory factory = new ConnectorFactoryImpl();
-    Connector connector = factory.build(environment);
+    log.info("Construct and lazy load graphSet");
     ContainerGraphSet graphSet = new ContainerGraphSetImpl(connector);
     graphSet.setContainerFile(container);
     graphSet.setContainerConfig(containerConfig);
@@ -50,6 +46,8 @@ public class GraphSetFactory {
    * @param connector
    */
   public static HashMap<String, String> load(Graph[] originalGraphs, Connector connector, ContainerFile container, ConfigFile configFile) {
+
+    connector.init();
 
     ArrayList<Graph> loadList = DescribeFactoryImpl.loadList(originalGraphs, container);
 

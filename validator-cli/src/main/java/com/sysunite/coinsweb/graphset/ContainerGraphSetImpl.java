@@ -24,6 +24,8 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
 
 
+
+  protected boolean initialized = false;
   private boolean disabled;
   private Connector connector;
   private ContainerFile container;
@@ -48,13 +50,9 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
       return;
     }
 
-    log.info("Initialize connector");
-    connector.init();
-
+    log.info("Load stuff to connector");
     contextMap = GraphSetFactory.load(containerConfig.getGraphs(), connector, container, configFile);
-
-    log.info("Finished initializing connector");
-    this.connector.setAllLoaded();
+    this.setAllLoaded();
   }
 
   /**
@@ -62,7 +60,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
    */
   public TupleQueryResult select(String query) {
 
-    if(connector.requiresLoad()) {
+    if(requiresLoad()) {
       load();
     }
 
@@ -73,7 +71,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
     boolean resultsFound = false;
 
-    if(connector.requiresLoad()) {
+    if(requiresLoad()) {
       load();
     }
 
@@ -106,7 +104,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   }
 
   public Map<String, String> contextMap() {
-    if(connector.requiresLoad()) {
+    if(requiresLoad()) {
       load();
     }
     return contextMap;
@@ -117,7 +115,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   }
 
   public Map<String, Long> quadCount() {
-    if(connector.requiresLoad()) {
+    if(requiresLoad()) {
       load();
     }
     return connector.quadCount();
@@ -153,7 +151,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
   public void update(String query, Object validationStepResult) {
 
-    if(connector.requiresLoad()) {
+    if(requiresLoad()) {
       load();
     }
 
@@ -167,7 +165,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   }
 
   public void update(String query) {
-    if(connector.requiresLoad()) {
+    if(requiresLoad()) {
       load();
     }
     connector.update(query);
@@ -196,9 +194,13 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     throw new RuntimeException("The object is not an instance of a ConfigFile ");
   }
 
+  /**
+   * Close the graphSet, but not the connector
+   */
   @Override
-  public void close() {
-    if(!connector.requiresLoad()) {
+  public void cleanup() {
+    if(!requiresLoad()) {
+      log.info("Will perform a cleanup if this is not disabled");
       connector.cleanup();
     }
   }
@@ -211,5 +213,12 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
       load();
     }
     return connector.graphExists(context);
+  }
+
+  public boolean requiresLoad() {
+    return !initialized;
+  }
+  public void setAllLoaded() {
+    initialized = true;
   }
 }

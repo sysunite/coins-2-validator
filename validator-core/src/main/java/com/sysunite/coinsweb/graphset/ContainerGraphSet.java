@@ -27,7 +27,10 @@ public interface ContainerGraphSet {
   Map<String, String> contextMap();
   Map<String, Long> quadCount();
 
-  void close();
+  void cleanup();
 
-  String graphExists(String graphVar);
+
+
+  boolean requiresLoad();
+  void setAllLoaded();
 }

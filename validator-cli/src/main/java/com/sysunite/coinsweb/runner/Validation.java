@@ -1,7 +1,11 @@
 package com.sysunite.coinsweb.runner;
 
+import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.connector.ConnectorFactory;
+import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
+import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
 import com.sysunite.coinsweb.filemanager.VirtualContainerFileImpl;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphSetFactory;
@@ -26,6 +30,13 @@ public class Validation {
 
   public static void run(ConfigFile configFile) {
 
+    log.info("Construct the connector");
+    ConnectorFactory factory = new ConnectorFactoryImpl();
+    Connector connector = factory.build(configFile.getEnvironment());
+
+    if(!connector.testConnection()) {
+      throw new RuntimeException("Failed to connect to the store");
+    }
 
 
     log.info("Entered first phase of run, \uD83D\uDD0E iterate over containers");
@@ -50,8 +61,10 @@ public class Validation {
         log.info("Validate "+containerConfig.getLocation().toString());
         containerFile = new ContainerFileImpl(FileFactory.toFile(containerConfig.getLocation()).getPath());
       }
-      ContainerGraphSet graphSet = GraphSetFactory.lazyLoad(containerFile, containerConfig);
 
+
+      // Init graphSet
+      ContainerGraphSet graphSet = GraphSetFactory.lazyLoad(containerFile, containerConfig, connector);
       Map<String, Object> containerItems = new HashMap();
       containerItems.put("file", containerFile);
       HashMap<String, String> availableNamespaces = new HashMap();
@@ -78,8 +91,8 @@ public class Validation {
         containerItems.putAll(items);
       }
 
-      // Close graphSet
-      graphSet.close();
+      // Cleanup
+      graphSet.cleanup();
 
       // Postprocessing of reportItems
       boolean valid = true;
@@ -92,8 +105,11 @@ public class Validation {
       containers.put(containerConfig.getCode(), containerItems);
     }
 
+    log.info("Close the connector");
+    connector.close();
 
-    log.info("Start generating report");
+
+    log.info("Entered second phase of run, \uD83D\uDDDE generate reports");
 
     // Generate the reports
     String xml = null;

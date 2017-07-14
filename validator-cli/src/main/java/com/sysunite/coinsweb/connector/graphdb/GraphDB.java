@@ -46,9 +46,6 @@ public class GraphDB extends Rdf4jConnector {
       throw new RuntimeException("No endpoint url specified");
     }
     url = config.getStore().getConfig().get("endpoint");
-//    log.info(""+config.getConfig().containsKey("endpoint"));
-//    log.info(""+config.getConfig().containsKey("user"));
-//    log.info(""+config.getConfig().containsKey("password"));
 
     if(config.getStore().getConfig().containsKey("disableCleanUp")) {
       disableCleanUp = Boolean.parseBoolean(config.getStore().getConfig().get("disableCleanUp"));
@@ -64,6 +61,10 @@ public class GraphDB extends Rdf4jConnector {
   }
 
   public void init() {
+
+    if(initialized) {
+      return;
+    }
 
     manager = new RemoteRepositoryManager(url);
     manager.initialize();
@@ -84,28 +85,36 @@ public class GraphDB extends Rdf4jConnector {
     log.error(e.getMessage(), e);
     }
     repository = manager.getRepository(repositoryId);
+    initialized = true;
   }
 
 
 
   @Override
   public void cleanup() {
+    if(!initialized) {
+      init();
+    }
     if(repository != null) {
       if(!disableCleanUp) {
         try (RepositoryConnection con = repository.getConnection()) {
           con.clear();
         }
       }
-      repository.shutDown();
     }
+  }
 
+  @Override
+  public void close() {
+    if(!initialized) {
+      return;
+    }
+    repository.shutDown();
     if(!disableCleanUp) {
       if (manager != null && repositoryId != null) {
         manager.removeRepository(repositoryId);
       }
     }
-
-    initialized = false;
   }
 
 

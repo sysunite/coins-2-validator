@@ -7,6 +7,7 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
@@ -19,6 +20,7 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -28,7 +30,6 @@ public abstract class Rdf4jConnector implements Connector {
 
   private static final Logger log = LoggerFactory.getLogger(Rdf4jConnector.class);
   protected Repository repository;
-
   protected boolean initialized = false;
 
 
@@ -43,14 +44,21 @@ public abstract class Rdf4jConnector implements Connector {
 
   @Override
   public boolean testConnection() {
-
-
-
-    return false;
+    try {
+      if (!initialized) {
+        init();
+      }
+      return repository.isWritable();
+    } catch(RepositoryException e) {
+      return false;
+    }
   }
 
   @Override
   public TupleQueryResult query(String queryString) {
+    if(!initialized) {
+      init();
+    }
 
     try (RepositoryConnection con = repository.getConnection()) {
 
@@ -65,6 +73,9 @@ public abstract class Rdf4jConnector implements Connector {
 
   @Override
   public void update(String queryString) {
+    if(!initialized) {
+      init();
+    }
 
     try (RepositoryConnection con = repository.getConnection()) {
 
@@ -82,14 +93,26 @@ public abstract class Rdf4jConnector implements Connector {
 
   @Override
   public void cleanup() {
+    if(!initialized) {
+      init();
+    }
     try (RepositoryConnection con = repository.getConnection()) {
       con.clear();
-      initialized = false;
+    }
+  }
+
+  @Override
+  public void close() {
+    if(!initialized) {
+      return;
     }
   }
 
   @Override
   public void uploadFile(File file, String[] contexts) {
+    if(!initialized) {
+      init();
+    }
 
     try (RepositoryConnection con = repository.getConnection()) {
       Optional<RDFFormat> format = Rio.getParserFormatForFileName(file.toString());
@@ -109,12 +132,17 @@ public abstract class Rdf4jConnector implements Connector {
 
   public String graphExists(String context) {
 
+
+    if(context == null || context.isEmpty()) {
+      return null;
+    }
+
     String query =
 
     "PREFIX val: <"+ QueryFactory.VALIDATOR_NS+"> " +
     "SELECT ?creationDate " +
     "FROM NAMED <"+context+"> " +
-    "WHERE { graph ?g { " +
+    "WHERE { graph <"+context+"> { " +
     "  <"+context+"> val:uploaded ?creationDate . " +
     "}}";
 
@@ -143,6 +171,9 @@ public abstract class Rdf4jConnector implements Connector {
 
   @Override
   public void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts) {
+    if(!initialized) {
+      init();
+    }
 
     try (RepositoryConnection con = repository.getConnection()) {
       Optional<RDFFormat> format = Rio.getParserFormatForFileName(fileName);
@@ -161,6 +192,9 @@ public abstract class Rdf4jConnector implements Connector {
 
   @Override
   public HashMap<String, Long> quadCount() {
+    if(!initialized) {
+      init();
+    }
     HashMap<String, Long> result = new HashMap();
     try (RepositoryConnection con = repository.getConnection()) {
       RepositoryResult<Resource> graphIterator = con.getContextIDs();
@@ -177,6 +211,9 @@ public abstract class Rdf4jConnector implements Connector {
 
 
   public boolean containsContext(String context) {
+    if(!initialized) {
+      init();
+    }
     try (RepositoryConnection con = repository.getConnection()) {
       RepositoryResult<Resource> graphIterator = con.getContextIDs();
       while(graphIterator.hasNext()) {
@@ -189,6 +226,9 @@ public abstract class Rdf4jConnector implements Connector {
     return false;
   }
   private Resource[] getContexts(String[] contexts) {
+    if(!initialized) {
+      init();
+    }
     ValueFactory factory = repository.getValueFactory();
     Resource[] contextsIRI = new Resource[contexts.length];
     for(int i = 0; i < contexts.length; i++) {
@@ -197,10 +237,5 @@ public abstract class Rdf4jConnector implements Connector {
     return contextsIRI;
   }
 
-  public boolean requiresLoad() {
-    return !initialized;
-  }
-  public void setAllLoaded() {
-    initialized = true;
-  }
+
 }

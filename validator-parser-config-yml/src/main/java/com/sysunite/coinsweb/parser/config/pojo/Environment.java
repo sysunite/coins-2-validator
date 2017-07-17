@@ -31,6 +31,9 @@ public class Environment extends ConfigPart {
   private Mapping[] graphs;
   private String tempPath;
 
+  private boolean cleanUp = false;
+  private boolean destroyRepo = false;
+
   public Store getStore() {
     return store;
   }
@@ -50,6 +53,18 @@ public class Environment extends ConfigPart {
   }
   public String getTempPath() {
     return tempPath;
+  }
+  public boolean getCleanUp() {
+    return cleanUp;
+  }
+  public void setCleanUp(boolean cleanUp) {
+    this.cleanUp = cleanUp;
+  }
+  public boolean getDestroyRepo() {
+    return destroyRepo;
+  }
+  public void setDestroyRepo(boolean destroyRepo) {
+    this.destroyRepo = destroyRepo;
   }
 
   public void setStore(Store store) {

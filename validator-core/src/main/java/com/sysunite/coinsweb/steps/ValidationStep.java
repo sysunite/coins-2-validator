@@ -15,6 +15,9 @@ public interface ValidationStep {
   void checkConfig();
   void setParent(Object configFile);
 
+  boolean getFailed();
+  boolean getValid();
+
   // Logic part
   Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet);
 }

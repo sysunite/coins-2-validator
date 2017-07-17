@@ -1,6 +1,7 @@
 package com.sysunite.coinsweb.parser.config.factory;
 
 import com.sysunite.coinsweb.parser.config.pojo.Graph;
+import com.sysunite.coinsweb.parser.config.pojo.GraphVarImpl;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -10,5 +11,5 @@ import java.util.ArrayList;
  */
 public interface DescribeFactory {
 
-  ArrayList<Graph> graphsInContainer(File containerFile);
+  ArrayList<Graph> graphsInContainer(File containerFile, ArrayList<GraphVarImpl> dataGraphs, ArrayList<GraphVarImpl> schemaGraphs);
 }

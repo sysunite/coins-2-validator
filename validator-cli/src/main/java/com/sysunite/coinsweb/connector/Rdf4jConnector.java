@@ -1,9 +1,9 @@
 package com.sysunite.coinsweb.connector;
 
 import com.sysunite.coinsweb.graphset.QueryFactory;
-import com.sysunite.coinsweb.rdfutil.Utils;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -33,7 +33,8 @@ public abstract class Rdf4jConnector implements Connector {
   protected boolean initialized = false;
 
 
-
+  protected boolean cleanUp = false;
+  protected boolean wipeOnClose = false;
 
 
 
@@ -97,12 +98,16 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   @Override
-  public void cleanup() {
+  public void cleanup(String[] contexts) {
     if(!initialized) {
       init();
     }
-    try (RepositoryConnection con = repository.getConnection()) {
-      con.clear();
+    if(repository != null) {
+      if(cleanUp) {
+        try (RepositoryConnection con = repository.getConnection()) {
+          con.clear(Rdf4jConnector.asResource(contexts));
+        }
+      }
     }
   }
 
@@ -124,7 +129,7 @@ public abstract class Rdf4jConnector implements Connector {
       if(!format.isPresent()) {
         throw new RuntimeException("Could not determine the type of file this is: " + file.getName());
       }
-      con.add(file, null, format.get(), getContexts(contexts));
+      con.add(file, null, format.get(), asResource(contexts));
       for(String context : contexts) {
         storeGraphExists(context);
       }
@@ -185,7 +190,7 @@ public abstract class Rdf4jConnector implements Connector {
       if(!format.isPresent()) {
         throw new RuntimeException("Could not determine the type of file this is: " + fileName);
       }
-      con.add(inputStream, baseUri, format.get(), getContexts(contexts.toArray(new String[0])));
+      con.add(inputStream, baseUri, format.get(), asResource(contexts.toArray(new String[0])));
       for(String context : contexts) {
         storeGraphExists(context);
       }
@@ -214,33 +219,30 @@ public abstract class Rdf4jConnector implements Connector {
 
 
 
-
-  public boolean containsContext(String context) {
+  @Override
+  public List<String> getContexts() {
     if(!initialized) {
       init();
     }
+    log.info("Connector contains these contexts (that might be used by GraphSets):");
+    ArrayList<String> contexts = new ArrayList();
     try (RepositoryConnection con = repository.getConnection()) {
       RepositoryResult<Resource> graphIterator = con.getContextIDs();
       while(graphIterator.hasNext()) {
         Resource graphName = graphIterator.next();
-        if(Utils.withoutHashOrSlash(graphName.toString()).equals(Utils.withoutHashOrSlash(context))) {
-          return true;
-        }
+        log.info("- " + graphName.toString());
+        contexts.add(graphName.toString());
       }
     }
-    return false;
+    return contexts;
   }
-  private Resource[] getContexts(String[] contexts) {
-    if(!initialized) {
-      init();
-    }
-    ValueFactory factory = repository.getValueFactory();
+
+  public static Resource[] asResource(String[] contexts) {
+    ValueFactory factory = SimpleValueFactory.getInstance();
     Resource[] contextsIRI = new Resource[contexts.length];
     for(int i = 0; i < contexts.length; i++) {
       contextsIRI[i] = factory.createIRI(contexts[i]);
     }
     return contextsIRI;
   }
-
-
 }

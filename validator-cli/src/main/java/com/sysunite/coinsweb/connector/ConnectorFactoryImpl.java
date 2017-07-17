@@ -22,8 +22,8 @@ public class ConnectorFactoryImpl implements ConnectorFactory {
   static
   {
     register = new HashMap();
-    register.put("graphdb", GraphDB.class);
-    register.put("rdf4j-sail-memory", InMemRdf4j.class);
+    register.put(GraphDB.REFERENCE, GraphDB.class);
+    register.put(InMemRdf4j.REFERENCE, InMemRdf4j.class);
   }
 
   public boolean exists(String key) {

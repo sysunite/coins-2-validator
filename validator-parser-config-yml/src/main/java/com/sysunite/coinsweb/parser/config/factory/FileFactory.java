@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
@@ -68,57 +67,57 @@ public class FileFactory {
   }
 
   public static InputStream toInputStream(Locator locator) {
-    String triedReference = "null";
+    String triedReference = "error interpreting locator";
 
     if(Locator.FILE.equals(locator.getType())) {
       try {
         File file;
         if(locator.getParent() != null) {
+          triedReference = locator.getParent().resolve(locator.getPath()).toString();
           file = locator.getParent().resolve(locator.getPath()).toFile();
         } else {
+          triedReference = locator.getPath();
           file =  new File(locator.getPath());
         }
-        triedReference = file.toString();
         return new FileInputStream(file);
-      } catch (IOException e) {}
+      } catch (Exception e) {}
     }
     if(Locator.ONLINE.equals(locator.getType())) {
       try {
         URL url = new URL(locator.getUri());
         triedReference = url.toString();
         return url.openStream();
-      } catch (MalformedURLException e) {
-      } catch (IOException e) {}
+      } catch (Exception e) {}
     }
 
     throw new RuntimeException("Locator of type "+locator.getType()+" could not be read as inputStream: "+triedReference);
   }
 
   public static InputStream toInputStream(Source source, ContainerFile container) {
-    String triedReference = "null";
+    String triedReference = "error interpreting source";
     if (Source.FILE.equals(source.getType())) {
       try {
         File file;
         if (source.getParent() != null) {
+          triedReference = source.getParent().resolve(source.getPath()).toString();
           file = source.getParent().resolve(source.getPath()).toFile();
         } else {
+          triedReference = source.getPath();
           file = new File(source.getPath());
         }
-        triedReference = file.toString();
         return new FileInputStream(file);
-      } catch (IOException e) {
+      } catch (Exception e) {
       }
     } else if (Source.ONLINE.equals(source.getType())) {
       try {
         URL url = new URL(source.getUri());
         return url.openStream();
-      } catch (MalformedURLException e) {
-      } catch (IOException e) {
+      } catch (Exception e) {
       }
     } else if (Source.CONTAINER.equals(source.getType())) {
 
-      DeleteOnCloseFileInputStream stream = container.getFile(Paths.get(source.getPath()));
       triedReference = "in container: "+Paths.get(source.getPath());
+      DeleteOnCloseFileInputStream stream = container.getFile(Paths.get(source.getPath()));
       return stream;
     }
     throw new RuntimeException("Source of type "+source.getType()+" could not be read as inputStream: "+triedReference);

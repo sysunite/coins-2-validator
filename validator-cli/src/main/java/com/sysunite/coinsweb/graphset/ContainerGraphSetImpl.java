@@ -4,15 +4,14 @@ import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
-import com.sysunite.coinsweb.report.ReportFactory;
-import com.sysunite.coinsweb.steps.profile.QueryResult;
-import com.sysunite.coinsweb.steps.profile.ValidationQueryResult;
-import freemarker.template.Template;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -20,8 +19,6 @@ import java.util.*;
 public class ContainerGraphSetImpl implements ContainerGraphSet {
 
   private static final Logger log = LoggerFactory.getLogger(ContainerGraphSetImpl.class);
-
-
 
 
   protected boolean initialized = false;
@@ -43,7 +40,8 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     this.connector = connector;
   }
 
-  private void load() {
+  // Execute postponed lazy load
+  public void load() {
 
     if(disabled) {
       return;
@@ -66,40 +64,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     List<Object> result = connector.query(query);
     return result;
   }
-  public boolean select(String query, Object formatTemplate, Object validationStepResult) {
 
-    boolean resultsFound = false;
-
-    if(requiresLoad()) {
-      load();
-    }
-
-    long start = new Date().getTime();
-
-    ArrayList<String> formattedResults = new ArrayList<>();
-    List<Object> result = connector.query(query);
-
-    if(result.isEmpty()) {
-      log.info("No results, which is good");
-    } else {
-      log.info("Results were found, this is bad");
-      resultsFound = true;
-
-      if(formatTemplate != null) {
-        for(Object bindingSet : result) {
-          formattedResults.add(ReportFactory.formatResult((BindingSet)bindingSet, (Template) formatTemplate));
-        }
-      }
-    }
-
-    long executionTime = new Date().getTime() - start;
-    if(validationStepResult != null) {
-      ((QueryResult) validationStepResult).setExecutionTime(executionTime);
-      ((QueryResult) validationStepResult).setExecutedQuery(query);
-      ((ValidationQueryResult) validationStepResult).addFormattedResults(formattedResults);
-    }
-    return resultsFound;
-  }
 
   public Map<GraphVar, String> contextMap() {
     if(requiresLoad()) {
@@ -147,20 +112,6 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
 
 
-  public void update(String query, Object validationStepResult) {
-
-    if(requiresLoad()) {
-      load();
-    }
-
-    long start = new Date().getTime();
-
-    connector.update(query);
-
-    long executionTime = new Date().getTime() - start;
-    ((QueryResult) validationStepResult).setExecutionTime(executionTime);
-    ((QueryResult) validationStepResult).setExecutedQuery(query);
-  }
 
   public void update(String query) {
     if(requiresLoad()) {
@@ -193,13 +144,22 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   }
 
   /**
-   * Close the graphSet, but not the connector
+   * Remove the contexts (graphs) from the connection that belong to this graphSet
    */
   @Override
   public void cleanup() {
+
+
     if(!requiresLoad()) {
-      log.info("Will perform a cleanup if this is not disabled");
-      connector.cleanup();
+
+      ArrayList<String> contexts = new ArrayList<>();
+      log.info("Will wipe these graphs (if enabled) to remove GraphSet graphs from the Connector:");
+      for(String context : contextMap.values()) {
+        log.info("- "+context);
+        contexts.add(context);
+      }
+
+      connector.cleanup(contexts.toArray(new String[0]));
     }
   }
 
@@ -217,5 +177,9 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   }
   public void setAllLoaded() {
     initialized = true;
+  }
+
+  public Connector getConnector() {
+    return connector;
   }
 }

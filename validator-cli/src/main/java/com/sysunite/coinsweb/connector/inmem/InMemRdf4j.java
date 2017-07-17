@@ -14,8 +14,7 @@ public class InMemRdf4j extends Rdf4jConnector {
 
   private static final Logger log = LoggerFactory.getLogger(InMemRdf4j.class);
 
-
-
+  public static final String REFERENCE = "rdf4j-sail-memory";
 
   public InMemRdf4j(Environment config) {
 
@@ -34,6 +33,8 @@ public class InMemRdf4j extends Rdf4jConnector {
     if(initialized) {
       return;
     }
+
+    log.info("Initialize connector ("+REFERENCE+")");
 
     repository = new SailRepository(new MemoryStore());
     repository.initialize();

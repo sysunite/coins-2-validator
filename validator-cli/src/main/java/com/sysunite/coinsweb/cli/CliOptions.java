@@ -192,6 +192,18 @@ public class CliOptions {
     }
   }
 
+  public static Path makeUnique(Path path) {
+    String filePath = path.toString();
+    String filePathBase = filePath.substring(0, filePath.lastIndexOf("."));
+    String fileExtension = filePath.substring(filePath.lastIndexOf("."));
+    int i = 1;
+    while(path.toFile().exists()) {
+      filePath = filePathBase + "."+ (i++) + fileExtension;
+      path = resolvePath(filePath);
+    }
+    return path;
+  }
+
 
   public static List<Path> resolvePaths(List<String> paths) {
     List<Path> result = new ArrayList<>();

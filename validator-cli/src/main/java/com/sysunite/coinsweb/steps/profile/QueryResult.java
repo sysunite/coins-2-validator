@@ -25,6 +25,7 @@
 package com.sysunite.coinsweb.steps.profile;
 
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +44,8 @@ public abstract class QueryResult {
   private String id;
   private String reference;
   private String description;
+  @JacksonXmlCData
   private String sparqlQuery;
-  private String errorMessage;
   private long executionTime;
   private List<Map<String, Long>> runStatistics = new ArrayList<>();
 
@@ -78,9 +79,6 @@ public abstract class QueryResult {
   }
   public String getSparqlQuery() {
     return sparqlQuery;
-  }
-  public String getErrorMessage() {
-    return errorMessage;
   }
   public long getExecutionTime() {
     return executionTime;

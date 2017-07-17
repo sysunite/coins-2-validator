@@ -57,12 +57,13 @@ public class StepDeserializer extends StdDeserializer<ValidationStep[]> {
         Class<? extends ValidationStep> clazz = factory.get(type);
 
         ValidationStep validationStep = mapper.readValue(node.toString(), clazz);
+//        validationStep.setParent();
         validationStep.checkConfig();
         result.add(validationStep);
       }
       return result.toArray(new ValidationStep[0]);
     } catch (Exception e) {
-      log.error(e.getMessage(), e);
+      log.error(e.getMessage());
       throw new RuntimeException("Was not able to parse the part of the config yml that configures the Step with type "+type + "\n" + e.getLocalizedMessage());
     }
   }

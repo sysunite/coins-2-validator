@@ -8,11 +8,13 @@ import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.parser.config.pojo.Environment;
 import com.sysunite.coinsweb.parser.config.pojo.Graph;
+import com.sysunite.coinsweb.rdfutil.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static java.util.Collections.sort;
 
@@ -48,11 +50,12 @@ public class GraphSetFactory {
   public static HashMap<GraphVar, String> load(Graph[] originalGraphs, Connector connector, ContainerFile container, ConfigFile configFile) {
 
     connector.init();
+    List<String> availableContexts = connector.getContexts();
 
     ArrayList<Graph> loadList = DescribeFactoryImpl.loadList(originalGraphs, container);
 
-    // Keep a whitelist of keys that should not be loaded
-    ArrayList<GraphVar> whitelist = new ArrayList();
+    // Keep a whiteList of keys that should not be loaded
+    ArrayList<GraphVar> whiteList = new ArrayList();
 
     // Map source graphname to target graphname
     HashMap<GraphVar, String> mapping = configFile.getEnvironment().getMapping();
@@ -78,34 +81,34 @@ public class GraphSetFactory {
         log.info("Use for "+ key + " graphname "+ fullNamespace);
         sortedHashMapping.put(key, fullNamespace);
 
-        // Fill the blacklist
-        if(connector.containsContext(fullNamespace)) {
-          log.info("Adding key "+ key+" to the whitelist, this graph is already available: "+ fullNamespace);
-          whitelist.add(key);
+        // Fill the whiteList
+        if(Utils.containsNamespace(fullNamespace, availableContexts)) {
+          log.info("Adding key "+ key+" to the whiteList, this graph is already available: "+ fullNamespace);
+          whiteList.add(key);
         }
       }
 
 
       for (Graph graph : loadList) {
-        load(graph, connector, container, sortedHashMapping, whitelist);
+        executeLoad(graph, connector, container, sortedHashMapping, whiteList);
       }
       return sortedHashMapping;
 
     } else {
 
       for (Graph graph : loadList) {
-        load(graph, connector, container, mapping, whitelist);
+        executeLoad(graph, connector, container, mapping, whiteList);
       }
       return mapping;
     }
   }
 
-  public static void load(Graph graph, Connector connector, ContainerFile container, HashMap<GraphVar, String> mapping, ArrayList<GraphVar> whitelist) {
+  private static void executeLoad(Graph graph, Connector connector, ContainerFile container, HashMap<GraphVar, String> mapping, ArrayList<GraphVar> whiteList) {
 
     ArrayList<String> graphNames = new ArrayList();
     for(int i = 0; i < graph.getAs().size(); i++) {
       GraphVar key = graph.getAs().get(i);
-      if(!whitelist.contains(key)) {
+      if(!whiteList.contains(key)) {
         graphNames.add(mapping.get(key));
       }
     }

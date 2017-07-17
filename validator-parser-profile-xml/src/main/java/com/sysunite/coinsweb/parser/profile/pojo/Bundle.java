@@ -31,6 +31,8 @@ public class Bundle {
   @JacksonXmlElementWrapper(localName="queries")
   private ArrayList<Query> queries;
 
+  private boolean valid = false;
+
 
   public String getType() {
     return type;
@@ -61,5 +63,12 @@ public class Bundle {
   }
   public void setQueries(ArrayList<Query> queries) {
     this.queries = queries;
+  }
+
+  public boolean getValid() {
+    return valid;
+  }
+  public void setValid(boolean valid) {
+    this.valid = valid;
   }
 }

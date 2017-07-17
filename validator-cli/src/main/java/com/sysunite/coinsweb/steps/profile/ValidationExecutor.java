@@ -25,6 +25,7 @@
 package com.sysunite.coinsweb.steps.profile;
 
 
+import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphVar;
 import com.sysunite.coinsweb.graphset.QueryFactory;
@@ -32,6 +33,9 @@ import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
 import com.sysunite.coinsweb.rdfutil.Utils;
+import com.sysunite.coinsweb.report.ReportFactory;
+import com.sysunite.coinsweb.steps.ProfileValidation;
+import freemarker.template.Template;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,36 +53,32 @@ public class ValidationExecutor {
 
   private ProfileFile profile;
   private ContainerGraphSet graphSet;
-  private int maxResults;
+  private ProfileValidation validationConfig;
+  private Connector connector;
 
-  public ValidationExecutor(ProfileFile profile, ContainerGraphSet graphSet, int maxResults) {
+  private String defaultPrefixes = null;
+  private Map<String, String> validationGraphs;
+  Set<String> executedInferences;
+
+
+  public ValidationExecutor(ProfileFile profile, ContainerGraphSet graphSet, ProfileValidation validationConfig, Connector connector) {
     this.profile = profile;
     this.graphSet = graphSet;
-    this.maxResults = maxResults;
-  }
+    this.validationConfig = validationConfig;
+    this.connector = connector;
 
-  public Map<String, Object> validate() {
-
-
-    log.info("Execute profile");
-
-
-    long start = new Date().getTime();
-    boolean valid = true;
-
-
-    String defaultPrefixes = null;
     if(profile.getQueryConfiguration() != null) {
       defaultPrefixes = profile.getQueryConfiguration().cleanDefaultPrefixes();
     }
 
+
     log.info("Using contextMap ("+graphSet.contextMap().keySet().size()+"):");
-    Map<String, String> validationGraphs = new HashMap<>();
-    Set<String> executedInferences = new HashSet();
+    validationGraphs = new HashMap<>();
+    executedInferences = new HashSet();
 
     for(GraphVar graphVar : graphSet.contextMap().keySet()) {
       String context = graphSet.contextMap().get(graphVar);
-      log.info(graphVar + " > "+context);
+      log.info("- " + graphVar + " > "+context);
 
       String uploadDate = graphSet.graphExists(graphVar);
       if(uploadDate == null) {
@@ -88,116 +88,210 @@ public class ValidationExecutor {
       validationGraphs.put(graphVar.toString(), '<'+context+'>');
       executedInferences.addAll(getFinishedInferences(graphVar));
     }
+  }
+
+  public void validate() {
 
 
-    HashMap<String, HashMap<String, QueryResult>> bundleResults = new HashMap();
+    log.info("Execute profile");
+
+
+
+    boolean valid = true;
+
+
+
+
+
+
+    HashMap<String, HashMap<String, Object>> bundleResults = new HashMap();
 
     // Execute bundles in order of appearance
     for(Bundle bundle : profile.getBundles()) {
-      boolean containsUpdate = false;
-      boolean someTripleWasAdded = false;
 
-      String inferenceCode = profile.getName()+"/"+profile.getVersion()+"/"+bundle.getReference();
       if(Bundle.INFERENCE.equals(bundle.getType())) {
-        if(executedInferences.contains(inferenceCode)) {
-          log.info("Check if >>" + inferenceCode + "<< was executed before, it was");
-          continue;
-        } else {
-          log.info("Check if >>" + inferenceCode + "<< was executed before, it was not");
-        }
+
+      } else if(Bundle.VALIDATION.equals(bundle.getType())) {
+
+        HashMap<String, Object> resultMap = executeValidationBundle(bundle);
+        bundleResults.put(bundle.getReference(), resultMap);
+
+      } else {
+        throw new RuntimeException("Bundle type "+bundle.getType()+" not supported");
       }
 
-      Map<String, Long> previous = graphSet.quadCount();
-      Map<String, Long> beforeBundle = previous;
-      HashMap<String, QueryResult> resultMap = new HashMap();
-
-      log.info("\uD83D\uDC1A Will perform bundle \""+bundle.getReference()+"\"");
-
-      int run = 1;
-      do {
-        someTripleWasAdded = false;
-        if(run > MAX_RUNS) {
-          throw new RuntimeException("Break running, max number of repeated runs reached for bundle: "+bundle.getReference());
-        }
-
-        for (Query query : bundle.getQueries()) {
-
-          QueryResult resultCarrier;
-          if(!resultMap.containsKey(query.getReference())) {
-            if(Bundle.INFERENCE.equals(bundle.getType())) {
-
-              resultCarrier = new InferenceQueryResult(query);
-            } else if(Bundle.VALIDATION.equals(bundle.getType())) {
-
-              resultCarrier = new ValidationQueryResult(query);
-            } else {
-              throw new RuntimeException("No supported bundle type.");
-            }
-            resultMap.put(query.getReference(), resultCarrier);
-          } else {
-            resultCarrier = resultMap.get(query.getReference());
-          }
 
 
-          if (resultCarrier instanceof InferenceQueryResult) {
-            containsUpdate = true;
 
-            String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes);
-            graphSet.update(queryString, resultCarrier);
-
-            Map<String, Long> current = graphSet.quadCount();
-            resultCarrier.addRunStatistics(current);
-            long quadsAdded = quadsAdded(previous, current);
-            previous = current;
-            ((InferenceQueryResult)resultCarrier).addQuadsAdded(quadsAdded);
-
-            log.info("Finished run "+resultCarrier.getRunStatistics().size()+" for query \""+query.getReference()+"\", this total amount of quads was added: "+quadsAdded);
-            if(quadsAdded > 0) {
-              someTripleWasAdded = true;
-            }
-          }
-          if (resultCarrier instanceof ValidationQueryResult) {
-
-            String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes, maxResults);
-            graphSet.select(queryString, query.getFormatTemplate(), resultCarrier);
-            boolean hasNoResults = ((ValidationQueryResult)resultCarrier).getFormattedResults().isEmpty();
-            ((ValidationQueryResult)resultCarrier).setPassed(hasNoResults);
-
-            valid &= hasNoResults;
-          }
-        }
-
-        run++;
-      } while(containsUpdate && someTripleWasAdded);
-
-      // Store that this  inference bundle was executed
-      if(Bundle.INFERENCE.equals(bundle.getType())) {
-        Map<String, Long> bundleTotal = quadsAddedPerGraph(beforeBundle, previous);
-        for(String graphName : bundleTotal.keySet()) {
-          if(bundleTotal.get(graphName) > 0l) {
-            storeFinishedInferences(graphName, inferenceCode);
-          }
-        }
-      }
-
-      bundleResults.put(bundle.getReference(), resultMap);
     }
 
-
-    // Prepare data to transfer to the template
-    if(valid) {
-      log.info("\uD83E\uDD47 valid");
-    } else {
-      log.info("\uD83E\uDD48 invalid");
-    }
-
-    Map<String, Object> reportItems = new HashMap();
-
-    reportItems.put("valid",         valid);
-    reportItems.put("bundleResults", bundleResults);
-
-    return reportItems;
+    validationConfig.setValid(valid);
+    validationConfig.setBundleResults(bundleResults);
   }
+
+
+
+  private HashMap<String, Object> executeInferenceBundle(Bundle bundle) {
+
+    boolean containsUpdate = false;
+    boolean someTripleWasAdded = false;
+    HashMap<String, Object> resultMap = new HashMap();
+
+    String inferenceCode = profile.getName()+"/"+profile.getVersion()+"/"+bundle.getReference();
+    if(Bundle.INFERENCE.equals(bundle.getType())) {
+      if(executedInferences.contains(inferenceCode)) {
+        log.info("Check if >>" + inferenceCode + "<< was executed before, it was");
+        return resultMap;
+      } else {
+        log.info("Check if >>" + inferenceCode + "<< was executed before, it was not");
+      }
+    }
+
+    Map<String, Long> previous = graphSet.quadCount();
+    Map<String, Long> beforeBundle = previous;
+
+    log.info("\uD83D\uDC1A Will perform bundle \""+bundle.getReference()+"\"");
+
+    int run = 1;
+    do {
+      someTripleWasAdded = false;
+      if(run > MAX_RUNS) {
+        throw new RuntimeException("Break running, max number of repeated runs reached for bundle: "+bundle.getReference());
+      }
+
+      for (Query query : bundle.getQueries()) {
+
+        QueryResult resultCarrier;
+        if(!resultMap.containsKey(query.getReference())) {
+
+
+            resultCarrier = new InferenceQueryResult(query);
+
+          resultMap.put(query.getReference(), resultCarrier);
+        } else {
+          resultCarrier = (InferenceQueryResult) resultMap.get(query.getReference());
+        }
+
+
+          containsUpdate = true;
+
+          String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes);
+
+          if(graphSet.requiresLoad()) {
+            graphSet.load();
+          }
+
+          long start = new Date().getTime();
+
+          connector.update(queryString);
+
+          long executionTime = new Date().getTime() - start;
+          resultCarrier.setExecutionTime(executionTime);
+          resultCarrier.setExecutedQuery(queryString);
+
+
+
+
+
+          Map<String, Long> current = graphSet.quadCount();
+          resultCarrier.addRunStatistics(current);
+          long quadsAdded = quadsAdded(previous, current);
+          previous = current;
+          ((InferenceQueryResult)resultCarrier).addQuadsAdded(quadsAdded);
+
+          log.info("Finished run "+resultCarrier.getRunStatistics().size()+" for query \""+query.getReference()+"\", this total amount of quads was added: "+quadsAdded);
+          if(quadsAdded > 0) {
+            someTripleWasAdded = true;
+          }
+
+
+      }
+
+      run++;
+    } while(containsUpdate && someTripleWasAdded);
+
+    // Store that this  inference bundle was executed
+    if(Bundle.INFERENCE.equals(bundle.getType())) {
+      Map<String, Long> bundleTotal = quadsAddedPerGraph(beforeBundle, previous);
+      for(String graphName : bundleTotal.keySet()) {
+        if(bundleTotal.get(graphName) > 0l) {
+          storeFinishedInferences(graphName, inferenceCode);
+        }
+      }
+    }
+
+    return resultMap;
+  }
+
+  private HashMap<String, Object> executeValidationBundle(Bundle bundle) {
+
+    boolean valid = true;
+    HashMap<String, Object> resultMap = new HashMap();
+
+    for (Query query : bundle.getQueries()) {
+
+      ValidationQueryResult resultCarrier;
+      if(!resultMap.containsKey(query.getReference())) {
+        resultCarrier = new ValidationQueryResult(query);
+        resultMap.put(query.getReference(), resultCarrier);
+      } else {
+        resultCarrier = (ValidationQueryResult)resultMap.get(query.getReference());
+      }
+
+
+
+      String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes, validationConfig.getMaxResults());
+
+      Template formatTemplate = query.getFormatTemplate();
+
+
+
+
+      if(graphSet.requiresLoad()) {
+        graphSet.load();
+      }
+
+      long startQuery = new Date().getTime();
+
+      ArrayList<String> formattedResults = new ArrayList<>();
+      List<Object> result = connector.query(queryString);
+
+      if(result.isEmpty()) {
+        log.info("No results for \""+query.getReference()+"\", which is good");
+      } else {
+        log.info("Results were found for \""+query.getReference()+"\", this is bad");
+
+
+        if(formatTemplate != null) {
+          for(Object bindingSet : result) {
+            formattedResults.add(ReportFactory.formatResult((BindingSet) bindingSet, formatTemplate));
+          }
+        }
+      }
+
+      long executionTime = new Date().getTime() - startQuery;
+
+      resultCarrier.setExecutionTime(executionTime);
+      resultCarrier.setExecutedQuery(queryString);
+      resultCarrier.addFormattedResults(formattedResults);
+
+
+
+
+
+      boolean hasNoResults = resultCarrier.getFormattedResults().isEmpty();
+      resultCarrier.setPassed(hasNoResults);
+
+      valid &= hasNoResults;
+
+    }
+    bundle.setValid(valid);
+
+    return resultMap;
+  }
+
+
+
 
 
   public List<String> getFinishedInferences(GraphVar graphVar) {

@@ -1,2 +1,0 @@
-@prefix ns: <http://connection-test/ns#> .
-ns:test ns:rel ns:test .

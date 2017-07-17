@@ -25,6 +25,7 @@
 package com.sysunite.coinsweb.steps.profile;
 
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ public class ValidationQueryResult extends QueryResult {
   private static final Logger log = LoggerFactory.getLogger(ValidationQueryResult.class);
 
   private Iterator<Map<String,String>> resultSet;
+  @JacksonXmlCData
   private List<String> formattedResults = new ArrayList<>();
   private boolean passed;
 

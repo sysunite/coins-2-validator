@@ -38,6 +38,16 @@ public class StepStub extends ConfigPart implements ValidationStep {
   }
 
   @Override
+  public boolean getFailed() {
+    return false;
+  }
+
+  @Override
+  public boolean getValid() {
+    return false;
+  }
+
+  @Override
   public Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet) {
     // stub
     return null;

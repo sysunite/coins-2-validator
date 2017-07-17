@@ -7,7 +7,6 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.GraphUtil;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
 import org.eclipse.rdf4j.repository.manager.RemoteRepositoryManager;
@@ -31,11 +30,12 @@ public class GraphDB extends Rdf4jConnector {
 
   private static final Logger log = LoggerFactory.getLogger(GraphDB.class);
 
+  public static final String REFERENCE = "graphdb";
+
   private String url;
   RepositoryManager manager;
   String repositoryId;
 
-  boolean disableCleanUp = false;
   boolean repoPerRun = false;
 
 
@@ -47,9 +47,10 @@ public class GraphDB extends Rdf4jConnector {
     }
     url = config.getStore().getConfig().get("endpoint");
 
-    if(config.getStore().getConfig().containsKey("disableCleanUp")) {
-      disableCleanUp = Boolean.parseBoolean(config.getStore().getConfig().get("disableCleanUp"));
-    }
+
+    cleanUp = config.getCleanUp();
+    wipeOnClose = config.getDestroyRepo();
+
 
     if(Environment.REPO_PER_RUN.equals(config.getLoadingStrategy())) {
       repoPerRun = true;
@@ -65,6 +66,8 @@ public class GraphDB extends Rdf4jConnector {
     if(initialized) {
       return;
     }
+
+    log.info("Initialize connector ("+REFERENCE+")");
 
     manager = new RemoteRepositoryManager(url);
     manager.initialize();
@@ -90,19 +93,7 @@ public class GraphDB extends Rdf4jConnector {
 
 
 
-  @Override
-  public void cleanup() {
-    if(!initialized) {
-      init();
-    }
-    if(repository != null) {
-      if(!disableCleanUp) {
-        try (RepositoryConnection con = repository.getConnection()) {
-          con.clear();
-        }
-      }
-    }
-  }
+
 
   @Override
   public void close() {
@@ -110,7 +101,7 @@ public class GraphDB extends Rdf4jConnector {
       return;
     }
     repository.shutDown();
-    if(!disableCleanUp) {
+    if(wipeOnClose) {
       if (manager != null && repositoryId != null) {
         manager.removeRepository(repositoryId);
       }

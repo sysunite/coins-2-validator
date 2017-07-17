@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -141,7 +142,9 @@ public class ConfigFactory {
 
     ArrayList<Graph> graphs;
     if(describeFactory != null) {
-      graphs = describeFactory.graphsInContainer(containerFile);
+      ArrayList<GraphVarImpl> dataGraphs = new ArrayList<>(Arrays.asList(new GraphVarImpl("INSTANCE_UNION_GRAPH"), new GraphVarImpl("FULL_UNION_GRAPH")));
+      ArrayList<GraphVarImpl> schemaGraphs = new ArrayList<>(Arrays.asList(new GraphVarImpl("SCHEMA_UNION_GRAPH"), new GraphVarImpl("FULL_UNION_GRAPH")));
+      graphs = describeFactory.graphsInContainer(containerFile, dataGraphs, schemaGraphs);
     } else {
       graphs = new ArrayList();
 

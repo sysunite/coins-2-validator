@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -169,17 +168,15 @@ public class DescribeFactoryImpl implements DescribeFactory {
   }
 
 
-  public ArrayList<Graph> graphsInContainer(File file) {
-
-    ContainerFileImpl containerFile = new ContainerFileImpl(file.getPath());
-
+  public ArrayList<Graph> graphsInContainer(File file, ArrayList<GraphVarImpl> dataGraphs, ArrayList<GraphVarImpl>schemaGraphs) {
+    if(!(file instanceof ContainerFileImpl)) {
+      throw new RuntimeException("Please call graphsInContainer with a ContainerFileImpl as argument");
+    }
+    ContainerFileImpl containerFile = (ContainerFileImpl) file;
     ArrayList<Graph> graphs = new ArrayList();
-    graphs.addAll(contentGraphsInContainer(containerFile));
-    graphs.addAll(libraryGraphsInContainer(containerFile));
+    graphs.addAll(contentGraphsInContainer(containerFile, dataGraphs));
+    graphs.addAll(libraryGraphsInContainer(containerFile, schemaGraphs));
     return graphs;
-  }
-  public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile) {
-    return contentGraphsInContainer(containerFile, new ArrayList<>(Arrays.asList(new GraphVarImpl("INSTANCE_UNION_GRAPH"), new GraphVarImpl("FULL_UNION_GRAPH"))));
   }
   public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content) {
     ArrayList<Graph> graphs = new ArrayList();
@@ -205,9 +202,6 @@ public class DescribeFactoryImpl implements DescribeFactory {
       }
     }
     return graphs;
-  }
-  public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile) {
-    return libraryGraphsInContainer(containerFile, new ArrayList<>(Arrays.asList(new GraphVarImpl("SCHEMA_UNION_GRAPH"), new GraphVarImpl("FULL_UNION_GRAPH"))));
   }
   public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content) {
     ArrayList<Graph> graphs = new ArrayList();
@@ -236,7 +230,6 @@ public class DescribeFactoryImpl implements DescribeFactory {
   }
 
 
-  // todo  handle error reading file: make sure the file system validator checks this first
   public static ArrayList<String> namespacesForFile(File file) throws FileNotFoundException {
     return namespacesForFile(new FileInputStream(file), file.getName());
   }

@@ -1,5 +1,11 @@
 package com.sysunite.coinsweb.runner;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import com.sysunite.coinsweb.cli.CliOptions;
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.connector.ConnectorFactory;
 import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
@@ -10,12 +16,17 @@ import com.sysunite.coinsweb.filemanager.VirtualContainerFileImpl;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphSetFactory;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
-import com.sysunite.coinsweb.parser.config.pojo.*;
+import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
+import com.sysunite.coinsweb.parser.config.pojo.Container;
+import com.sysunite.coinsweb.parser.config.pojo.Locator;
+import com.sysunite.coinsweb.parser.config.pojo.Report;
+import com.sysunite.coinsweb.parser.profile.util.IndentedCDATAPrettyPrinter;
 import com.sysunite.coinsweb.report.ReportFactory;
 import com.sysunite.coinsweb.steps.ValidationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -116,8 +127,14 @@ public class Validation {
 
         log.info("\uD83D\uDD2C Will now execute validationStep of type "+step.getType());
 
-        try {
+
           Map<String, Object> items = step.execute(containerFile, graphSet);
+
+
+
+
+        if(!step.getFailed()) {
+
           if (!items.containsKey("valid")) {
             throw new RuntimeException("Validator " + step.getType() + " dit not return the field \"valid\"");
           }
@@ -126,16 +143,18 @@ public class Validation {
           ((Map<String, Boolean>) containerItems.get("steps")).put(step.getType(), valid);
           ((Map<String, Boolean>) containerItems.get("stepsFailed")).put(step.getType(), false);
           containerItems.putAll(items);
-        } catch(RuntimeException e) {
 
-          log.warn("Executing failed validationStep of type "+step.getType());
-          log.warn(e.getMessage());
+        } else {
+
+
 
           // Default config for failed validations
           boolean valid = false;
           ((ArrayList<String>) containerItems.get("stepNames")).add(step.getType());
           ((Map<String, Boolean>) containerItems.get("steps")).put(step.getType(), valid);
           ((Map<String, Boolean>) containerItems.get("stepsFailed")).put(step.getType(), true);
+
+
         }
       }
 
@@ -165,8 +184,18 @@ public class Validation {
     for(Report report : configFile.getRun().getReports()) {
       String payload = null;
       if(Report.XML.equals(report.getType())) {
-        if(xml == null) {
-          xml = ReportFactory.buildXml(reportItems);
+
+
+
+        XmlMapper objectMapper = new XmlMapper();
+        objectMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        ObjectWriter xmlWriter = objectMapper.writer(new IndentedCDATAPrettyPrinter());
+
+        try {
+          xml = xmlWriter.writeValueAsString(configFile);
+        } catch (JsonProcessingException e) {
+          e.printStackTrace();
         }
         payload = xml;
       }
@@ -178,7 +207,9 @@ public class Validation {
       }
 
       if(Locator.FILE.equals(report.getLocation().getType()) && payload != null) {
-        ReportFactory.saveReport(payload, configFile.resolve(report.getLocation().getPath()));
+        Path path = CliOptions.makeUnique(configFile.resolve(report.getLocation().getPath()));
+        report.getLocation().setPath(path.toString());
+        ReportFactory.saveReport(payload, path);
       }
       if(Locator.ONLINE.equals(report.getLocation().getType()) && payload != null) {
         ReportFactory.postReport(payload, report.getLocation().getUri());

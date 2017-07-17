@@ -155,16 +155,22 @@ public class Application {
         }
 
         // Get config
-        ConfigFile configFile;
+        ConfigFile configFile = null;
 
-        if (file != null) {
-          log.info("Try to read config.yml from file");
-          configFile = ConfigFile.parse(file);
-          log.info("Done reading config.yml from file");
-        } else {
-          log.info("Try to read config.yml from pipe");
-          configFile = ConfigFile.parse(System.in);
-          log.info("Done reading config.yml from pipe");
+        try {
+          if (file != null) {
+            log.info("Try to read config.yml from file");
+            configFile = ConfigFile.parse(file);
+            log.info("Done reading config.yml from file");
+          } else {
+            log.info("Try to read config.yml from pipe");
+            configFile = ConfigFile.parse(System.in);
+            log.info("Done reading config.yml from pipe");
+          }
+        } catch(RuntimeException e) {
+          log.error("Unable to read config.yml: "+e.getLocalizedMessage());
+          CliOptions.printOutput("Stopped with error");
+          System.exit(1);
         }
 
         if(options.hasConfigFile() && options.hasContainerFile() > 0) {

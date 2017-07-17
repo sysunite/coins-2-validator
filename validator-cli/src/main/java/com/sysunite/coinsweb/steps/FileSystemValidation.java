@@ -17,7 +17,6 @@ import java.util.Map;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 
-
 /**
  * @author bastbijl, Sysunite 2017
  */
@@ -27,6 +26,7 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
   private static final Logger log = LoggerFactory.getLogger(FileSystemValidation.class);
 
 
+  // Configuration items
   private String type = "FileSystemValidation";
   public String getType() {
     return type;
@@ -43,6 +43,43 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
     this.lookIn = lookIn;
   }
 
+
+  // Result items
+  private boolean failed = true;
+  public boolean getFailed() {
+    return failed;
+  }
+
+  private boolean valid = false;
+  public boolean getValid() {
+    return valid;
+  }
+
+  private boolean oneRepoFile = false;
+  public boolean getOneRepoFile() {
+    return oneRepoFile;
+  }
+
+  private boolean noSubsInBim = false;
+  public boolean getNoSubsInBim() {
+    return noSubsInBim;
+  }
+
+  private boolean noOrphans = false;
+  public boolean getNoOrphans() {
+    return noOrphans;
+  }
+
+  private boolean allImportsImportable = false;
+  public boolean getAllImportsImportable() {
+    return allImportsImportable;
+  }
+
+  private List<String> imports;
+  public List<String> getImports() {
+    return imports;
+  }
+
   public void checkConfig() {
     isNotNull(lookIn);
   }
@@ -50,41 +87,51 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
   @Override
   public Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet) {
 
-    // Should be one repo file
-    boolean oneRepoFile = container.getContentFiles().size() == 1;
+    try {
 
-    // Should be no sub folders in bim
-    boolean noSubsInBim = true;
-    for(String path : container.getContentFiles()) {
-      noSubsInBim &= (Paths.get(path).getNameCount() == 1);
-    }
+      // Should be one repo file
+      oneRepoFile = container.getContentFiles().size() == 1;
 
-    // Should be no orphan files
-    boolean noOrphans = container.getOrphanFiles().isEmpty();
-
-    // Should be able to satisfy all ontology imports from repository folder
-    boolean allImportsImportable = true;
-
-    ArrayList<String> availableGraphs = new ArrayList();
-    for(String repoFilePath : container.getRepositoryFiles()) {
-      availableGraphs.addAll(container.getRepositoryFileNamespaces(repoFilePath));
-    }
-
-    List<String> imports = new ArrayList();
-    if(graphSet.hasContext(getLookIn())) {
-      imports = graphSet.getImports(getLookIn());
-      for (String namespace : imports) {
-
-        boolean found = Utils.containsNamespace(namespace, availableGraphs);
-        if(!found) {
-          log.info("Namespace to import "+ namespace+ " was not found in "+String.join(", ", availableGraphs));
-        }
-        allImportsImportable &= found;
+      // Should be no sub folders in bim
+      noSubsInBim = true;
+      for (String path : container.getContentFiles()) {
+        noSubsInBim &= (Paths.get(path).getNameCount() == 1);
       }
+
+      // Should be no orphan files
+      noOrphans = container.getOrphanFiles().isEmpty();
+
+      // Should be able to satisfy all ontology imports from repository folder
+      allImportsImportable = true;
+
+      ArrayList<String> availableGraphs = new ArrayList();
+      for (String repoFilePath : container.getRepositoryFiles()) {
+        availableGraphs.addAll(container.getRepositoryFileNamespaces(repoFilePath));
+      }
+
+      imports = new ArrayList();
+      if (graphSet.hasContext(getLookIn())) {
+        imports = graphSet.getImports(getLookIn());
+        for (String namespace : imports) {
+
+          boolean found = Utils.containsNamespace(namespace, availableGraphs);
+          if (!found) {
+            log.info("Namespace to import " + namespace + " was not found in " + String.join(", ", availableGraphs));
+          }
+          allImportsImportable &= found;
+        }
+      }
+
+      boolean valid = oneRepoFile && noSubsInBim && noOrphans && allImportsImportable;
+
+    } catch (RuntimeException e) {
+      log.warn("Executing failed validationStep of type "+getType());
+      log.warn(e.getMessage());
+      failed = true;
     }
 
-    boolean valid = oneRepoFile && noSubsInBim && noOrphans && allImportsImportable;
-    if(valid) {
+    // Prepare data to transfer to the template
+    if (getValid()) {
       log.info("\uD83E\uDD47 valid");
     } else {
       log.info("\uD83E\uDD48 invalid");
@@ -92,12 +139,13 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
 
     Map<String, Object> reportItems = new HashMap();
 
-    reportItems.put("valid",                valid);
-    reportItems.put("oneRepoFile",          oneRepoFile);
-    reportItems.put("noSubsInBim",          noSubsInBim);
-    reportItems.put("noOrphans",            noOrphans);
-    reportItems.put("allImportsImportable", allImportsImportable);
-    reportItems.put("imports",              imports);
+    reportItems.put("failed",               getFailed());
+    reportItems.put("valid",                getValid());
+    reportItems.put("oneRepoFile",          getOneRepoFile());
+    reportItems.put("noSubsInBim",          getNoSubsInBim());
+    reportItems.put("noOrphans",            getNoOrphans());
+    reportItems.put("allImportsImportable", getAllImportsImportable());
+    reportItems.put("imports",              getImports());
 
     return reportItems;
   }

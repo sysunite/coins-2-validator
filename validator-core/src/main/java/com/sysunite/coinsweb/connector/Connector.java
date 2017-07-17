@@ -2,6 +2,7 @@ package com.sysunite.coinsweb.connector;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,4 +31,6 @@ public interface Connector {
   List<String> getContexts();
 
   String graphExists(String context);
+
+  void writeContextsToFile(String[] contexts, OutputStream outputStream);
 }

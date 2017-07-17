@@ -12,7 +12,7 @@ import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 /**
  * @author bastbijl, Sysunite 2017
  */
-@JsonInclude(Include.NON_NULL)
+@JsonInclude(Include.NON_DEFAULT)
 @JsonDeserialize(converter=MappingSanitizer.class)
 public class Mapping extends ConfigPart {
 
@@ -28,11 +28,9 @@ public class Mapping extends ConfigPart {
     return variable;
   }
 
-
   public void setGraphname(String graphname) {
     this.graphname = graphname;
   }
-
   public void setVariable(GraphVarImpl variable) {
     this.variable = variable;
   }

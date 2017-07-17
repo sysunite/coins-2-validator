@@ -4,10 +4,7 @@ import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
-import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
-import com.sysunite.coinsweb.parser.config.pojo.Container;
-import com.sysunite.coinsweb.parser.config.pojo.Environment;
-import com.sysunite.coinsweb.parser.config.pojo.Graph;
+import com.sysunite.coinsweb.parser.config.pojo.*;
 import com.sysunite.coinsweb.rdfutil.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +24,7 @@ public class GraphSetFactory {
 
   public static ContainerGraphSet lazyLoad(ContainerFile container, Container containerConfig, Connector connector) {
     Environment environment = containerConfig.getParent().getEnvironment();
+
     if("none".equals(environment.getStore().getType())) {
       return new ContainerGraphSetImpl();
     }
@@ -36,6 +34,19 @@ public class GraphSetFactory {
     graphSet.setContainerFile(container);
     graphSet.setContainerConfig(containerConfig);
     graphSet.setConfigFile(containerConfig.getParent());
+
+    Graph main = null;
+    for(Graph graph : containerConfig.getGraphs()) {
+      if(graph.getMain() != null && graph.getMain()) {
+        if(main == null) {
+          main = graph;
+        } else {
+          throw new RuntimeException("No two graphs can be flagged as main");
+        }
+      }
+    }
+    graphSet.setMain(main);
+
     return graphSet;
   }
 

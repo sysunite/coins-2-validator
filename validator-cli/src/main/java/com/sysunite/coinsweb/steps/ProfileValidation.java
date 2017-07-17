@@ -107,7 +107,7 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
         }
       }
 
-      ValidationExecutor executor = new ValidationExecutor(profileFile, graphSet, this, graphSet.getConnector());
+      ValidationExecutor executor = new ValidationExecutor(profileFile, graphSet, this);
 
       // Execute the validation
       executor.validate();
@@ -131,11 +131,4 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
 
     return reportItems;
   }
-
-
-
-
 }
-
-
-

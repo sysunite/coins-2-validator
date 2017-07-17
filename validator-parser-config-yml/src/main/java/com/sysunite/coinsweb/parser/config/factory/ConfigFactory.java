@@ -11,9 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -60,6 +58,26 @@ public class ConfigFactory {
     configFile.setRun(getDefaultRun(containersList, localizeTo));
 
     return configFile;
+  }
+
+  public static Mapping[] getDefaultMapping(Graph[] graphs) {
+
+    Set<GraphVarImpl> varSet = new HashSet();
+    ArrayList<Mapping> mappings = new ArrayList();
+    for(Graph graph : graphs) {
+      if(graph.getAs().size() != 1) {
+        throw new RuntimeException("Can not generate mapping from graphs if for some graph more (or less) than one graphVar is set");
+      }
+      GraphVarImpl graphVar = graph.getAs().get(0);
+      if(varSet.contains(graphVar)) {
+        throw new RuntimeException("The graphVar \""+graphVar+"\" was already used, can not generate a mapping based on this graphs");
+      }
+      Mapping mapping = new Mapping();
+      mapping.setVariable(graphVar);
+      mapping.setGraphname(graph.getSource().getGraphname());
+      mappings.add(mapping);
+    }
+    return mappings.toArray(new Mapping[0]);
   }
 
   public static ValidationStep[] getDefaultSteps() {

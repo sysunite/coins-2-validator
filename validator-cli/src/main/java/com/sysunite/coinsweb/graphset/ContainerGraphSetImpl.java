@@ -4,10 +4,12 @@ import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
+import com.sysunite.coinsweb.parser.config.pojo.Graph;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +31,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   private ConfigFile configFile;
   private HashMap<GraphVar, String> contextMap;
 
+  private Graph main;
 
 
   public ContainerGraphSetImpl() {
@@ -40,6 +43,13 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     this.connector = connector;
   }
 
+  public Object getMain() {
+    return main;
+  }
+  public void setMain(Object main) {
+    this.main = (Graph) main;
+  }
+
   // Execute postponed lazy load
   public void load() {
 
@@ -49,6 +59,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
     log.info("Load stuff to connector");
     contextMap = GraphSetFactory.load(containerConfig.getGraphs(), connector, container, configFile);
+
     this.setAllLoaded();
   }
 
@@ -179,7 +190,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     initialized = true;
   }
 
-  public Connector getConnector() {
-    return connector;
+  public void writeContextToFile(String[] contexts, OutputStream outputStream) {
+    connector.writeContextsToFile(contexts, outputStream);
   }
 }

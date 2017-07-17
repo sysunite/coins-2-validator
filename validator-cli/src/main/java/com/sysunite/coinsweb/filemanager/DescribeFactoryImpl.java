@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.filemanager;
 
+import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
 import com.sysunite.coinsweb.parser.config.factory.DescribeFactory;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.parser.config.pojo.*;
@@ -48,6 +49,10 @@ public class DescribeFactoryImpl implements DescribeFactory {
     }
     Graph[] expandedGraphs = loadList(container.getGraphs(), containerFile).toArray(new Graph[0]);
     container.setGraphs(expandedGraphs);
+
+    if(container.getParent().getEnvironment().getGraphs().length < 1) {
+      container.getParent().getEnvironment().setGraphs(ConfigFactory.getDefaultMapping(expandedGraphs));
+    }
   }
 
   // container can be null for a virtual container
@@ -168,7 +173,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
   }
 
 
-  public ArrayList<Graph> graphsInContainer(File file, ArrayList<GraphVarImpl> dataGraphs, ArrayList<GraphVarImpl>schemaGraphs) {
+  public ArrayList<Graph> graphsInContainer(File file, ArrayList<GraphVarImpl> dataGraphs, ArrayList<GraphVarImpl> schemaGraphs) {
     if(!(file instanceof ContainerFileImpl)) {
       throw new RuntimeException("Please call graphsInContainer with a ContainerFileImpl as argument");
     }

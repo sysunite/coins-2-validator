@@ -1,8 +1,8 @@
 package com.sysunite.coinsweb.graphset;
 
-import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -16,8 +16,6 @@ public interface ContainerGraphSet {
 
 
   List<Object> select(String query);
-
-
   void update(String query);
 
   List<String> getImports(GraphVar graphVar);
@@ -36,7 +34,9 @@ public interface ContainerGraphSet {
   boolean requiresLoad();
   void setAllLoaded();
 
+  Object getMain();
+  void setMain(Object graphVar);
   String graphExists(GraphVar graphVar);
 
-  Connector getConnector();
+  void writeContextToFile(String[] contexts, OutputStream outputStream);
 }

@@ -67,7 +67,7 @@ public class Validation {
       ContainerFile containerFile;
       if(containerConfig.isVirtual()) {
         log.info("\uD83D\uDCCF Validate a virtual file");
-        containerFile = new VirtualContainerFileImpl();
+        containerFile = new VirtualContainerFileImpl(containerConfig);
       } else {
         String containerFilePath = containerConfig.getLocation().toString();
         log.info("\uD83D\uDCD0 Validate "+containerFilePath);

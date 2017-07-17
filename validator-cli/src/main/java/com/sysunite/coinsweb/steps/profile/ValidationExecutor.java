@@ -62,11 +62,10 @@ public class ValidationExecutor {
   Map<String, List<String>> executedInferences;        // map context to list of inferenceCode
 
 
-  public ValidationExecutor(ProfileFile profile, ContainerGraphSet graphSet, ProfileValidation validationConfig, Connector connector) {
+  public ValidationExecutor(ProfileFile profile, ContainerGraphSet graphSet, ProfileValidation validationConfig) {
     this.profile = profile;
     this.graphSet = graphSet;
     this.validationConfig = validationConfig;
-    this.connector = connector;
 
     if(profile.getQueryConfiguration() != null) {
       defaultPrefixes = profile.getQueryConfiguration().cleanDefaultPrefixes();
@@ -309,8 +308,6 @@ public class ValidationExecutor {
 
 
   public List<String> getFinishedInferences(String context) {
-
-
 
     String query =
 

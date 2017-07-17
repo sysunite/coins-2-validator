@@ -23,12 +23,18 @@ public class Graph extends ConfigPart {
 
   private Source source;
   private ArrayList<GraphVarImpl> as;
+  private Boolean main;
+
+
 
   public Source getSource() {
     return source;
   }
   public ArrayList<GraphVarImpl> getAs() {
     return as;
+  }
+  public Boolean getMain() {
+    return main;
   }
 
   public void setSource(Source source) {
@@ -37,6 +43,9 @@ public class Graph extends ConfigPart {
   public void setAs(ArrayList<GraphVarImpl> as) {
     this.as = as;
   }
+  public void setMain(Boolean main) {
+    this.main = main;
+  }
 
   @JsonIgnore
   public Graph clone() {
@@ -44,6 +53,7 @@ public class Graph extends ConfigPart {
     clone.setSource(this.getSource().clone());
     clone.setAs((ArrayList<GraphVarImpl>)this.getAs().clone());
     clone.setParent(this.getParent());
+    clone.setMain(this.getMain());
     return clone;
   }
 

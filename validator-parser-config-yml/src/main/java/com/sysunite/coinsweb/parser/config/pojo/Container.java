@@ -26,6 +26,8 @@ public class Container extends ConfigPart {
   private String type;
   private Locator location;
   private Graph[] graphs = new Graph[0];
+  @JsonInclude(Include.NON_EMPTY)
+  private Attachment[] attachments = new Attachment[0];
 
   @JsonIgnore
   private String code;
@@ -42,6 +44,9 @@ public class Container extends ConfigPart {
   }
   public Graph[] getGraphs() {
     return graphs;
+  }
+  public Attachment[] getAttachments() {
+    return attachments;
   }
 
   @JsonIgnore
@@ -68,6 +73,12 @@ public class Container extends ConfigPart {
       graph.setParent(this.getParent());
     }
   }
+  public void setAttachments(Attachment[] attachments) {
+    this.attachments = attachments;
+    for(Attachment attachment : this.attachments) {
+      attachment.setParent(this.getParent());
+    }
+  }
 
   @Override
   public void setParent(Object parent) {
@@ -77,6 +88,9 @@ public class Container extends ConfigPart {
     }
     for(Graph graph : this.graphs) {
       graph.setParent(this.getParent());
+    }
+    for(Attachment attachment : this.attachments) {
+      attachment.setParent(this.getParent());
     }
   }
 

@@ -25,14 +25,12 @@ public class Source extends ConfigPart {
   public static final String FILE = "file";
   public static final String ONLINE = "online";
   public static final String CONTAINER = "container";
-//  public static final String STORE = "store";
 
 
   private String type;
   private String path;
   private String uri;
   private String graphname;
-//  private Store store;
 
 
   public String getType() {
@@ -47,9 +45,6 @@ public class Source extends ConfigPart {
   public String getUri() {
     return uri;
   }
-//  public Store getStore() {
-//    return store;
-//  }
 
   public void setType(String type) {
     validate(type, FILE, ONLINE, CONTAINER);
@@ -103,12 +98,6 @@ public class Source extends ConfigPart {
 
 
 
-//  public void setEndpoint(Store store) {
-//    this.store = store;
-//    this.store.setParent(this.getParent());
-//  }
-
-
   @JsonIgnore
   public Source clone() {
     Source clone = new Source();
@@ -140,7 +129,6 @@ class SourceSanitizer extends StdConverter<Source, Source> {
       if(obj.getPath() != null && obj.getPath().contains("*")) {
         throw new RuntimeException("Wildcards in path are only allowed for sources of type 'container'");
       }
-//      isFile(obj.getPath());
     }
     if(Source.ONLINE.equals(obj.getType())) {
       isResolvable(obj.getUri());
@@ -152,9 +140,7 @@ class SourceSanitizer extends StdConverter<Source, Source> {
         }
       }
     }
-//    if(Graph.STORE.equals(obj.getType())) {
-//      isNotNull(obj.getStore());
-//    }
+
 
     return obj;
   }

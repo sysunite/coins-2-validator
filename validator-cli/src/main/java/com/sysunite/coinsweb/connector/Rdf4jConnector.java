@@ -10,6 +10,7 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFHandler;
 import org.eclipse.rdf4j.rio.Rio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -244,5 +246,15 @@ public abstract class Rdf4jConnector implements Connector {
       contextsIRI[i] = factory.createIRI(contexts[i]);
     }
     return contextsIRI;
+  }
+
+
+  public void writeContextsToFile(String[] contexts, OutputStream outputStream) {
+
+    RDFHandler writer = Rio.createWriter(RDFFormat.RDFXML, outputStream);
+
+    try (RepositoryConnection con = repository.getConnection()) {
+      con.export(writer, asResource(contexts));
+    }
   }
 }

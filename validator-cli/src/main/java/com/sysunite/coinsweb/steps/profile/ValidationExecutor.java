@@ -36,6 +36,7 @@ import com.sysunite.coinsweb.rdfutil.Utils;
 import com.sysunite.coinsweb.report.ReportFactory;
 import com.sysunite.coinsweb.steps.ProfileValidation;
 import freemarker.template.Template;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +59,7 @@ public class ValidationExecutor {
 
   private String defaultPrefixes = null;
   private Map<String, String> validationGraphs;
-  Set<String> executedInferences;
+  Map<String, List<String>> executedInferences;        // map context to list of inferenceCode
 
 
   public ValidationExecutor(ProfileFile profile, ContainerGraphSet graphSet, ProfileValidation validationConfig, Connector connector) {
@@ -74,7 +75,7 @@ public class ValidationExecutor {
 
     log.info("Using contextMap ("+graphSet.contextMap().keySet().size()+"):");
     validationGraphs = new HashMap<>();
-    executedInferences = new HashSet();
+    executedInferences = new HashMap();
 
     for(GraphVar graphVar : graphSet.contextMap().keySet()) {
       String context = graphSet.contextMap().get(graphVar);
@@ -86,7 +87,8 @@ public class ValidationExecutor {
       }
 
       validationGraphs.put(graphVar.toString(), '<'+context+'>');
-      executedInferences.addAll(getFinishedInferences(graphVar));
+      List<String> list = getFinishedInferences(context);
+      executedInferences.put(context, list);
     }
   }
 
@@ -100,16 +102,15 @@ public class ValidationExecutor {
     boolean valid = true;
 
 
-
-
-
-
     HashMap<String, HashMap<String, Object>> bundleResults = new HashMap();
 
     // Execute bundles in order of appearance
     for(Bundle bundle : profile.getBundles()) {
 
       if(Bundle.INFERENCE.equals(bundle.getType())) {
+
+        HashMap<String, Object> resultMap = executeInferenceBundle(bundle);
+        bundleResults.put(bundle.getReference(), resultMap);
 
       } else if(Bundle.VALIDATION.equals(bundle.getType())) {
 
@@ -121,10 +122,11 @@ public class ValidationExecutor {
       }
 
 
-
+      valid &= bundle.getValid();
 
     }
 
+    validationConfig.setFailed(false);
     validationConfig.setValid(valid);
     validationConfig.setBundleResults(bundleResults);
   }
@@ -138,14 +140,27 @@ public class ValidationExecutor {
     HashMap<String, Object> resultMap = new HashMap();
 
     String inferenceCode = profile.getName()+"/"+profile.getVersion()+"/"+bundle.getReference();
-    if(Bundle.INFERENCE.equals(bundle.getType())) {
-      if(executedInferences.contains(inferenceCode)) {
-        log.info("Check if >>" + inferenceCode + "<< was executed before, it was");
-        return resultMap;
-      } else {
-        log.info("Check if >>" + inferenceCode + "<< was executed before, it was not");
+
+    log.info("Will check all for these graphs if some inference was executed before");
+    for(GraphVar graphVar : QueryFactory.usedVars(bundle)) {
+      String context = graphSet.contextMap().get(graphVar);
+      List<String> list = new ArrayList<>();
+      if(Utils.containsNamespace(context, executedInferences.keySet())) {
+        list = executedInferences.get(context);
       }
+      log.info("- "+graphVar+" > "+context+" has >>"+String.join("<<, >>", list)+"<<");
+      for(String existingInferenceCode : list) {
+        if(inferenceCodeWithoutRef(existingInferenceCode).equals(inferenceCodeWithoutRef(inferenceCode))) {
+          log.info("Inference >>" + inferenceCode + "<< was executed before");
+          return resultMap;
+        } else {
+          throw new RuntimeException("Some other >>" + executedInferences.get(context) + "<< inference was executed before, this connector can not be used");
+        }
+      }
+
+      log.info("Inference >>" + inferenceCode + "<< was not executed before");
     }
+
 
     Map<String, Long> previous = graphSet.quadCount();
     Map<String, Long> beforeBundle = previous;
@@ -164,45 +179,44 @@ public class ValidationExecutor {
         QueryResult resultCarrier;
         if(!resultMap.containsKey(query.getReference())) {
 
-
-            resultCarrier = new InferenceQueryResult(query);
-
+          resultCarrier = new InferenceQueryResult(query);
           resultMap.put(query.getReference(), resultCarrier);
+
         } else {
+
           resultCarrier = (InferenceQueryResult) resultMap.get(query.getReference());
+
         }
 
 
-          containsUpdate = true;
+        containsUpdate = true;
 
-          String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes);
+        String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes);
 
-          if(graphSet.requiresLoad()) {
-            graphSet.load();
-          }
+        if(graphSet.requiresLoad()) {
+          graphSet.load();
+        }
 
-          long start = new Date().getTime();
+        long start = new Date().getTime();
 
-          connector.update(queryString);
+        connector.update(queryString);
 
-          long executionTime = new Date().getTime() - start;
-          resultCarrier.setExecutionTime(executionTime);
-          resultCarrier.setExecutedQuery(queryString);
-
-
+        long executionTime = new Date().getTime() - start;
+        resultCarrier.setExecutionTime(executionTime);
+        resultCarrier.setExecutedQuery(queryString);
 
 
 
-          Map<String, Long> current = graphSet.quadCount();
-          resultCarrier.addRunStatistics(current);
-          long quadsAdded = quadsAdded(previous, current);
-          previous = current;
-          ((InferenceQueryResult)resultCarrier).addQuadsAdded(quadsAdded);
+        Map<String, Long> current = graphSet.quadCount();
+        resultCarrier.addRunStatistics(current);
+        long quadsAdded = quadsAdded(previous, current);
+        previous = current;
+        ((InferenceQueryResult)resultCarrier).addQuadsAdded(quadsAdded);
 
-          log.info("Finished run "+resultCarrier.getRunStatistics().size()+" for query \""+query.getReference()+"\", this total amount of quads was added: "+quadsAdded);
-          if(quadsAdded > 0) {
-            someTripleWasAdded = true;
-          }
+        log.info("Finished run "+resultCarrier.getRunStatistics().size()+" for query \""+query.getReference()+"\", this total amount of quads was added: "+quadsAdded);
+        if(quadsAdded > 0) {
+          someTripleWasAdded = true;
+        }
 
 
       }
@@ -259,7 +273,7 @@ public class ValidationExecutor {
       if(result.isEmpty()) {
         log.info("No results for \""+query.getReference()+"\", which is good");
       } else {
-        log.info("Results were found for \""+query.getReference()+"\", this is bad");
+        log.info("Results found for \""+query.getReference()+"\", this is bad");
 
 
         if(formatTemplate != null) {
@@ -294,9 +308,9 @@ public class ValidationExecutor {
 
 
 
-  public List<String> getFinishedInferences(GraphVar graphVar) {
+  public List<String> getFinishedInferences(String context) {
 
-    String context = graphSet.contextMap().get(graphVar);
+
 
     String query =
 
@@ -351,7 +365,7 @@ public class ValidationExecutor {
 
     for(String graphName : current.keySet()) {
       if(Utils.containsNamespace(graphName, previous.keySet())) {
-        result.put(graphName, current.get(graphName) - previous.get(graphName)); // todo: reading this graphName from previous might be scary
+        result.put(graphName, current.get(graphName) - previous.get(graphName));
       }
     }
     for(String graphName : previous.keySet()) {
@@ -370,5 +384,12 @@ public class ValidationExecutor {
       count += Math.abs(results.get(graphName)); // negative values also count as change
     }
     return count;
+  }
+
+  public static String inferenceCodeWithoutRef(String inferenceCode) {
+    if(inferenceCode == null || inferenceCode.isEmpty() || StringUtils.countMatches(inferenceCode, "/") != 2) {
+      throw new RuntimeException("InferenceCode >>"+inferenceCode+"<< is not valid");
+    }
+    return inferenceCode.substring(0, inferenceCode.lastIndexOf("/"));
   }
 }

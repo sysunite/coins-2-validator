@@ -82,7 +82,7 @@ public class Validation {
           containerItems.put("alledgedName", containerFilePath);
           containerItems.put("valid", false);
           containers.put(containerConfig.getCode(), containerItems);
-          log.info("Skipping normal path because container file could not be found, up to the next");
+          log.warn("Skipping normal path because container file could not be found, up to the next (msg): " + e.getLocalizedMessage());
           continue;
         }
       }
@@ -104,7 +104,7 @@ public class Validation {
         containerItems.put("stepsFailed", new HashMap<String, Boolean>());
         containerItems.put("valid", false);
         containers.put(containerConfig.getCode(), containerItems);
-        log.info("Skipping normal path because container file could not be found, up to the next");
+        log.warn("Skipping normal path because container file could not be found, up to the next (msg): " + e.getLocalizedMessage());
         continue;
       }
 
@@ -128,10 +128,7 @@ public class Validation {
         log.info("\uD83D\uDD2C Will now execute validationStep of type "+step.getType());
 
 
-          Map<String, Object> items = step.execute(containerFile, graphSet);
-
-
-
+        Map<String, Object> items = step.execute(containerFile, graphSet);
 
         if(!step.getFailed()) {
 

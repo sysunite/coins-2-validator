@@ -51,13 +51,18 @@ public class QueryFactory {
 
   public static Set<GraphVar> usedVars(ProfileFile profileFile) {
     HashSet<GraphVar> result = new HashSet();
-    Pattern pattern = Pattern.compile("(?<=\\$\\{)([^\\}]+)(?=\\})");
     for(Bundle bundle : profileFile.getBundles()) {
-      for(Query query : bundle.getQueries()) {
-        Matcher matcher = pattern.matcher(query.cleanQuery());
-        while(matcher.find()) {
-          result.add(new GraphVarImpl(matcher.group()));
-        }
+      result.addAll(usedVars(bundle));
+    }
+    return result;
+  }
+  public static Set<GraphVar> usedVars(Bundle bundle) {
+    HashSet<GraphVar> result = new HashSet();
+    Pattern pattern = Pattern.compile("(?<=\\$\\{)([^\\}]+)(?=\\})");
+    for(Query query : bundle.getQueries()) {
+      Matcher matcher = pattern.matcher(query.cleanQuery());
+      while(matcher.find()) {
+        result.add(new GraphVarImpl(matcher.group()));
       }
     }
     return result;

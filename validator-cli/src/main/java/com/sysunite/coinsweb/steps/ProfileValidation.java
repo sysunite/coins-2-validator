@@ -82,6 +82,14 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     this.valid = valid;
   }
 
+  private List<String> bundleNames;
+  public List<String> getBundleNames() {
+    return bundleNames;
+  }
+  public void setBundleNames(List<String> bundleNames) {
+    this.bundleNames = bundleNames;
+  }
+
   private HashMap<String, HashMap<String, Object>> bundleResults;
   public HashMap<String, HashMap<String, Object>> getBundleResults() {
     return bundleResults;
@@ -114,6 +122,8 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
 
       // Execute the validation
       executor.validate();
+
+
     } catch (RuntimeException e) {
       log.warn("Executing failed validationStep of type "+getType());
       log.warn(e.getMessage());

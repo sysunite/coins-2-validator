@@ -99,10 +99,13 @@ public class ValidationExecutor {
     boolean valid = true;
 
 
+    List<String> bundleNames = new ArrayList();
     HashMap<String, HashMap<String, Object>> bundleResults = new HashMap();
 
     // Execute bundles in order of appearance
     for(Bundle bundle : profile.getBundles()) {
+
+      bundleNames.add(bundle.getReference());
 
       if(Bundle.INFERENCE.equals(bundle.getType())) {
 
@@ -125,6 +128,7 @@ public class ValidationExecutor {
 
     validationConfig.setFailed(false);
     validationConfig.setValid(valid);
+    validationConfig.setBundleNames(bundleNames);
     validationConfig.setBundleResults(bundleResults);
   }
 

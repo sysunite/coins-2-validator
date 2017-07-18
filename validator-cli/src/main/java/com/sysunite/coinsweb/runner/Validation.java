@@ -182,8 +182,6 @@ public class Validation {
       String payload = null;
       if(Report.XML.equals(report.getType())) {
 
-
-
         XmlMapper objectMapper = new XmlMapper();
         objectMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -197,9 +195,11 @@ public class Validation {
         payload = xml;
       }
       if(Report.HTML.equals(report.getType())) {
-        if(html == null) {
-          html = ReportFactory.buildHtml(reportItems);
-        }
+        html = ReportFactory.buildHtml(reportItems);
+        payload = html;
+      }
+      if(Report.CUSTOM.equals(report.getType())) {
+        html = ReportFactory.buildCustom(reportItems, FileFactory.toFile(report.getTemplate()));
         payload = html;
       }
 

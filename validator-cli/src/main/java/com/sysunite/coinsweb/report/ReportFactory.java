@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.report;
 
+import freemarker.cache.FileTemplateLoader;
 import freemarker.core.InvalidReferenceException;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -10,10 +11,7 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -36,6 +34,9 @@ public class ReportFactory {
   public static String buildHtml(Map<String, Object> reportItems) {
     return build(reportItems, "report.html");
   }
+  public static String buildCustom(Map<String, Object> reportItems, File file) {
+    return build(reportItems, file);
+  }
 
   private static String build(Map<String, Object> reportItems, String templatePath) {
     try {
@@ -45,6 +46,28 @@ public class ReportFactory {
       cfg.setClassForTemplateLoading(ReportFactory.class, "/validator/");
       cfg.setDefaultEncoding("UTF-8");
       Template template = cfg.getTemplate(templatePath);
+      StringWriter writer = new StringWriter();
+      template.process(reportItems, writer);
+      return writer.toString();
+
+    } catch (TemplateException e) {
+      log.error(e.getMessage(), e);
+    } catch (IOException e) {
+      log.error(e.getMessage(), e);
+    }
+    throw new RuntimeException("Was not able to build the report from template.");
+  }
+
+  private static String build(Map<String, Object> reportItems, File file) {
+    try {
+
+      log.info("Try to load custom template: "+file.getPath());
+
+      Configuration cfg = new Configuration();
+      cfg.setLocale(Locale.GERMAN); // for dutch number format
+      cfg.setDefaultEncoding("UTF-8");
+      cfg.setTemplateLoader(new FileTemplateLoader(file.getParentFile()));
+      Template template = cfg.getTemplate(file.getName());
       StringWriter writer = new StringWriter();
       template.process(reportItems, writer);
       return writer.toString();

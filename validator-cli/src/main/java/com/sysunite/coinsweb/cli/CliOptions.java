@@ -55,10 +55,10 @@ public class CliOptions {
 
     Options options = new Options();
     options.addOption("a", "absolute", false, "use absolute paths when generating config-generated.yml");
-    options.addOption(null, "yml-to-console", false, "print the generated config to the console");
     options.addOption("h", "help", false, "print help");
     options.addOption("l", "log", false, "write log file");
     options.addOption("q", false, "quiet, no output to the console");
+    options.addOption(null, "yml-to-console", false, "print the generated config to the console");
 
     return options;
   }

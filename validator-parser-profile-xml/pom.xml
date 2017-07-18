@@ -6,17 +6,17 @@
 
   <groupId>com.sysunite.coinsweb</groupId>
   <artifactId>validator-parser-profile-xml</artifactId>
-  <version>2.0.5-SNAPSHOT</version>
+  <version>2.0.5</version>
 
   <parent>
     <groupId>com.sysunite.coinsweb</groupId>
     <artifactId>coins-2-validator</artifactId>
-    <version>2.0.5-SNAPSHOT</version>
+    <version>2.0.5</version>
   </parent>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <validator.version>2.0.5-SNAPSHOT</validator.version>
+    <validator.version>2.0.5</validator.version>
     <jackson.version>2.8.7</jackson.version>
   </properties>
 

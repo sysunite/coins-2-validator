@@ -27,9 +27,11 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
 
   private static final Logger log = LoggerFactory.getLogger(ContainerFileWriter.class);
 
+  public static final String REFERENCE = "ContainerFileWriter";
+
 
   // Configuration items
-  private String type = "ContainerFileWriter";
+  private String type = REFERENCE;
   public String getType() {
     return type;
   }
@@ -138,13 +140,13 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
 
 
 
-      this.valid = true;
-      this.failed = false;
+      valid = true;
+      failed = false;
 
     } catch (RuntimeException e) {
       log.warn("Executing failed validationStep of type "+getType());
       log.warn(e.getMessage(), e);
-      this.failed = true;
+      failed = true;
     }
 
     // Prepare data to transfer to the template

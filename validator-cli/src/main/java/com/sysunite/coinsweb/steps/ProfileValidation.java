@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,9 +27,11 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
 
   private static final Logger log = LoggerFactory.getLogger(ProfileValidation.class);
 
+  public static final String REFERENCE = "ProfileValidation";
+
 
   // Configuration items
-  private String type = "ProfileValidation";
+  private String type = REFERENCE;
   private Locator profile;
   private int maxResults;
 
@@ -118,10 +121,14 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     }
 
     // Prepare data to transfer to the template
-    if(getValid()) {
-      log.info("\uD83E\uDD47 valid");
+    if(getFailed()) {
+      log.info("\uD83E\uDD49 failed");
     } else {
-      log.info("\uD83E\uDD48 invalid");
+      if (getValid()) {
+        log.info("\uD83E\uDD47 valid");
+      } else {
+        log.info("\uD83E\uDD48 invalid");
+      }
     }
 
     Map<String, Object> reportItems = new HashMap();

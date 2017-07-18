@@ -25,7 +25,6 @@
 package com.sysunite.coinsweb.steps.profile;
 
 
-import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphVar;
 import com.sysunite.coinsweb.graphset.QueryFactory;
@@ -55,7 +54,6 @@ public class ValidationExecutor {
   private ProfileFile profile;
   private ContainerGraphSet graphSet;
   private ProfileValidation validationConfig;
-  private Connector connector;
 
   private String defaultPrefixes = null;
   private Map<String, String> validationGraphs;
@@ -198,7 +196,7 @@ public class ValidationExecutor {
 
         long start = new Date().getTime();
 
-        connector.update(queryString);
+        graphSet.update(queryString);
 
         long executionTime = new Date().getTime() - start;
         resultCarrier.setExecutionTime(executionTime);
@@ -267,7 +265,7 @@ public class ValidationExecutor {
       long startQuery = new Date().getTime();
 
       ArrayList<String> formattedResults = new ArrayList<>();
-      List<Object> result = connector.query(queryString);
+      List<Object> result = graphSet.select(queryString);
 
       if(result.isEmpty()) {
         log.info("No results for \""+query.getReference()+"\", which is good");

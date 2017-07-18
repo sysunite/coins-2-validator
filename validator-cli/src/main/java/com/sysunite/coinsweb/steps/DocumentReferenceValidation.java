@@ -25,9 +25,11 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
 
   private static final Logger log = LoggerFactory.getLogger(DocumentReferenceValidation.class);
 
+  public static final String REFERENCE = "DocumentReferenceValidation";
+
 
   // Configuration items
-  private String type = "DocumentReferenceValidation";
+  private String type = REFERENCE;
   public String getType() {
     return type;
   }
@@ -116,6 +118,7 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
 
 
       valid = allReferencesAreSatisfied;
+      failed = false;
 
 
 
@@ -128,10 +131,14 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
     }
 
     // Prepare data to transfer to the template
-    if (getValid()) {
-      log.info("\uD83E\uDD47 valid");
+    if(getFailed()) {
+      log.info("\uD83E\uDD49 failed");
     } else {
-      log.info("\uD83E\uDD48 invalid");
+      if (getValid()) {
+        log.info("\uD83E\uDD47 valid");
+      } else {
+        log.info("\uD83E\uDD48 invalid");
+      }
     }
 
     Map<String, Object> reportItems = new HashMap();

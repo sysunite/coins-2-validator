@@ -25,9 +25,11 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
 
   private static final Logger log = LoggerFactory.getLogger(FileSystemValidation.class);
 
+  public static final String REFERENCE = "FileSystemValidation";
+
 
   // Configuration items
-  private String type = "FileSystemValidation";
+  private String type = REFERENCE;
   public String getType() {
     return type;
   }
@@ -122,7 +124,8 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
         }
       }
 
-      boolean valid = oneRepoFile && noSubsInBim && noOrphans && allImportsImportable;
+      valid = oneRepoFile && noSubsInBim && noOrphans && allImportsImportable;
+      failed = false;
 
     } catch (RuntimeException e) {
       log.warn("Executing failed validationStep of type "+getType());
@@ -131,10 +134,14 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
     }
 
     // Prepare data to transfer to the template
-    if (getValid()) {
-      log.info("\uD83E\uDD47 valid");
+    if(getFailed()) {
+      log.info("\uD83E\uDD49 failed");
     } else {
-      log.info("\uD83E\uDD48 invalid");
+      if (getValid()) {
+        log.info("\uD83E\uDD47 valid");
+      } else {
+        log.info("\uD83E\uDD48 invalid");
+      }
     }
 
     Map<String, Object> reportItems = new HashMap();

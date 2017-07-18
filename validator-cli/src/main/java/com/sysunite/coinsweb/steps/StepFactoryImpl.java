@@ -13,10 +13,10 @@ public class StepFactoryImpl implements StepFactory {
   static
   {
     register = new HashMap();
-    register.put("FileSystemValidation", FileSystemValidation.class);
-    register.put("DocumentReferenceValidation", DocumentReferenceValidation.class);
-    register.put("ProfileValidation", ProfileValidation.class);
-    register.put("ContainerFileWriter", ContainerFileWriter.class);
+    register.put(FileSystemValidation.REFERENCE, FileSystemValidation.class);
+    register.put(DocumentReferenceValidation.REFERENCE, DocumentReferenceValidation.class);
+    register.put(ProfileValidation.REFERENCE, ProfileValidation.class);
+    register.put(ContainerFileWriter.REFERENCE, ContainerFileWriter.class);
   }
 
   public boolean exists(String key) {

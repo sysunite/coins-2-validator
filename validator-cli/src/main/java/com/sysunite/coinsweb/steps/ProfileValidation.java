@@ -144,6 +144,7 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     Map<String, Object> reportItems = new HashMap();
 
     reportItems.put("valid",         getValid());
+    reportItems.put("bundleNames",   getBundleNames());
     reportItems.put("bundleResults", getBundleResults());
 
     return reportItems;

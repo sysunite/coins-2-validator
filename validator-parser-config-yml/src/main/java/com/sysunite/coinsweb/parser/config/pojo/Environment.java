@@ -1,14 +1,10 @@
 package com.sysunite.coinsweb.parser.config.pojo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
-import com.sysunite.coinsweb.graphset.GraphVar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 import static com.sysunite.coinsweb.parser.Parser.validate;
@@ -28,10 +24,10 @@ public class Environment extends ConfigPart {
 
   private Store store;
   private String loadingStrategy;
-  private Mapping[] graphs;
   private String tempPath;
 
   private boolean cleanUp = false;
+  private boolean createRepo = true;
   private boolean destroyRepo = false;
 
   public Store getStore() {
@@ -40,31 +36,17 @@ public class Environment extends ConfigPart {
   public String getLoadingStrategy() {
     return loadingStrategy;
   }
-  public Mapping[] getGraphs() {
-    return graphs;
-  }
-  @JsonIgnore
-  public HashMap<GraphVar, String> getMapping() {
-    HashMap<GraphVar, String> graphs = new HashMap();
-    for(Mapping mapping : getGraphs()) {
-      graphs.put(mapping.getVariable(), mapping.getGraphname());
-    }
-    return graphs;
-  }
   public String getTempPath() {
     return tempPath;
   }
   public boolean getCleanUp() {
     return cleanUp;
   }
-  public void setCleanUp(boolean cleanUp) {
-    this.cleanUp = cleanUp;
+  public boolean getCreateRepo() {
+    return createRepo;
   }
   public boolean getDestroyRepo() {
     return destroyRepo;
-  }
-  public void setDestroyRepo(boolean destroyRepo) {
-    this.destroyRepo = destroyRepo;
   }
 
   public void setStore(Store store) {
@@ -76,14 +58,17 @@ public class Environment extends ConfigPart {
     validate(loadingStrategy, PERMANENT, HASH_IN_GRAPHNAME, REPO_PER_RUN);
     this.loadingStrategy = loadingStrategy;
   }
-  public void setGraphs(Mapping[] graphs) {
-    this.graphs = graphs;
-    for(Mapping mapping : this.graphs) {
-      mapping.setParent(this.getParent());
-    }
-  }
   public void setTempPath(String tempPath) {
     this.tempPath = tempPath;
+  }
+  public void setCleanUp(boolean cleanUp) {
+    this.cleanUp = cleanUp;
+  }
+  public void setCreateRepo(boolean createRepo) {
+    this.createRepo = createRepo;
+  }
+  public void setDestroyRepo(boolean destroyRepo) {
+    this.destroyRepo = destroyRepo;
   }
 
   @Override
@@ -91,9 +76,6 @@ public class Environment extends ConfigPart {
     super.setParent(parent);
     if(this.store != null) {
       this.store.setParent(this.getParent());
-    }
-    for(Mapping mapping : this.graphs) {
-      mapping.setParent(this.getParent());
     }
   }
 }

@@ -5,9 +5,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
+import com.sysunite.coinsweb.graphset.GraphVar;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
 
 import static com.sysunite.coinsweb.parser.Parser.*;
 
@@ -25,6 +28,7 @@ public class Container extends ConfigPart {
 
   private String type;
   private Locator location;
+  private Mapping[] variables = new Mapping[0];
   private Graph[] graphs = new Graph[0];
   @JsonInclude(Include.NON_EMPTY)
   private Attachment[] attachments = new Attachment[0];
@@ -41,6 +45,17 @@ public class Container extends ConfigPart {
   }
   public Locator getLocation() {
     return location;
+  }
+  public Mapping[] getVariables() {
+    return variables;
+  }
+  @JsonIgnore
+  public HashMap<GraphVar, String> getVariablesMap() {
+    HashMap<GraphVar, String> graphs = new HashMap();
+    for(Mapping mapping : getVariables()) {
+      graphs.put(mapping.getVariable(), mapping.getGraphname());
+    }
+    return graphs;
   }
   public Graph[] getGraphs() {
     return graphs;
@@ -67,6 +82,12 @@ public class Container extends ConfigPart {
     this.location = location;
     this.location.setParent(this.getParent());
   }
+  public void setVariables(Mapping[] variables) {
+    this.variables = variables;
+    for(Mapping mapping : this.variables) {
+      mapping.setParent(this.getParent());
+    }
+  }
   public void setGraphs(Graph[] graphs) {
     this.graphs = graphs;
     for(Graph graph : this.graphs) {
@@ -86,6 +107,9 @@ public class Container extends ConfigPart {
     if(this.location != null) {
       this.location.setParent(this.getParent());
     }
+    for(Mapping mapping : this.variables) {
+      mapping.setParent(this.getParent());
+    }
     for(Graph graph : this.graphs) {
       graph.setParent(this.getParent());
     }
@@ -100,11 +124,16 @@ public class Container extends ConfigPart {
     Container clone = new Container();
     clone.setType(this.type);
     clone.setLocation(this.location.clone());
+    Mapping[] variables = new Mapping[this.variables.length];
+    for(int i = 0; i < this.variables.length; i++) {
+      variables[i] = this.variables[i].clone();
+    }
     Graph[] graphs = new Graph[this.graphs.length];
     for(int i = 0; i < this.graphs.length; i++) {
       graphs[i] = this.graphs[i].clone();
     }
     clone.setGraphs(graphs);
+    clone.setParent(this.getParent());
     return clone;
   }
 }

@@ -51,9 +51,9 @@ public class Graph extends ConfigPart {
   public Graph clone() {
     Graph clone = new Graph();
     clone.setSource(this.getSource().clone());
-    clone.setAs((ArrayList<GraphVarImpl>)this.getAs().clone());
-    clone.setParent(this.getParent());
+    clone.setAs((ArrayList<GraphVarImpl>) this.getAs().clone());
     clone.setMain(this.getMain());
+    clone.setParent(this.getParent());
     return clone;
   }
 

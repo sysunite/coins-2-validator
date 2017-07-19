@@ -58,7 +58,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     }
 
     log.info("Load stuff to connector");
-    contextMap = GraphSetFactory.load(containerConfig.getGraphs(), connector, container, configFile);
+    contextMap = GraphSetFactory.load(containerConfig, connector, container, configFile);
 
     this.setAllLoaded();
   }

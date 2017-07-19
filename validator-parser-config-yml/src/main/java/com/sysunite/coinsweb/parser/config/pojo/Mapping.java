@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.parser.config.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -33,6 +34,15 @@ public class Mapping extends ConfigPart {
   }
   public void setVariable(GraphVarImpl variable) {
     this.variable = variable;
+  }
+
+  @JsonIgnore
+  public Mapping clone() {
+    Mapping clone = new Mapping();
+    clone.setGraphname(this.graphname);
+    clone.setVariable(this.variable);
+    clone.setParent(this.getParent());
+    return clone;
   }
 }
 

@@ -55,10 +55,10 @@ public class GraphSetFactory {
    *
    * Returns a map that maps
    *
-   * @param originalGraphs
-   * @param connector
    */
-  public static HashMap<GraphVar, String> load(Graph[] originalGraphs, Connector connector, ContainerFile container, ConfigFile configFile) {
+  public static HashMap<GraphVar, String> load(Container containerConfig, Connector connector, ContainerFile container, ConfigFile configFile) {
+
+    Graph[] originalGraphs = containerConfig.getGraphs();
 
     connector.init();
     List<String> availableContexts = connector.getContexts();
@@ -69,7 +69,7 @@ public class GraphSetFactory {
     ArrayList<GraphVar> whiteList = new ArrayList();
 
     // Map source graphname to target graphname
-    HashMap<GraphVar, String> mapping = configFile.getEnvironment().getMapping();
+    HashMap<GraphVar, String> mapping = containerConfig.getVariablesMap();
     if(Environment.HASH_IN_GRAPHNAME.equals(configFile.getEnvironment().getLoadingStrategy())) {
 
       HashMap<GraphVar, ArrayList<String>> keyToHashArray = new HashMap();

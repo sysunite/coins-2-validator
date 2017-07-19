@@ -113,21 +113,6 @@ public class ConfigFactory {
     environment.setStore(store);
     environment.setLoadingStrategy(Environment.HASH_IN_GRAPHNAME);
 
-    Mapping fullMapping = new Mapping();
-    fullMapping.setVariable(new GraphVarImpl("FULL_UNION_GRAPH"));
-    fullMapping.setGraphname("http://full/union");
-
-    Mapping instancesMapping = new Mapping();
-    instancesMapping.setVariable(new GraphVarImpl("INSTANCE_UNION_GRAPH"));
-    instancesMapping.setGraphname("http://instances/union");
-
-    Mapping libraryMapping = new Mapping();
-    libraryMapping.setVariable(new GraphVarImpl("SCHEMA_UNION_GRAPH"));
-    libraryMapping.setGraphname("http://library/union");
-
-    Mapping[] mappings = {fullMapping, instancesMapping, libraryMapping};
-
-    environment.setGraphs(mappings);
     return environment;
   }
 
@@ -157,6 +142,21 @@ public class ConfigFactory {
     locator.localizeTo(localizeTo);
     locator.setType("file");
     locator.setPath(containerFile.toString());
+
+    Mapping fullMapping = new Mapping();
+    fullMapping.setVariable(new GraphVarImpl("FULL_UNION_GRAPH"));
+    fullMapping.setGraphname("http://full/union");
+
+    Mapping instancesMapping = new Mapping();
+    instancesMapping.setVariable(new GraphVarImpl("INSTANCE_UNION_GRAPH"));
+    instancesMapping.setGraphname("http://instances/union");
+
+    Mapping libraryMapping = new Mapping();
+    libraryMapping.setVariable(new GraphVarImpl("SCHEMA_UNION_GRAPH"));
+    libraryMapping.setGraphname("http://library/union");
+
+    Mapping[] variables = {fullMapping, instancesMapping, libraryMapping};
+
 
     ArrayList<Graph> graphs;
     if(describeFactory != null) {
@@ -196,6 +196,7 @@ public class ConfigFactory {
     Container container = new Container();
     container.setType("container");
     container.setLocation(locator);
+    container.setVariables(variables);
     container.setGraphs(graphs.toArray(new Graph[0]));
 
     return container;

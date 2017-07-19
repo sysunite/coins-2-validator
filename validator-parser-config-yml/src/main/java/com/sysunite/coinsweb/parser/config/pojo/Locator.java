@@ -84,6 +84,7 @@ public class Locator extends ConfigPart {
     clone.setPath(this.path);
     clone.setUri(this.uri);
     clone.localizeTo(this.localizeTo);
+    clone.setParent(this.getParent());
     return clone;
   }
 }

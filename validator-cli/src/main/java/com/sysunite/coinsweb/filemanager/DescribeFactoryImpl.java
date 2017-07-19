@@ -50,8 +50,8 @@ public class DescribeFactoryImpl implements DescribeFactory {
     Graph[] expandedGraphs = loadList(container.getGraphs(), containerFile).toArray(new Graph[0]);
     container.setGraphs(expandedGraphs);
 
-    if(container.getParent().getEnvironment().getGraphs().length < 1) {
-      container.getParent().getEnvironment().setGraphs(ConfigFactory.getDefaultMapping(expandedGraphs));
+    if(container.getVariables().length < 1) {
+      container.setVariables(ConfigFactory.getDefaultMapping(expandedGraphs));
     }
   }
 

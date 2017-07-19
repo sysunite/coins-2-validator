@@ -128,6 +128,7 @@ public class Container extends ConfigPart {
     for(int i = 0; i < this.variables.length; i++) {
       variables[i] = this.variables[i].clone();
     }
+    clone.setVariables(variables);
     Graph[] graphs = new Graph[this.graphs.length];
     for(int i = 0; i < this.graphs.length; i++) {
       graphs[i] = this.graphs[i].clone();

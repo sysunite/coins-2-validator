@@ -28,9 +28,7 @@ public class ReportFactory {
 
   private static final Logger log = LoggerFactory.getLogger(ReportFactory.class);
 
-  public static String buildXml(Map<String, Object> reportItems) {
-    return build(reportItems, "report.xml");
-  }
+
   public static String buildHtml(Map<String, Object> reportItems) {
     return build(reportItems, "report.html");
   }

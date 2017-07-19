@@ -17,6 +17,7 @@ public class Report extends ConfigPart {
 
   private static final Logger log = LoggerFactory.getLogger(Report.class);
 
+  public static final String JSON = "json";
   public static final String XML = "xml";
   public static final String HTML = "html";
   public static final String CUSTOM = "custom";
@@ -36,7 +37,7 @@ public class Report extends ConfigPart {
   }
 
   public void setType(String type) {
-    validate(type, XML, HTML, CUSTOM);
+    validate(type, JSON, XML, HTML, CUSTOM);
     this.type = type;
   }
   public void setLocation(Locator location) {

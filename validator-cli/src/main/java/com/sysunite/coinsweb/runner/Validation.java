@@ -1,6 +1,7 @@
 package com.sysunite.coinsweb.runner;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -176,10 +177,19 @@ public class Validation {
     log.info("Entered second phase of run, \uD83D\uDDDE generate reports");
 
     // Generate the reports
-    String xml = null;
-    String html = null;
     for(Report report : configFile.getRun().getReports()) {
       String payload = null;
+      if(Report.JSON.equals(report.getType())) {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+        try {
+          payload = objectMapper.writeValueAsString(configFile);
+        } catch (JsonProcessingException e) {
+          e.printStackTrace();
+        }
+      }
       if(Report.XML.equals(report.getType())) {
 
         XmlMapper objectMapper = new XmlMapper();
@@ -188,19 +198,16 @@ public class Validation {
         ObjectWriter xmlWriter = objectMapper.writer(new IndentedCDATAPrettyPrinter());
 
         try {
-          xml = xmlWriter.writeValueAsString(configFile);
+          payload = xmlWriter.writeValueAsString(configFile);
         } catch (JsonProcessingException e) {
           e.printStackTrace();
         }
-        payload = xml;
       }
       if(Report.HTML.equals(report.getType())) {
-        html = ReportFactory.buildHtml(reportItems);
-        payload = html;
+        payload = ReportFactory.buildHtml(reportItems);
       }
       if(Report.CUSTOM.equals(report.getType())) {
-        html = ReportFactory.buildCustom(reportItems, FileFactory.toFile(report.getTemplate()));
-        payload = html;
+        payload = ReportFactory.buildCustom(reportItems, FileFactory.toFile(report.getTemplate()));
       }
 
       if(Locator.FILE.equals(report.getLocation().getType()) && payload != null) {

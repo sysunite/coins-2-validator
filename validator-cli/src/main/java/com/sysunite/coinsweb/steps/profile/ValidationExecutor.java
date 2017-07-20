@@ -49,8 +49,6 @@ public class ValidationExecutor {
 
   private static final Logger log = LoggerFactory.getLogger(ValidationExecutor.class);
 
-  private static final int MAX_RUNS = 50;
-
   private ProfileFile profile;
   private ContainerGraphSet graphSet;
   private ProfileValidation validationConfig;
@@ -100,7 +98,7 @@ public class ValidationExecutor {
 
 
     List<String> bundleNames = new ArrayList();
-    HashMap<String, HashMap<String, Object>> bundleResults = new HashMap();
+    HashMap<String, Object> bundleResults = new HashMap();
 
     // Execute bundles in order of appearance
     for(Bundle bundle : profile.getBundles()) {
@@ -109,8 +107,10 @@ public class ValidationExecutor {
 
       if(Bundle.INFERENCE.equals(bundle.getType())) {
 
-        HashMap<String, Object> resultMap = executeInferenceBundle(bundle);
-        bundleResults.put(bundle.getReference(), resultMap);
+        InferenceBundleStatistics statistics = executeInferenceBundle(bundle);
+        if(statistics != null) {
+          bundleResults.put(bundle.getReference(), statistics);
+        }
 
       } else if(Bundle.VALIDATION.equals(bundle.getType())) {
 
@@ -134,11 +134,11 @@ public class ValidationExecutor {
 
 
 
-  private HashMap<String, Object> executeInferenceBundle(Bundle bundle) {
+  private InferenceBundleStatistics executeInferenceBundle(Bundle bundle) {
 
-    boolean containsUpdate = false;
-    boolean someTripleWasAdded = false;
-    HashMap<String, Object> resultMap = new HashMap();
+
+    InferenceBundleStatistics resultCarrier = new InferenceBundleStatistics(bundle);
+
 
     String inferenceCode = profile.getName()+"/"+profile.getVersion()+"/"+bundle.getReference();
 
@@ -153,7 +153,7 @@ public class ValidationExecutor {
       for(String existingInferenceCode : list) {
         if(inferenceCodeWithoutRef(existingInferenceCode).equals(inferenceCodeWithoutRef(inferenceCode))) {
           log.info("Inference >>" + inferenceCode + "<< was executed before");
-          return resultMap;
+          return resultCarrier;
         } else {
           throw new RuntimeException("Some other >>" + executedInferences.get(context) + "<< inference was executed before, this connector can not be used");
         }
@@ -163,79 +163,57 @@ public class ValidationExecutor {
     }
 
 
-    Map<String, Long> previous = graphSet.quadCount();
-    Map<String, Long> beforeBundle = previous;
+    long quadsAddedThisRun = 0l;
+    Map<GraphVar, Long> previous = graphSet.quadCount();
+    Map<GraphVar, Long> beforeBundle = previous;
 
     log.info("\uD83D\uDC1A Will perform bundle \""+bundle.getReference()+"\"");
 
     int run = 1;
     do {
-      someTripleWasAdded = false;
-      if(run > MAX_RUNS) {
+
+      if(run > validationConfig.getMaxInferenceRuns()) {
         throw new RuntimeException("Break running, max number of repeated runs reached for bundle: "+bundle.getReference());
       }
 
+      long start = new Date().getTime();
+
+
       for (Query query : bundle.getQueries()) {
 
-        QueryResult resultCarrier;
-        if(!resultMap.containsKey(query.getReference())) {
-
-          resultCarrier = new InferenceQueryResult(query);
-          resultMap.put(query.getReference(), resultCarrier);
-
-        } else {
-
-          resultCarrier = (InferenceQueryResult) resultMap.get(query.getReference());
-
-        }
-
-
-        containsUpdate = true;
-
         String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes);
-
-        if(graphSet.requiresLoad()) {
-          graphSet.load();
-        }
-
-        long start = new Date().getTime();
-
         graphSet.update(queryString);
-
-        long executionTime = new Date().getTime() - start;
-        resultCarrier.setExecutionTime(executionTime);
-        resultCarrier.setExecutedQuery(queryString);
-
-
-
-        Map<String, Long> current = graphSet.quadCount();
-        resultCarrier.addRunStatistics(current);
-        long quadsAdded = quadsAdded(previous, current);
-        previous = current;
-        ((InferenceQueryResult)resultCarrier).addQuadsAdded(quadsAdded);
-
-        log.info("Finished run "+resultCarrier.getRunStatistics().size()+" for query \""+query.getReference()+"\", this total amount of quads was added: "+quadsAdded);
-        if(quadsAdded > 0) {
-          someTripleWasAdded = true;
-        }
-
 
       }
 
+      long executionTime = (new Date().getTime()) - start;
+
+
+
+      Map<GraphVar, Long> current = graphSet.quadCount();
+      resultCarrier.addRunStatistics(current);
+      quadsAddedThisRun = quadsAdded(previous, current);
+      previous = current;
+      resultCarrier.addQuadsAdded(quadsAddedThisRun);
+      resultCarrier.addExecutionTime(executionTime);
+
+      log.info("Finished run "+run+" for bundle \""+bundle.getReference()+"\", this total amount of quads was added this run: "+quadsAddedThisRun);
+
+
       run++;
-    } while(containsUpdate && someTripleWasAdded);
+    } while(quadsAddedThisRun > 0);
 
     // Store that this  inference bundle was executed
     if(Bundle.INFERENCE.equals(bundle.getType())) {
-      Map<String, Long> bundleTotal = quadsAddedPerGraph(beforeBundle, previous);
-      for(String graphName : bundleTotal.keySet()) {
-        if(bundleTotal.get(graphName) > 0l) {
-          storeFinishedInferences(graphName, inferenceCode);
+      Map<GraphVar, Long> bundleTotal = quadsAddedPerGraph(beforeBundle, previous);
+      for(GraphVar graphVar : bundleTotal.keySet()) {
+        if(bundleTotal.get(graphVar) > 0l) {
+          storeFinishedInferences(graphVar, inferenceCode);
         }
       }
     }
 
-    return resultMap;
+    return resultCarrier;
   }
 
   private HashMap<String, Object> executeValidationBundle(Bundle bundle) {
@@ -330,7 +308,9 @@ public class ValidationExecutor {
     return inferenceCodes;
   }
 
-  public void storeFinishedInferences(String context, String inferenceCode) {
+  public void storeFinishedInferences(GraphVar graphVar, String inferenceCode) {
+
+    String context = graphSet.contextMap().get(graphVar);
 
     log.info("Store inferenceCode >>"+inferenceCode+"<< for "+context);
 
@@ -345,16 +325,16 @@ public class ValidationExecutor {
 
 
 
-  public static Map<String, Long> quadsAddedPerGraph(Map<String, Long> previous, Map<String, Long> current) {
+  public static Map<GraphVar, Long> quadsAddedPerGraph(Map<GraphVar, Long> previous, Map<GraphVar, Long> current) {
 
-    HashMap<String, Long> result = new HashMap();
+    HashMap<GraphVar, Long> result = new HashMap();
     if(current == null && previous == null) {
       return result;
     }
 
     if(current == null) {
-      for(String graphName : previous.keySet()) {
-        result.put(graphName, - previous.get(graphName));
+      for(GraphVar graphVar : previous.keySet()) {
+        result.put(graphVar, - previous.get(graphVar));
       }
     }
 
@@ -362,25 +342,25 @@ public class ValidationExecutor {
       return current;
     }
 
-    for(String graphName : current.keySet()) {
-      if(Utils.containsNamespace(graphName, previous.keySet())) {
-        result.put(graphName, current.get(graphName) - previous.get(graphName));
+    for(GraphVar graphVar : current.keySet()) {
+      if(previous.keySet().contains(graphVar)) {
+        result.put(graphVar, current.get(graphVar) - previous.get(graphVar));
       }
     }
-    for(String graphName : previous.keySet()) {
-      if(!Utils.containsNamespace(graphName, current.keySet())) {
-        result.put(graphName, - previous.get(graphName));
+    for(GraphVar graphVar : previous.keySet()) {
+      if(!current.keySet().contains(graphVar)) {
+        result.put(graphVar, - previous.get(graphVar));
       }
     }
 
     return result;
   }
 
-  public static long quadsAdded(Map<String, Long> previous, Map<String, Long> current) {
+  public static long quadsAdded(Map<GraphVar, Long> previous, Map<GraphVar, Long> current) {
     long count = 0l;
-    Map<String, Long> results = quadsAddedPerGraph(previous, current);
-    for(String graphName : results.keySet()) {
-      count += Math.abs(results.get(graphName)); // negative values also count as change
+    Map<GraphVar, Long> results = quadsAddedPerGraph(previous, current);
+    for(GraphVar graphVar : results.keySet()) {
+      count += Math.abs(results.get(graphVar)); // negative values also count as change
     }
     return count;
   }

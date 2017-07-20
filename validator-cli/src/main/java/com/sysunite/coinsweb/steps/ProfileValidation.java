@@ -33,7 +33,8 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
   // Configuration items
   private String type = REFERENCE;
   private Locator profile;
-  private int maxResults;
+  private int maxResults = 0;
+  private int maxInferenceRuns = 50;
 
   public String getType() {
     return type;
@@ -43,6 +44,9 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
   }
   public int getMaxResults() {
     return maxResults;
+  }
+  public int getMaxInferenceRuns() {
+    return maxInferenceRuns;
   }
 
   public void setType(String type) {
@@ -54,6 +58,9 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
   }
   public void setMaxResults(int maxResults) {
     this.maxResults = maxResults;
+  }
+  public void setMaxInferenceRuns(int maxInferenceRuns) {
+    this.maxInferenceRuns = maxInferenceRuns;
   }
 
   @Override
@@ -90,11 +97,11 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     this.bundleNames = bundleNames;
   }
 
-  private HashMap<String, HashMap<String, Object>> bundleResults;
-  public HashMap<String, HashMap<String, Object>> getBundleResults() {
+  private HashMap<String, Object> bundleResults;
+  public HashMap<String, Object> getBundleResults() {
     return bundleResults;
   }
-  public void setBundleResults(HashMap<String, HashMap<String, Object>> bundleResults) {
+  public void setBundleResults(HashMap<String, Object> bundleResults) {
     this.bundleResults = bundleResults;
   }
 

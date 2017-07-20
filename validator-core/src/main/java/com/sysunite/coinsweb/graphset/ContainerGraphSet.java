@@ -25,7 +25,7 @@ public interface ContainerGraphSet {
   void setContainerConfig(Object containerConfig);
   void setConfigFile(Object configFile);
   Map<GraphVar, String> contextMap();
-  Map<String, Long> quadCount();
+  Map<GraphVar, Long> quadCount();
 
   void cleanup();
 

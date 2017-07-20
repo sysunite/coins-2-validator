@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -29,7 +28,7 @@ public interface Connector {
   void uploadFile(File file, String[] contexts);
   void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts);
 
-  HashMap<String, Long> quadCount();
+  long quadCount(String context);
   List<String> getContexts();
 
   String graphExists(String context);

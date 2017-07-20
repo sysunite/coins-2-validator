@@ -25,8 +25,8 @@
 package com.sysunite.coinsweb.steps.profile;
 
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
-import com.sysunite.coinsweb.parser.profile.pojo.Query;
+import com.sysunite.coinsweb.graphset.GraphVar;
+import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,36 +37,33 @@ import java.util.Map;
 /**
  * @author Bastiaan Bijl, Sysunite 2016
  */
-public abstract class QueryResult {
+public class InferenceBundleStatistics {
 
-  private static final Logger log = LoggerFactory.getLogger(QueryResult.class);
+  private static final Logger log = LoggerFactory.getLogger(InferenceBundleStatistics.class);
 
   private String id;
   private String reference;
   private String description;
-  @JacksonXmlCData
-  private String sparqlQuery;
-  private long executionTime;
-  private List<Map<String, Long>> runStatistics = new ArrayList<>();
+  private long executionTime = 0l;
+  private List<Map<GraphVar, Long>> runStatistics = new ArrayList<>();
+  private int runs = 0;
+  private long quadsAdded = 0l;
 
-  public QueryResult(Query queryConfig) {
+  public InferenceBundleStatistics(Bundle bundleConfig) {
 
     // Set passed attributes
     this.id = Long.toHexString(Double.doubleToLongBits(Math.random()));
-    this.reference = queryConfig.getReference();
-    this.description = queryConfig.getDescription();
-  }
-
-  public void setExecutionTime(long executionTime) {
-    this.executionTime = executionTime;
-  }
-  public void setExecutedQuery(String sparqlQuery) {
-    this.sparqlQuery = sparqlQuery;
+    this.reference = bundleConfig.getReference();
+    this.description = bundleConfig.getDescription();
   }
 
 
-  public abstract boolean isValidationQuery();
-  public abstract boolean isInferenceQuery();
+  public void addRun() {
+    this.runs += 1;
+  }
+  public void addExecutionTime(long executionTime) {
+    this.executionTime += executionTime;
+  }
 
   public String getId() {
     return id;
@@ -77,18 +74,24 @@ public abstract class QueryResult {
   public String getDescription() {
     return description;
   }
-  public String getSparqlQuery() {
-    return sparqlQuery;
-  }
   public long getExecutionTime() {
     return executionTime;
   }
 
-  public void addRunStatistics(Map<String, Long> quadCount) {
+  public void addRunStatistics(Map<GraphVar, Long> quadCount) {
     runStatistics.add(quadCount);
   }
-  public List<Map<String, Long>> getRunStatistics() {
+  public List<Map<GraphVar, Long>> getRunStatistics() {
     return runStatistics;
   }
+  public int getRuns() {
+    return runs;
+  }
 
+  public void addQuadsAdded(long count) {
+    this.quadsAdded += count;
+  }
+  public long getQuadsAdded() {
+    return quadsAdded;
+  }
 }

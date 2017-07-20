@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -104,6 +103,7 @@ public abstract class Rdf4jConnector implements Connector {
   @Override
   public void sparqlCopy(String fromContext, String toContext) {
     update("COPY <"+fromContext+"> TO <"+toContext+">");
+    storeGraphExists(toContext);
   }
   @Override
   public void sparqlAdd(String fromContext, String toContext) {
@@ -214,20 +214,14 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   @Override
-  public HashMap<String, Long> quadCount() {
+  public long quadCount(String context) {
     if(!initialized) {
       init();
     }
-    HashMap<String, Long> result = new HashMap();
+
     try (RepositoryConnection con = repository.getConnection()) {
-      RepositoryResult<Resource> graphIterator = con.getContextIDs();
-      while(graphIterator.hasNext()) {
-        Resource graphName = graphIterator.next();
-        long count = con.size(graphName);
-        result.put(graphName.toString(), count);
-      }
+      return con.size(asResource(new String[]{context}));
     }
-    return result;
   }
 
 

@@ -38,9 +38,19 @@ import java.util.Map;
 /**
  * @author Bastiaan Bijl, Sysunite 2016
  */
-public class ValidationQueryResult extends QueryResult {
+public class ValidationQueryResult {
+
 
   private static final Logger log = LoggerFactory.getLogger(ValidationQueryResult.class);
+
+  private String id;
+  private String reference;
+  private String description;
+  @JacksonXmlCData
+  private String sparqlQuery;
+  private long executionTime;
+  private List<Map<String, Long>> runStatistics = new ArrayList<>();
+
 
   private Iterator<Map<String,String>> resultSet;
   @JacksonXmlCData
@@ -48,8 +58,51 @@ public class ValidationQueryResult extends QueryResult {
   private boolean passed;
 
   public ValidationQueryResult(Query queryConfig) {
-    super(queryConfig);
+
+    // Set passed attributes
+    this.id = Long.toHexString(Double.doubleToLongBits(Math.random()));
+    this.reference = queryConfig.getReference();
+    this.description = queryConfig.getDescription();
   }
+
+  public void setExecutionTime(long executionTime) {
+    this.executionTime = executionTime;
+  }
+  public void setExecutedQuery(String sparqlQuery) {
+    this.sparqlQuery = sparqlQuery;
+  }
+
+
+  public boolean isValidationQuery() {
+    return true;
+  }
+  public boolean isInferenceQuery() {
+    return false;
+  }
+
+  public String getId() {
+    return id;
+  }
+  public String getReference() {
+    return reference;
+  }
+  public String getDescription() {
+    return description;
+  }
+  public String getSparqlQuery() {
+    return sparqlQuery;
+  }
+  public long getExecutionTime() {
+    return executionTime;
+  }
+
+  public void addRunStatistics(Map<String, Long> quadCount) {
+    runStatistics.add(quadCount);
+  }
+  public List<Map<String, Long>> getRunStatistics() {
+    return runStatistics;
+  }
+
 
 
   public void setResultSet(Iterator<Map<String,String>> resultSet) {
@@ -62,12 +115,7 @@ public class ValidationQueryResult extends QueryResult {
     this.passed = passed;
   }
 
-  public boolean isValidationQuery() {
-    return true;
-  }
-  public boolean isInferenceQuery() {
-    return false;
-  }
+
 
 
   public Iterator<Map<String,String>> getResultSet() {

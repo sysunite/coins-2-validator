@@ -88,11 +88,15 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     return contextMap().containsKey(graphVar);
   }
 
-  public Map<String, Long> quadCount() {
+  public Map<GraphVar, Long> quadCount() {
     if(requiresLoad()) {
       load();
     }
-    return connector.quadCount();
+    HashMap<GraphVar, Long> map = new HashMap();
+    for(GraphVar graphVar : contextMap().keySet()) {
+      map.put(graphVar, connector.quadCount(contextMap().get(graphVar)));
+    }
+    return map;
   }
 
   public List<String> getImports(GraphVar graphVar) {

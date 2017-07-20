@@ -10,9 +10,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static java.util.Collections.sort;
 
@@ -175,6 +173,8 @@ public class GraphSetFactory {
     int benchmark = graphs.length;
     int toDo = 0;
 
+    Set<Graph> finished = new HashSet();
+
     do {
 
       log.info("Go trough graphs to copy/add context to context");
@@ -188,6 +188,10 @@ public class GraphSetFactory {
 
       for (Graph graph : graphs) {
         if (Source.STORE.equals(graph.getSource().getType())) {
+
+          if(finished.contains(graph)) {
+            continue;
+          }
 
           // It is not allowed to copy to an existing graph
           for (GraphVarImpl to : graph.getAs()) {
@@ -227,6 +231,7 @@ public class GraphSetFactory {
               }
               resolvedGraphs.add(to);
             }
+            finished.add(graph);
 
 
           // Or keep it for next run

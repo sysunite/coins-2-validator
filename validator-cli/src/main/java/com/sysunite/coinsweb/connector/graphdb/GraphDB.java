@@ -37,6 +37,7 @@ public class GraphDB extends Rdf4jConnector {
   String repositoryId;
 
   boolean repoPerRun = false;
+  boolean createRepo;
 
 
 
@@ -49,6 +50,7 @@ public class GraphDB extends Rdf4jConnector {
 
 
     cleanUp = config.getCleanUp();
+    createRepo = config.getCreateRepo();
     wipeOnClose = config.getDestroyRepo();
 
 
@@ -82,10 +84,15 @@ public class GraphDB extends Rdf4jConnector {
       if(manager.hasRepositoryConfig(repositoryId)) {
         log.info("Found existing repository");
       } else {
-        manager.addRepositoryConfig(createRepositoryConfig(repositoryId));
+        if(createRepo) {
+          manager.addRepositoryConfig(createRepositoryConfig(repositoryId));
+        } else {
+          log.warn("Not allowed to create repo, but needs to");
+          return;
+        }
       }
     } catch (IOException e) {
-    log.error(e.getMessage(), e);
+      log.error(e.getMessage(), e);
     }
     repository = manager.getRepository(repositoryId);
     initialized = true;

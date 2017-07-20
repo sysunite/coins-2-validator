@@ -28,6 +28,14 @@ public class ConfigFileTest {
   }
 
   @Test
+  public void test981Container() {
+
+    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("general-9.81.yml").getFile()));
+    String yml = ConfigFactory.getDefaultConfigString(configFile);
+    System.out.println(yml);
+  }
+
+  @Test
   public void testMinimalContainer() {
 
     ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("minimal-container.yml").getFile()));

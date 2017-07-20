@@ -89,6 +89,8 @@ public abstract class Rdf4jConnector implements Connector {
 
       Update updateQuery = con.prepareUpdate(QueryLanguage.SPARQL, queryString);
       updateQuery.setIncludeInferred(false);
+
+
       try {
         updateQuery.execute();
       } catch (Exception e) {
@@ -97,6 +99,15 @@ public abstract class Rdf4jConnector implements Connector {
     } catch (Exception e) {
       log.error(e.getMessage(), e);
     }
+  }
+
+  @Override
+  public void sparqlCopy(String fromContext, String toContext) {
+    update("COPY <"+fromContext+"> TO <"+toContext+">");
+  }
+  @Override
+  public void sparqlAdd(String fromContext, String toContext) {
+    update("ADD <"+fromContext+"> TO <"+toContext+">");
   }
 
   @Override

@@ -22,6 +22,8 @@ public interface Connector {
 
   List<Object> query(String queryString);
   void update(String queryString);
+  void sparqlCopy(String fromContext, String toContext);
+  void sparqlAdd(String fromContext, String toContext);
 
 
   void uploadFile(File file, String[] contexts);

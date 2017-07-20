@@ -6,6 +6,7 @@ import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.parser.config.pojo.*;
 import com.sysunite.coinsweb.rdfutil.Utils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +75,14 @@ public class GraphSetFactory {
 
       HashMap<GraphVar, ArrayList<String>> keyToHashArray = new HashMap();
       for (Graph graph : loadList) {
+
+        // Only consider these now
+        if(!Source.ONLINE.equals(graph.getSource().getType()) &&
+           !Source.CONTAINER.equals(graph.getSource().getType()) &&
+           !Source.FILE.equals(graph.getSource().getType())) {
+          continue;
+        }
+
         for(GraphVar key : graph.getAs()) {
           if(!keyToHashArray.containsKey(key)) {
             keyToHashArray.put(key, new ArrayList());
@@ -86,30 +95,44 @@ public class GraphSetFactory {
         }
       }
       HashMap<GraphVar, String> sortedHashMapping = new HashMap();
-      for(GraphVar key : keyToHashArray.keySet()) {
-        sort(keyToHashArray.get(key));
-        String fullNamespace = mapping.get(key)+"-"+String.join("-", keyToHashArray.get(key));
-        log.info("Use for "+ key + " graphname "+ fullNamespace);
-        sortedHashMapping.put(key, fullNamespace);
+      for(GraphVar key : mapping.keySet()) {
+        if(keyToHashArray.containsKey(key)) {
+          sort(keyToHashArray.get(key));
+          String fullNamespace = mapping.get(key) + "-" + String.join("-", keyToHashArray.get(key));
+          log.info("Use for " + key + " graphname " + fullNamespace);
+          sortedHashMapping.put(key, fullNamespace);
 
-        // Fill the whiteList
-        if(Utils.containsNamespace(fullNamespace, availableContexts)) {
-          log.info("Adding key "+ key+" to the whiteList, this graph is already available: "+ fullNamespace);
-          whiteList.add(key);
+          // Fill the whiteList
+          if (Utils.containsNamespace(fullNamespace, availableContexts)) {
+            log.info("Adding key " + key + " to the whiteList, this graph is already available: " + fullNamespace);
+            whiteList.add(key);
+          }
+        } else {
+          sortedHashMapping.put(key, mapping.get(key) + "-" + RandomStringUtils.random(8, true, true));
         }
       }
 
 
       for (Graph graph : loadList) {
-        executeLoad(graph, connector, container, sortedHashMapping, whiteList);
+        if(Source.ONLINE.equals(graph.getSource().getType()) ||
+           Source.CONTAINER.equals(graph.getSource().getType()) ||
+           Source.FILE.equals(graph.getSource().getType())) {
+          executeLoad(graph, connector, container, sortedHashMapping, whiteList);
+        }
       }
+      executeCompose(originalGraphs, connector, sortedHashMapping);
       return sortedHashMapping;
 
     } else {
 
       for (Graph graph : loadList) {
-        executeLoad(graph, connector, container, mapping, whiteList);
+        if(Source.ONLINE.equals(graph.getSource().getType()) ||
+           Source.CONTAINER.equals(graph.getSource().getType()) ||
+           Source.FILE.equals(graph.getSource().getType())) {
+          executeLoad(graph, connector, container, mapping, whiteList);
+        }
       }
+      executeCompose(originalGraphs, connector, mapping);
       return mapping;
     }
   }
@@ -133,6 +156,87 @@ public class GraphSetFactory {
       connector.uploadFile(FileFactory.toInputStream(graph.getSource(), container), fileName, graph.getSource().getGraphname(), graphNames);
     }
 
+  }
+
+  private static void executeCompose(Graph[] graphs, Connector connector, HashMap<GraphVar, String> mapping) {
+
+    if(graphs == null || graphs.length < 1) {
+      return;
+    }
+
+    // Collect available graphVars for copying
+    List<GraphVarImpl> resolvedGraphs = new ArrayList();
+    for (Graph graph : graphs) {
+      if(!Source.STORE.equals(graph.getSource().getType())) {
+        resolvedGraphs.addAll(graph.getAs());
+      }
+    }
+
+    int benchmark = graphs.length;
+    int toDo = 0;
+
+    do {
+
+      log.info("Go trough graphs to copy/add context to context");
+
+      // If previous run had the same amount as the benchmark some copy actions are not possible to execute;
+      if(toDo == benchmark) {
+        throw new RuntimeException("This many of Sources of type 'store' can not be mapped: "+toDo);
+      }
+      benchmark = toDo;
+      toDo = 0;
+
+      for (Graph graph : graphs) {
+        if (Source.STORE.equals(graph.getSource().getType())) {
+
+          // It is not allowed to copy to an existing graph
+          for (GraphVarImpl to : graph.getAs()) {
+            if (resolvedGraphs.contains(to)) {
+              throw new RuntimeException("Some Source of type 'store' wants to map to an already existing graphVar: " + to.toString());
+            }
+          }
+
+          boolean resolvable = true;
+          for (GraphVarImpl from : graph.getSource().getGraphs()) {
+            resolvable &= resolvedGraphs.contains(from);
+          }
+
+          // Execute it
+          if(resolvable) {
+
+
+
+            log.info("Found a Source of type 'store' that is resolvable");
+
+            // First use COPY and for all the others ADD
+            for (GraphVarImpl to : graph.getAs()) {
+              boolean first = true;
+              for (GraphVarImpl from : graph.getSource().getGraphs()) {
+
+                String fromContext = mapping.get(from);
+                String toContext = mapping.get(to);
+
+                if(first) {
+                  log.info("Copy "+fromContext+" to "+toContext);
+                  connector.sparqlCopy(fromContext, toContext);
+                  first = false;
+                } else {
+                  log.info("Add all triples from "+fromContext+" to "+toContext);
+                  connector.sparqlAdd(fromContext, toContext);
+                }
+              }
+              resolvedGraphs.add(to);
+            }
+
+
+          // Or keep it for next run
+          } else {
+            toDo++;
+          }
+        }
+      }
+
+    } while(toDo > 0);
   }
 
 }

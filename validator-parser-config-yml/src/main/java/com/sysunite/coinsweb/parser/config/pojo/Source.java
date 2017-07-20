@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import static com.sysunite.coinsweb.parser.Parser.*;
 
@@ -25,19 +26,18 @@ public class Source extends ConfigPart {
   public static final String FILE = "file";
   public static final String ONLINE = "online";
   public static final String CONTAINER = "container";
+  public static final String STORE = "store";
 
 
   private String type;
   private String path;
   private String uri;
   private String graphname;
+  private ArrayList<GraphVarImpl> graphs;
 
 
   public String getType() {
     return type;
-  }
-  public String getGraphname() {
-    return graphname;
   }
   public String getPath() {
     return FilenameUtils.separatorsToSystem(path);
@@ -45,19 +45,28 @@ public class Source extends ConfigPart {
   public String getUri() {
     return uri;
   }
+  public String getGraphname() {
+    return graphname;
+  }
+  public ArrayList<GraphVarImpl> getGraphs() {
+    return graphs;
+  }
 
   public void setType(String type) {
-    validate(type, FILE, ONLINE, CONTAINER);
+    validate(type, FILE, ONLINE, CONTAINER, STORE);
     this.type = type;
-  }
-  public void setGraphname(String graphname) {
-    this.graphname = graphname;
   }
   public void setPath(String path) {
     this.path = path;
   }
   public void setUri(String uri) {
     this.uri = uri;
+  }
+  public void setGraphname(String graphname) {
+    this.graphname = graphname;
+  }
+  public void setGraphs(ArrayList<GraphVarImpl> graphs) {
+    this.graphs = graphs;
   }
 
   @JsonIgnore
@@ -102,9 +111,14 @@ public class Source extends ConfigPart {
   public Source clone() {
     Source clone = new Source();
     clone.setType(this.type);
-    clone.setGraphname(this.graphname);
     clone.setPath(this.path);
     clone.setUri(this.uri);
+    clone.setGraphname(this.graphname);
+    if(this.getGraphs() != null) {
+      ArrayList<GraphVarImpl> graphs = new ArrayList();
+      graphs.addAll(this.getGraphs());
+      clone.setGraphs(graphs);
+    }
     clone.setParent(this.getParent());
     return clone;
   }
@@ -123,22 +137,44 @@ class SourceSanitizer extends StdConverter<Source, Source> {
   public Source convert(Source obj) {
 
     isNotNull(obj.getType());
-    isNotNull(obj.getGraphname());
 
     if(Source.FILE.equals(obj.getType())) {
-      if(obj.getPath() != null && obj.getPath().contains("*")) {
+      isNotNull(obj.getPath());
+      isNotNull(obj.getGraphname());
+
+      isNull(obj.getUri());
+      isNull(obj.getGraphs());
+
+      if(obj.getPath().contains("*")) {
         throw new RuntimeException("Wildcards in path are only allowed for sources of type 'container'");
       }
     }
     if(Source.ONLINE.equals(obj.getType())) {
       isResolvable(obj.getUri());
+      isNotNull(obj.getGraphname());
+
+      isNull(obj.getPath());
+      isNull(obj.getGraphs());
     }
     if(Source.CONTAINER.equals(obj.getType())) {
-      if(obj.getPath() != null && obj.getPath().contains("*")) {
+      isNotNull(obj.getPath());
+      isNotNull(obj.getGraphname());
+
+      isNull(obj.getUri());
+      isNull(obj.getGraphs());
+
+      if(obj.getPath().contains("*")) {
         if(!obj.anyContentFile() && !obj.anyLibraryFile()) {
           throw new RuntimeException("Only wildcard allowed for bim or bim-repository folder");
         }
       }
+    }
+    if(Source.STORE.equals(obj.getType())) {
+      isNotEmpty(obj.getGraphs());
+
+      isNull(obj.getPath());
+      isNull(obj.getUri());
+      isNull(obj.getGraphname());
     }
 
 

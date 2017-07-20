@@ -26,9 +26,18 @@ public class Parser {
 
   public static void isNotEmpty(Object[] array) {
 
-    RuntimeException error = new RuntimeException("The array is empty but should contain at least one element");
+    RuntimeException error = new RuntimeException("The array is null/empty but should contain at least one element");
 
-    if(array.length < 1) {
+    if(array == null || array.length < 1) {
+      throw error;
+    }
+  }
+
+  public static void isNotEmpty(List array) {
+
+    RuntimeException error = new RuntimeException("The list is null/empty but should contain at least one element");
+
+    if(array == null || array.size() < 1) {
       throw error;
     }
   }

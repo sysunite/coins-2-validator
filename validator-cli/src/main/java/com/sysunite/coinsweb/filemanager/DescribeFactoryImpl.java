@@ -64,6 +64,14 @@ public class DescribeFactoryImpl implements DescribeFactory {
     // Explicit graphs
     ArrayList<String> explicitGraphs = new ArrayList();
     for(Graph graph : originalGraphs) {
+
+      // Only consider these now
+      if(!Source.ONLINE.equals(graph.getSource().getType()) &&
+         !Source.CONTAINER.equals(graph.getSource().getType()) &&
+         !Source.FILE.equals(graph.getSource().getType())) {
+        continue;
+      }
+
       if(!graph.getSource().anyGraph()) {
         String graphName = graph.getSource().getGraphname();
         if(Utils.containsNamespace(graphName, explicitGraphs)) {
@@ -154,19 +162,28 @@ public class DescribeFactoryImpl implements DescribeFactory {
 
     // Now load the explicit graphs
     for(Graph graph : originalGraphs) {
-      if(!graph.getSource().anyGraph()) {
 
-        // Check if the file in the container is available
-        if(Source.CONTAINER.equals(graph.getSource().getType())) {
-          try {
-            container.getFile(Paths.get(graph.getSource().getPath()));
-          } catch(RuntimeException e) {
-            throw e;
-          }
-        }
-
-        log.info("Will load explicitly defined file");
+      // Only consider these now
+      if(!Source.ONLINE.equals(graph.getSource().getType()) &&
+         !Source.CONTAINER.equals(graph.getSource().getType()) &&
+         !Source.FILE.equals(graph.getSource().getType())) {
         loadList.add(graph);
+      } else {
+
+        if (!graph.getSource().anyGraph()) {
+
+          // Check if the file in the container is available
+          if (Source.CONTAINER.equals(graph.getSource().getType())) {
+            try {
+              container.getFile(Paths.get(graph.getSource().getPath()));
+            } catch (RuntimeException e) {
+              throw e;
+            }
+          }
+
+          log.info("Will load explicitly defined file for context: " + graph.getSource().getGraphname());
+          loadList.add(graph);
+        }
       }
     }
     return loadList;

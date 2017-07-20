@@ -230,7 +230,7 @@ public class ConfigFactory {
     for(int i = 0; i < count; i++) {
       overriddenContainerSet[i] = blueprint.clone();
       String location = containerFiles[i].toString();
-      log.info("Use specified container config to load overriding container path: "+location);
+      log.info(location);
       overriddenContainerSet[i].getLocation().setPath(location);
     }
     configFile.getRun().setContainers(overriddenContainerSet);

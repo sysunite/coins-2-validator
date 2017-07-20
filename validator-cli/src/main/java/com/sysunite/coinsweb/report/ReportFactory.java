@@ -30,7 +30,7 @@ public class ReportFactory {
 
 
   public static String buildHtml(Map<String, Object> reportItems) {
-    return build(reportItems, "report.html");
+    return build(reportItems, "report.ftl");
   }
   public static String buildCustom(Map<String, Object> reportItems, File file) {
     return build(reportItems, file);
@@ -41,7 +41,7 @@ public class ReportFactory {
 
       Configuration cfg = new Configuration();
       cfg.setLocale(Locale.GERMAN); // for dutch number format
-      cfg.setClassForTemplateLoading(ReportFactory.class, "/validator/");
+      cfg.setClassForTemplateLoading(ReportFactory.class, "/report-template/");
       cfg.setDefaultEncoding("UTF-8");
       Template template = cfg.getTemplate(templatePath);
       StringWriter writer = new StringWriter();

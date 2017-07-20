@@ -177,16 +177,24 @@ public class Application {
           ConfigFactory.overrideContainers(configFile, options.hasContainerFile(), options.getContainerFiles());
         }
 
-        Validation.run(configFile);
+        boolean successful = Validation.run(configFile);
 
         // Optionally print the config.yml that was executed eventually
         if(options.ymlToConsole()) {
           System.out.print(ConfigFactory.getDefaultConfigString(configFile));
         }
 
-        log.info("Finished successfully, quitting");
-        CliOptions.printOutput("Finished successfully");
-        System.exit(0);
+        if(successful) {
+
+          log.info("Finished successfully, quitting");
+          CliOptions.printOutput("Finished successfully");
+          System.exit(0);
+        } else {
+
+          log.info("Finished with errors, quitting");
+          CliOptions.printOutput("Finished with errors");
+          System.exit(1);
+        }
 
       } catch (RuntimeException e) {
         log.error(e.getMessage(), e);

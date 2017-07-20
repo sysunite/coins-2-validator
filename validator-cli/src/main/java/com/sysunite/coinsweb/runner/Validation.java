@@ -40,7 +40,9 @@ public class Validation {
   private static final Logger log = LoggerFactory.getLogger(Validation.class);
 
 
-  public static void run(ConfigFile configFile) {
+  public static boolean run(ConfigFile configFile) {
+
+    boolean successful = true;
 
     log.info("Construct the connector");
     ConnectorFactory factory = new ConnectorFactoryImpl();
@@ -84,6 +86,7 @@ public class Validation {
           containerItems.put("valid", false);
           containers.put(containerConfig.getCode(), containerItems);
           log.warn("Skipping normal path because container file could not be found, up to the next (msg): " + e.getLocalizedMessage());
+          successful &= false;
           continue;
         }
       }
@@ -106,6 +109,7 @@ public class Validation {
         containerItems.put("valid", false);
         containers.put(containerConfig.getCode(), containerItems);
         log.warn("Skipping normal path because container file could not be found, up to the next (msg): " + e.getLocalizedMessage());
+        successful &= false;
         continue;
       }
 
@@ -151,6 +155,7 @@ public class Validation {
           ((ArrayList<String>) containerItems.get("stepNames")).add(step.getType());
           ((Map<String, Boolean>) containerItems.get("steps")).put(step.getType(), valid);
           ((Map<String, Boolean>) containerItems.get("stepsFailed")).put(step.getType(), true);
+          successful &= false;
 
 
         }
@@ -219,6 +224,8 @@ public class Validation {
         ReportFactory.postReport(payload, report.getLocation().getUri());
       }
     }
+
+    return successful;
   }
 
   private static HashMap<String, String> availableNamespaces(ContainerFile containerFile) {

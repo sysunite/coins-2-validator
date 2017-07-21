@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.steps;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.VirtualContainerFileImpl;
@@ -15,8 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -77,7 +76,7 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
   }
 
   @Override
-  public Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet) {
+  public void execute(ContainerFile container, ContainerGraphSet graphSet) {
 
     if(!(container instanceof VirtualContainerFileImpl)) {
       throw new RuntimeException("Only virtual container files can be stored for now");
@@ -148,15 +147,21 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
       log.warn(e.getMessage(), e);
       failed = true;
     }
+  }
 
-    // Prepare data to transfer to the template
-    Map<String, Object> reportItems = new HashMap();
+  @JsonIgnore
+  public ContainerFileWriter clone() {
+    ContainerFileWriter clone = new ContainerFileWriter();
 
-    reportItems.put("failed",     getFailed());
-    reportItems.put("valid",      getValid());
+    // Configuration
+    clone.setType(this.getType());
+    clone.setLocation(this.getLocation().clone());
+    clone.setParent(this.getParent());
 
-
-    return reportItems;
+    // Results
+    clone.setValid(this.getValid());
+    clone.setFailed(this.getFailed());
+    return clone;
   }
 
 

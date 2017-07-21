@@ -1,6 +1,11 @@
 package com.sysunite.coinsweb.steps;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphVar;
@@ -8,16 +13,15 @@ import com.sysunite.coinsweb.graphset.QueryFactory;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigPart;
 import com.sysunite.coinsweb.parser.config.pojo.Locator;
+import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.steps.profile.ValidationExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -89,7 +93,7 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     this.valid = valid;
   }
 
-  private List<String> bundleNames;
+  private List<String> bundleNames = new ArrayList();
   public List<String> getBundleNames() {
     return bundleNames;
   }
@@ -97,19 +101,25 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     this.bundleNames = bundleNames;
   }
 
-  private HashMap<String, Object> bundleResults;
-  public HashMap<String, Object> getBundleResults() {
-    return bundleResults;
+
+  @JsonSerialize(keyUsing = BundleKeySerializer.class)
+  private HashMap<String, Bundle> bundles = new HashMap();
+  public HashMap<String, Bundle> getBundles() {
+    return bundles;
   }
-  public void setBundleResults(HashMap<String, Object> bundleResults) {
-    this.bundleResults = bundleResults;
+  public void setBundles(HashMap<String, Bundle> bundles) {
+    this.bundles = bundles;
+  }
+  public void addBundle(Bundle bundle) {
+    this.bundleNames.add(bundle.getReference());
+    this.bundles.put(bundle.getReference(), bundle);
   }
 
   public void checkConfig() {
   }
 
   @Override
-  public Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet) {
+  public void execute(ContainerFile container, ContainerGraphSet graphSet) {
 
     try {
 
@@ -147,13 +157,33 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
         log.info("\uD83E\uDD48 invalid");
       }
     }
+  }
 
-    Map<String, Object> reportItems = new HashMap();
 
-    reportItems.put("valid",         getValid());
-    reportItems.put("bundleNames",   getBundleNames());
-    reportItems.put("bundleResults", getBundleResults());
+  @JsonIgnore
+  public ProfileValidation clone() {
+    ProfileValidation clone = new ProfileValidation();
 
-    return reportItems;
+    // Configuration
+    clone.setType(this.getType());
+    clone.setProfile(this.getProfile().clone());
+    clone.setMaxResults(this.getMaxResults());
+    clone.setMaxInferenceRuns(this.getMaxInferenceRuns());
+    clone.setParent(this.getParent());
+
+    // Results
+    clone.setBundleNames(this.getBundleNames());
+    clone.setBundles(this.getBundles());
+    clone.setValid(this.getValid());
+    clone.setFailed(this.getFailed());
+    return clone;
+  }
+
+
+}
+class BundleKeySerializer extends JsonSerializer<String> {
+  @Override
+  public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    gen.writeFieldName("bundle");
   }
 }

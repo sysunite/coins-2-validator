@@ -1,5 +1,7 @@
 package com.sysunite.coinsweb.filemanager;
 
+import com.sysunite.coinsweb.parser.config.factory.FileFactory;
+import com.sysunite.coinsweb.parser.config.pojo.Container;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -26,6 +28,12 @@ public class ContainerFileImpl extends File implements ContainerFile {
   private static final Logger log = LoggerFactory.getLogger(ContainerFileImpl.class);
 
   private boolean scanned = false;
+  private boolean wrongSlashes = false;
+  private boolean corruptZip = false;
+
+  public ContainerFileImpl(Container containerConfig) {
+    super(FileFactory.toFile(containerConfig.getLocation()).getPath());
+  }
 
   public ContainerFileImpl(String pathname) {
     super(pathname);
@@ -41,18 +49,39 @@ public class ContainerFileImpl extends File implements ContainerFile {
   private static Path attachmentPath = Paths.get("doc");
 
   private HashMap<String, Path> contentFiles = new HashMap();
+  private HashMap<String, Path> invalidContentFiles = new HashMap();
   private HashMap<String, Path> repositoryFiles = new HashMap();
+  private HashMap<String, Path> invalidRepositoryFiles = new HashMap();
   private HashMap<String, Path> woaFiles = new HashMap();
   private HashMap<String, Path> attachmentFiles = new HashMap();
   private HashMap<String, Path> orphanFiles = new HashMap();
+
+  public boolean isScanned() {
+    return scanned;
+  }
+  public boolean isCorruptZip() {
+    return corruptZip;
+  }
+  public boolean hasWrongSlashes() {
+    if(!scanned) scan();
+    return wrongSlashes;
+  }
 
   public Set<String> getContentFiles() {
     if(!scanned) scan();
     return contentFiles.keySet();
   }
+  public Set<String> getInvalidContentFiles() {
+    if(!scanned) scan();
+    return invalidContentFiles.keySet();
+  }
   public Set<String> getRepositoryFiles() {
     if(!scanned) scan();
     return repositoryFiles.keySet();
+  }
+  public Set<String> getInvalidRepositoryFiles() {
+    if(!scanned) scan();
+    return invalidRepositoryFiles.keySet();
   }
   public Set<String> getWoaFiles() {
     if(!scanned) scan();
@@ -70,8 +99,14 @@ public class ContainerFileImpl extends File implements ContainerFile {
   public DeleteOnCloseFileInputStream getContentFile(String filename) {
     return getFile(contentFiles.get(filename));
   }
+  public DeleteOnCloseFileInputStream getInvalidContentFile(String filename) {
+    return getFile(invalidContentFiles.get(filename));
+  }
   public DeleteOnCloseFileInputStream getRepositoryFile(String filename) {
     return getFile(repositoryFiles.get(filename));
+  }
+  public DeleteOnCloseFileInputStream getInvalidRepositoryFile(String filename) {
+    return getFile(invalidRepositoryFiles.get(filename));
   }
   public DeleteOnCloseFileInputStream getWoaFile(String filename) {
     return getFile(woaFiles.get(filename));
@@ -81,6 +116,14 @@ public class ContainerFileImpl extends File implements ContainerFile {
   }
   public DeleteOnCloseFileInputStream getOrphanFile(String filename) {
     return getFile(orphanFiles.get(filename));
+  }
+
+  HashMap<String, ArrayList<String>> contentFileNamespaces = new HashMap();
+  public ArrayList<String> getContentFileNamespaces(String filename) {
+    if(!contentFileNamespaces.containsKey(filename)) {
+      contentFileNamespaces.put(filename, DescribeFactoryImpl.namespacesForFile(getContentFile(filename), filename));
+    }
+    return contentFileNamespaces.get(filename);
   }
 
   HashMap<String, ArrayList<String>> repositoryFileNamespaces = new HashMap();
@@ -94,8 +137,14 @@ public class ContainerFileImpl extends File implements ContainerFile {
   public Path getContentFilePath(String filename) {
     return contentFiles.get(filename);
   }
+  public Path getInvalidContentFilePath(String filename) {
+    return invalidContentFiles.get(filename);
+  }
   public Path getRepositoryFilePath(String filename) {
     return repositoryFiles.get(filename);
+  }
+  public Path getInvalidRepositoryFilePath(String filename) {
+    return invalidRepositoryFiles.get(filename);
   }
   public Path getWoaFilePath(String filename) {
     return woaFiles.get(filename);
@@ -156,7 +205,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
     throw new RuntimeException("File not found in container: " + zipPath);
   }
 
-  public void scan() {
+  private void scan() {
 
     if(!exists()) {
       throw new RuntimeException("Container file could not be found");
@@ -181,12 +230,18 @@ public class ContainerFileImpl extends File implements ContainerFile {
           continue;
         }
 
-        // Skip file names that start with a dot
         Path zipPath = Paths.get(FilenameUtils.separatorsToSystem(ze.getName()));
-        if(zipPath.getFileName().toString().startsWith(".")) {
-          ze = zis.getNextEntry();
-          continue;
+
+        // Detect wrong slashes
+        if(ze.getName().contains("\\")) {
+          wrongSlashes = true;
         }
+
+//        // Skip file names that start with a dot
+//        if(zipPath.getFileName().toString().startsWith(".")) {
+//          ze = zis.getNextEntry();
+//          continue;
+//        }
 
         Path normalizedPath = zipPath;
         if(leadingPath != null) {
@@ -203,15 +258,29 @@ public class ContainerFileImpl extends File implements ContainerFile {
         if(normalizedPath.startsWith(bimPath)) {
           Path inside = bimPath.relativize(normalizedPath);
           if(!inside.startsWith(repositoryPath)) {
-            contentFiles.put(inside.toString(), zipPath);
+
+            try {
+              contentFiles.put(inside.toString(), zipPath);
+              getContentFileNamespaces(inside.toString());
+            } catch (Exception e) {
+              contentFiles.remove(inside.toString());
+              invalidContentFiles.put(inside.toString(), zipPath);
+            }
 
           // bim/repository
           } else {
             inside = repositoryPath.relativize(inside);
-            repositoryFiles.put(inside.toString(), zipPath);
+
 
             // Do this to detect errors upfront
-            getRepositoryFileNamespaces(inside.toString());
+            try {
+              repositoryFiles.put(inside.toString(), zipPath);
+              getRepositoryFileNamespaces(inside.toString());
+            } catch (Exception e) {
+              repositoryFiles.remove(inside.toString());
+              invalidRepositoryFiles.put(inside.toString(), zipPath);
+            }
+
           }
 
         // woa
@@ -246,7 +315,10 @@ public class ContainerFileImpl extends File implements ContainerFile {
 
     } catch(IOException e) {
       log.error(e.getMessage(), e);
-      throw new RuntimeException("Something went wrong scanning the container file");
+
+      scanned = true;
+      corruptZip = true;
+      throw new RuntimeException("Something went wrong scanning the container file, concluding invalid zip");
     }
 
     scanned = true;

@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.steps;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
@@ -11,9 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 
@@ -51,15 +50,24 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
   public boolean getFailed() {
     return failed;
   }
+  public void setFailed(boolean failed) {
+    this.failed = failed;
+  }
 
   private boolean valid = false;
   public boolean getValid() {
     return valid;
   }
+  public void setValid(boolean valid) {
+    this.valid = valid;
+  }
 
   private List<String> internalDocumentReferences;
   public List<String> getInternalDocumentReferences() {
     return internalDocumentReferences;
+  }
+  public void setInternalDocumentReferences(List<String> internalDocumentReferences) {
+    this.internalDocumentReferences = internalDocumentReferences;
   }
 
 
@@ -68,7 +76,7 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
   }
 
   @Override
-  public Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet) {
+  public void execute(ContainerFile container, ContainerGraphSet graphSet) {
 
     try {
 
@@ -140,16 +148,22 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
         log.info("\uD83E\uDD48 invalid");
       }
     }
-
-    Map<String, Object> reportItems = new HashMap();
-
-    reportItems.put("failed",                          getFailed());
-    reportItems.put("valid",                           getValid());
-    reportItems.put("internalDocumentReferences",      getInternalDocumentReferences());
-
-    return reportItems;
   }
 
+  @JsonIgnore
+  public DocumentReferenceValidation clone() {
+    DocumentReferenceValidation clone = new DocumentReferenceValidation();
 
+    // Configuration
+    clone.setType(this.getType());
+    clone.setLookIn(this.getLookIn());
+    clone.setParent(this.getParent());
+
+    // Results
+    clone.setInternalDocumentReferences(this.getInternalDocumentReferences());
+    clone.setValid(this.getValid());
+    clone.setFailed(this.getFailed());
+    return clone;
+  }
 
 }

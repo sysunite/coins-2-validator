@@ -2,6 +2,7 @@ package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
+import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.parser.config.pojo.Graph;
@@ -52,6 +53,10 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
   // Execute postponed lazy load
   public void load() {
+
+    // Essential step to get rid of the wildcards in the configFile
+    log.info("Will now expand any wildcard usage in the config.yml section of this file");
+    DescribeFactoryImpl.expandGraphConfig(containerConfig);
 
     if(disabled) {
       return;

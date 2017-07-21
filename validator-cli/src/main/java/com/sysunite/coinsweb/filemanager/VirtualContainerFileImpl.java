@@ -47,9 +47,21 @@ public class VirtualContainerFileImpl implements ContainerFile {
   public Set<String> getContentFiles() {
     return contentFiles.keySet();
   }
+
+  @Override
+  public Set<String> getInvalidContentFiles() {
+    return null;
+  }
+
   public Set<String> getRepositoryFiles() {
     return repositoryFiles.keySet();
   }
+
+  @Override
+  public Set<String> getInvalidRepositoryFiles() {
+    return null;
+  }
+
   public Set<String> getWoaFiles() {
     return woaFiles.keySet();
   }
@@ -71,7 +83,17 @@ public class VirtualContainerFileImpl implements ContainerFile {
   }
 
   @Override
+  public DeleteOnCloseFileInputStream getInvalidContentFile(String filename) {
+    return null;
+  }
+
+  @Override
   public DeleteOnCloseFileInputStream getRepositoryFile(String filename) {
+    return null;
+  }
+
+  @Override
+  public DeleteOnCloseFileInputStream getInvalidRepositoryFile(String filename) {
     return null;
   }
 
@@ -91,6 +113,11 @@ public class VirtualContainerFileImpl implements ContainerFile {
   }
 
   @Override
+  public ArrayList<String> getContentFileNamespaces(String filename) {
+    return null;
+  }
+
+  @Override
   public ArrayList<String> getRepositoryFileNamespaces(String filename) {
     return null;
   }
@@ -106,7 +133,17 @@ public class VirtualContainerFileImpl implements ContainerFile {
   }
 
   @Override
+  public Path getInvalidContentFilePath(String filename) {
+    return null;
+  }
+
+  @Override
   public Path getRepositoryFilePath(String filename) {
+    return null;
+  }
+
+  @Override
+  public Path getInvalidRepositoryFilePath(String filename) {
     return null;
   }
 
@@ -125,10 +162,7 @@ public class VirtualContainerFileImpl implements ContainerFile {
     return null;
   }
 
-  @Override
-  public void scan() {
 
-  }
 
 
   public void writeZip(Path containerFile) {

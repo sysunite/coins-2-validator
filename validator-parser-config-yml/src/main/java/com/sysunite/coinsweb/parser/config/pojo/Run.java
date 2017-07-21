@@ -2,6 +2,8 @@ package com.sysunite.coinsweb.parser.config.pojo;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.sysunite.coinsweb.steps.ValidationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +24,20 @@ public class Run extends ConfigPart {
   private ValidationStep[] steps;
   private Report[] reports;
 
+  @JacksonXmlProperty(localName = "container")
+  @JacksonXmlElementWrapper(localName="containers")
   public Container[] getContainers() {
     return containers;
   }
+
+  @JacksonXmlProperty(localName = "step")
+  @JacksonXmlElementWrapper(localName="steps")
   public ValidationStep[] getSteps() {
     return steps;
   }
+
+  @JacksonXmlProperty(localName = "report")
+  @JacksonXmlElementWrapper(localName="reports")
   public Report[] getReports() {
     return reports;
   }

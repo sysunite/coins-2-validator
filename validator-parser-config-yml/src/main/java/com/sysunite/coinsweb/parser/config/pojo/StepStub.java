@@ -9,8 +9,6 @@ import com.sysunite.coinsweb.steps.ValidationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-
 /**
  * @author bastbijl, Sysunite 2017
  */
@@ -43,14 +41,24 @@ public class StepStub extends ConfigPart implements ValidationStep {
   }
 
   @Override
+  public ValidationStep clone() {
+    StepStub clone = new StepStub();
+
+    // Configuration
+    clone.setType(this.getType());
+    clone.setParent(this.getParent());
+
+    return clone;
+  }
+
+  @Override
   public boolean getValid() {
     return false;
   }
 
   @Override
-  public Map<String, Object> execute(ContainerFile container, ContainerGraphSet graphSet) {
+  public void execute(ContainerFile container, ContainerGraphSet graphSet) {
     // stub
-    return null;
   }
 
 }

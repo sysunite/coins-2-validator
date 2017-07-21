@@ -26,7 +26,6 @@ package com.sysunite.coinsweb.steps.profile;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.sysunite.coinsweb.graphset.GraphVar;
 import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
 import org.slf4j.Logger;
@@ -34,29 +33,24 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Bastiaan Bijl, Sysunite 2016
  */
-public class InferenceBundleStatistics extends Bundle {
+public class ValidationBundleStatistics extends Bundle {
 
-  private static final Logger log = LoggerFactory.getLogger(InferenceBundleStatistics.class);
+  private static final Logger log = LoggerFactory.getLogger(ValidationBundleStatistics.class);
 
   private String id;
   private long executionTimeMs = 0l;
   @JsonIgnore
   private HashMap<String, Query> queryMap;
-  private List<Map<GraphVar, Long>> runStatistics = new ArrayList<>();
-  private int runs = 0;
-  private long quadsAdded = 0l;
   private boolean valid = false;
 
-  public InferenceBundleStatistics(Bundle bundleConfig) {
+  public ValidationBundleStatistics(Bundle bundleConfig) {
 
-    if(!Bundle.INFERENCE.equals(bundleConfig.getType())) {
-      throw new RuntimeException("Can not upgrade Bundle of other than type 'inference' to InferenceBundleStatistics");
+    if(!Bundle.VALIDATION.equals(bundleConfig.getType())) {
+      throw new RuntimeException("Can not upgrade Bundle of other than type 'validation' to ValidationBundleStatistics");
     }
 
     // Copy fields
@@ -64,6 +58,8 @@ public class InferenceBundleStatistics extends Bundle {
     setReference(bundleConfig.getReference());
     setDescription(bundleConfig.getDescription());
     setQueries(bundleConfig.getQueries());
+
+
 
     // Make new fields
     this.id = Long.toHexString(Double.doubleToLongBits(Math.random()));
@@ -74,20 +70,12 @@ public class InferenceBundleStatistics extends Bundle {
   }
 
 
+
   public String getId() {
     return id;
   }
   public long getExecutionTimeMs() {
     return executionTimeMs;
-  }
-  public List<Map<GraphVar, Long>> getRunStatistics() {
-    return runStatistics;
-  }
-  public int getRuns() {
-    return runs;
-  }
-  public long getQuadsAdded() {
-    return quadsAdded;
   }
 
   @Override
@@ -97,19 +85,10 @@ public class InferenceBundleStatistics extends Bundle {
     return queries;
   }
 
-  public void addExecutionTimeMs(long executionTimeMs) {
+
+  public void addExecutionTime(long executionTimeMs) {
     this.executionTimeMs += executionTimeMs;
   }
-  public void addRunStatistics(Map<GraphVar, Long> quadCount) {
-    runStatistics.add(quadCount);
-  }
-  public void addRun() {
-    this.runs += 1;
-  }
-  public void addQuadsAdded(long count) {
-    this.quadsAdded += count;
-  }
-
   public void updateQuery(Query query) {
     this.queryMap.put(query.getReference(), query);
   }
@@ -124,10 +103,13 @@ public class InferenceBundleStatistics extends Bundle {
     return (QueryStatistics) this.queryMap.get(reference);
   }
 
+
+
   public boolean getValid() {
     return valid;
   }
   public void setValid(boolean valid) {
     this.valid = valid;
   }
+
 }

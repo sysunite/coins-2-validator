@@ -38,7 +38,7 @@ public class QueryFactory {
     return buildQuery(query, data, prefixes, 0);
   }
   public static String buildQuery(Query query, Map<String, String> data, String prefixes, int maxResults) {
-    String cleanQuery = query.cleanQuery();
+    String cleanQuery = query.getQuery();
     if(prefixes != null && !prefixes.isEmpty()) {
       cleanQuery = prefixes + '\n' + cleanQuery;
     }
@@ -60,7 +60,7 @@ public class QueryFactory {
     HashSet<GraphVar> result = new HashSet();
     Pattern pattern = Pattern.compile("(?<=\\$\\{)([^\\}]+)(?=\\})");
     for(Query query : bundle.getQueries()) {
-      Matcher matcher = pattern.matcher(query.cleanQuery());
+      Matcher matcher = pattern.matcher(query.getQuery());
       while(matcher.find()) {
         result.add(new GraphVarImpl(matcher.group()));
       }

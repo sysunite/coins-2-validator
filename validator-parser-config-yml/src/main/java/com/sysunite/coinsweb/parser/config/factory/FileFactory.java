@@ -32,9 +32,6 @@ public class FileFactory {
       ConfigFile configFile = locator.getParent();
       String path = locator.getPath();
       File file = new File(configFile.resolve(path).toString());
-      if(!file.exists()) {
-        throw new RuntimeException("Configured file not found: "+file.getPath());
-      }
       return file;
     }
     if(Locator.ONLINE.equals(locator.getType())) {

@@ -2,7 +2,7 @@ package com.sysunite.coinsweb.parser.profile.pojo;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.sysunite.coinsweb.parser.Parser;
+import com.sysunite.coinsweb.parser.profile.util.IndentedCDATAPrettyPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,13 +19,10 @@ public class QueryConfiguration {
 
 
   public String getDefaultPrefixes() {
-    return Parser.indentText(defaultPrefixes, 3);
-  }
-  public String cleanDefaultPrefixes() {
-    return Parser.indentText(defaultPrefixes, 0).trim();
+    return defaultPrefixes;
   }
   public void setDefaultPrefixes(String defaultPrefixes) {
-    this.defaultPrefixes = Parser.indentText(defaultPrefixes, 3);
+    this.defaultPrefixes = IndentedCDATAPrettyPrinter.indentText(defaultPrefixes, 0).trim();
   }
 
 }

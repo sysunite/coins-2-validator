@@ -64,7 +64,7 @@ public class ValidationExecutor {
     this.validationConfig = validationConfig;
 
     if(profile.getQueryConfiguration() != null) {
-      defaultPrefixes = profile.getQueryConfiguration().cleanDefaultPrefixes();
+      defaultPrefixes = profile.getQueryConfiguration().getDefaultPrefixes();
     }
 
 
@@ -96,40 +96,39 @@ public class ValidationExecutor {
 
     boolean valid = true;
 
-
-    List<String> bundleNames = new ArrayList();
-    HashMap<String, Object> bundleResults = new HashMap();
+//    ArrayList<Bundle> enhancedBundles = new ArrayList();
 
     // Execute bundles in order of appearance
     for(Bundle bundle : profile.getBundles()) {
 
-      bundleNames.add(bundle.getReference());
+
 
       if(Bundle.INFERENCE.equals(bundle.getType())) {
 
-        InferenceBundleStatistics statistics = executeInferenceBundle(bundle);
-        if(statistics != null) {
-          bundleResults.put(bundle.getReference(), statistics);
-        }
+        InferenceBundleStatistics enhanced = executeInferenceBundle(bundle);
+        validationConfig.addBundle(enhanced);
+//        enhancedBundles.add(enhanced);
+
 
       } else if(Bundle.VALIDATION.equals(bundle.getType())) {
 
-        HashMap<String, Object> resultMap = executeValidationBundle(bundle);
-        bundleResults.put(bundle.getReference(), resultMap);
+        ValidationBundleStatistics enhanced = executeValidationBundle(bundle);
+        validationConfig.addBundle(enhanced);
+//        enhancedBundles.add(enhanced);
+
+        valid &= enhanced.getValid();
+
 
       } else {
         throw new RuntimeException("Bundle type "+bundle.getType()+" not supported");
       }
 
-
-      valid &= bundle.getValid();
-
     }
+
+//    profile.setBundles(enhancedBundles);
 
     validationConfig.setFailed(false);
     validationConfig.setValid(valid);
-    validationConfig.setBundleNames(bundleNames);
-    validationConfig.setBundleResults(bundleResults);
   }
 
 
@@ -137,7 +136,7 @@ public class ValidationExecutor {
   private InferenceBundleStatistics executeInferenceBundle(Bundle bundle) {
 
 
-    InferenceBundleStatistics resultCarrier = new InferenceBundleStatistics(bundle);
+    InferenceBundleStatistics bundleStats = new InferenceBundleStatistics(bundle);
 
 
     String inferenceCode = profile.getName()+"/"+profile.getVersion()+"/"+bundle.getReference();
@@ -153,7 +152,7 @@ public class ValidationExecutor {
       for(String existingInferenceCode : list) {
         if(inferenceCodeWithoutRef(existingInferenceCode).equals(inferenceCodeWithoutRef(inferenceCode))) {
           log.info("Inference >>" + inferenceCode + "<< was executed before");
-          return resultCarrier;
+          return bundleStats;
         } else {
           throw new RuntimeException("Some other >>" + executedInferences.get(context) + "<< inference was executed before, this connector can not be used");
         }
@@ -179,10 +178,17 @@ public class ValidationExecutor {
       long start = new Date().getTime();
 
 
-      for (Query query : bundle.getQueries()) {
+      for (Query query : bundleStats.getQueries()) {
+
+        long startQuery = new Date().getTime();
+        QueryStatistics queryStats = bundleStats.getQuery(query.getReference());
 
         String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes);
+        queryStats.setExecutedQuery(queryString);
         graphSet.update(queryString);
+
+        long executionTimeQuery = (new Date().getTime()) - startQuery;
+        queryStats.addExecutionTimeMs(executionTimeQuery);
 
       }
 
@@ -191,11 +197,12 @@ public class ValidationExecutor {
 
 
       Map<GraphVar, Long> current = graphSet.quadCount();
-      resultCarrier.addRunStatistics(current);
+      bundleStats.addRunStatistics(current);
       quadsAddedThisRun = quadsAdded(previous, current);
       previous = current;
-      resultCarrier.addQuadsAdded(quadsAddedThisRun);
-      resultCarrier.addExecutionTime(executionTime);
+      bundleStats.addQuadsAdded(quadsAddedThisRun);
+      bundleStats.addExecutionTimeMs(executionTime);
+      bundleStats.addRun();
 
       log.info("Finished run "+run+" for bundle \""+bundle.getReference()+"\", this total amount of quads was added this run: "+quadsAddedThisRun);
 
@@ -213,74 +220,72 @@ public class ValidationExecutor {
       }
     }
 
-    return resultCarrier;
+    return bundleStats;
   }
 
-  private HashMap<String, Object> executeValidationBundle(Bundle bundle) {
+  private ValidationBundleStatistics executeValidationBundle(Bundle bundle) {
+
+    ValidationBundleStatistics bundleStats = new ValidationBundleStatistics(bundle);
 
     boolean valid = true;
-    HashMap<String, Object> resultMap = new HashMap();
 
-    for (Query query : bundle.getQueries()) {
+    for (Query query : bundleStats.getQueries()) {
 
-      ValidationQueryResult resultCarrier;
-      if(!resultMap.containsKey(query.getReference())) {
-        resultCarrier = new ValidationQueryResult(query);
-        resultMap.put(query.getReference(), resultCarrier);
-      } else {
-        resultCarrier = (ValidationQueryResult)resultMap.get(query.getReference());
-      }
-
-
+      QueryStatistics queryStats = bundleStats.getQuery(query.getReference());
 
       String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes, validationConfig.getMaxResults());
+      queryStats.setExecutedQuery(queryString);
 
-      Template formatTemplate = query.getFormatTemplate();
+      long start = new Date().getTime();
 
-
-
-
-      if(graphSet.requiresLoad()) {
-        graphSet.load();
-      }
-
-      long startQuery = new Date().getTime();
-
-      ArrayList<String> formattedResults = new ArrayList<>();
       List<Object> result = graphSet.select(queryString);
 
+
+      HashMap<String, String> results = new HashMap();
+      ArrayList<String> formattedResults = new ArrayList<>();
+
+      boolean hasNoResults;
+
       if(result.isEmpty()) {
+        hasNoResults = true;
         log.info("No results for \""+query.getReference()+"\", which is good");
+
       } else {
+        hasNoResults = false;
         log.info("Results found for \""+query.getReference()+"\", this is bad");
 
 
+
+        Template formatTemplate = query.getFormatTemplate();
+
         if(formatTemplate != null) {
           for(Object bindingSet : result) {
-            formattedResults.add(ReportFactory.formatResult((BindingSet) bindingSet, formatTemplate));
+            BindingSet row = (BindingSet) bindingSet;
+            for(String binding : row.getBindingNames()) {
+              results.put(binding, row.getValue(binding).stringValue());
+            }
+            formattedResults.add(ReportFactory.formatResult(row, formatTemplate));
           }
         }
       }
 
-      long executionTime = new Date().getTime() - startQuery;
-
-      resultCarrier.setExecutionTime(executionTime);
-      resultCarrier.setExecutedQuery(queryString);
-      resultCarrier.addFormattedResults(formattedResults);
+      long executionTime = new Date().getTime() - start;
 
 
 
 
 
-      boolean hasNoResults = resultCarrier.getFormattedResults().isEmpty();
-      resultCarrier.setPassed(hasNoResults);
+      queryStats.addExecutionTimeMs(executionTime);
+      queryStats.setResultSet(results);
+      queryStats.addFormattedResults(formattedResults);
+
 
       valid &= hasNoResults;
 
     }
-    bundle.setValid(valid);
 
-    return resultMap;
+    bundleStats.setValid(valid);
+    return bundleStats;
   }
 
 

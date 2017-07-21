@@ -1,14 +1,16 @@
 package com.sysunite.coinsweb.parser.config.pojo;
 
-import com.fasterxml.jackson.databind.util.StdConverter;
-import org.apache.commons.io.FilenameUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.util.StdConverter;
+import com.sysunite.coinsweb.parser.config.factory.FileFactory;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -76,6 +78,11 @@ public class Locator extends ConfigPart {
     return null;
   }
 
+  @JsonIgnore
+  public boolean fileExists() {
+    File file = FileFactory.toFile(this);
+    return file.exists() && file.isFile();
+  }
 
   @JsonIgnore
   public Locator clone() {

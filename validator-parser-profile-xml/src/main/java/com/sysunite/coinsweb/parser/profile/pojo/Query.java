@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.sysunite.coinsweb.parser.profile.util.IndentedCDATAPrettyPrinter;
 import com.sysunite.coinsweb.parser.profile.util.Markdown;
-import com.sysunite.coinsweb.parser.Parser;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -32,8 +32,7 @@ public class Query {
 
   @JsonInclude(Include.NON_NULL)
   @JacksonXmlCData
-  @JacksonXmlProperty(localName = "resultFormat")
-  private String format;
+  private String resultFormat;
 
   @JacksonXmlCData
   @JacksonXmlProperty(localName = "sparql")
@@ -56,18 +55,11 @@ public class Query {
   }
 
 
-  public String getFormat() {
-    return Markdown.parseLinksToHtml(format);
+  public String getResultFormat() {
+    return Markdown.parseLinksToHtml(resultFormat);
   }
-  public String cleanFormat() {
-    if(format == null) {
-      return "";
-    } else {
-      return Parser.indentText(getFormat(), 0).trim();
-    }
-  }
-  public void setFormat(String format) {
-    this.format = format;
+  public void setResultFormat(String resultFormat) {
+    this.resultFormat = IndentedCDATAPrettyPrinter.indentText(resultFormat, 0).trim();
   }
   @JsonIgnore
   private Template formatTemplate ;
@@ -77,7 +69,7 @@ public class Query {
       StringTemplateLoader templateLoader = new StringTemplateLoader();
       Configuration cfg = new Configuration();
       cfg.setTemplateLoader(templateLoader);
-      templateLoader.putTemplate("resultFormat", cleanFormat());
+      templateLoader.putTemplate("resultFormat", getResultFormat());
       try {
         formatTemplate = cfg.getTemplate("resultFormat");
       } catch (IOException e) {
@@ -90,13 +82,10 @@ public class Query {
 
 
   public String getQuery() {
-    return Parser.indentText(query, 6);
-  }
-  public String cleanQuery() {
-    return Parser.indentText(query, 0).trim();
+    return query;
   }
   public void setQuery(String query) {
-    this.query = Parser.indentText(query, 6);
+    this.query = IndentedCDATAPrettyPrinter.indentText(query, 0).trim();
   }
 
 

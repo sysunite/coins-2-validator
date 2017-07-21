@@ -1,7 +1,6 @@
 package com.sysunite.coinsweb.parser.profile.util;
 
 import com.fasterxml.jackson.dataformat.xml.util.DefaultXmlPrettyPrinter;
-import com.sysunite.coinsweb.parser.Parser;
 import org.codehaus.stax2.XMLStreamWriter2;
 
 import javax.xml.stream.XMLStreamException;
@@ -34,9 +33,12 @@ public class IndentedCDATAPrettyPrinter extends DefaultXmlPrettyPrinter {
 
     sw.writeStartElement(nsURI, localName);
     if(isCData) {
-      String padding = String.join("", Collections.nCopies(this._nesting+1, Parser.INDENT));
       this._objectIndenter.writeIndentation(sw, this._nesting+1);
-      sw.writeCData(System.lineSeparator() + text + System.lineSeparator() + padding);
+
+      String body = indentText(text.trim(), this._nesting+2);
+      String padding = String.join("", Collections.nCopies(this._nesting+1, INDENT));
+      sw.writeCData(System.lineSeparator() + body + System.lineSeparator() + padding);
+
       this._objectIndenter.writeIndentation(sw, this._nesting);
     } else {
       sw.writeCharacters(text);
@@ -51,5 +53,30 @@ public class IndentedCDATAPrettyPrinter extends DefaultXmlPrettyPrinter {
     System.arraycopy(with, 0, result, 0, with.length);
     System.arraycopy(fragment, 0, result, with.length, fragment.length);
     return result;
+  }
+
+  public static String INDENT = "  ";
+  public static String indentText(String body, int level) {
+    String result = "";
+    String indent = String.join("", Collections.nCopies(level, INDENT));
+    String[] lines = body.split(System.lineSeparator());
+    int cutoff = -1;
+    boolean skipping = true;
+    for(String line : lines) {
+      if(skipping) {
+        if(line.trim().isEmpty()) {
+          continue;
+        } else {
+          skipping = false;
+        }
+      }
+      int count = line.indexOf(line.trim());
+      if(cutoff == -1) {
+        cutoff = count;
+      }
+      count = Math.min(count, cutoff);
+      result += indent + line.substring(count) + System.lineSeparator();
+    }
+    return result.substring(0, result.length()-1);
   }
 }

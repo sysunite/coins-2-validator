@@ -2,7 +2,7 @@ version: '2'
 services:
   graphdb:
     image: "sysunite/graphdb-8.2.0"
-    command:  ["/opt/graphdb-free-8.2.0/bin/graphdb", "-s"]
+#    command:  ["/opt/graphdb-free-8.2.0/bin/graphdb", "-s"]
     ports:
     - "7200:7200"
     volumes:

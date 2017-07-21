@@ -1,5 +1,13 @@
 package com.sysunite.coinsweb.report;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
+import com.sysunite.coinsweb.parser.profile.util.IndentedCDATAPrettyPrinter;
 import freemarker.cache.FileTemplateLoader;
 import freemarker.core.InvalidReferenceException;
 import freemarker.template.Configuration;
@@ -29,14 +37,19 @@ public class ReportFactory {
   private static final Logger log = LoggerFactory.getLogger(ReportFactory.class);
 
 
-  public static String buildHtml(Map<String, Object> reportItems) {
-    return build(reportItems, "report.ftl");
+  public static String buildHtml(ConfigFile configFile) {
+    return build(configFile, "report.ftl");
   }
-  public static String buildCustom(Map<String, Object> reportItems, File file) {
-    return build(reportItems, file);
+  public static String buildCustom(ConfigFile configFile, File file) {
+    return build(configFile, file);
   }
 
-  private static String build(Map<String, Object> reportItems, String templatePath) {
+  private static String build(ConfigFile configFile, String templatePath) {
+
+    Map<String, Object> reportItems = new HashMap();
+    reportItems.put("runConfig", configFile);
+    reportItems.put("instanceOf", new InstanceOfMethod());
+
     try {
 
       Configuration cfg = new Configuration();
@@ -56,7 +69,12 @@ public class ReportFactory {
     throw new RuntimeException("Was not able to build the report from template.");
   }
 
-  private static String build(Map<String, Object> reportItems, File file) {
+  private static String build(ConfigFile configFile, File file) {
+
+    Map<String, Object> reportItems = new HashMap();
+    reportItems.put("runConfig", configFile);
+    reportItems.put("instanceOf", new InstanceOfMethod());
+
     try {
 
       log.info("Try to load custom template: "+file.getPath());
@@ -156,5 +174,31 @@ public class ReportFactory {
       input = "<u><div class=\"condense\">" + input.replace("#", "</div>#") + "</u>";
     }
     return input;
+  }
+
+  public static String buildXml(ConfigFile configFile) {
+    XmlMapper objectMapper = new XmlMapper();
+    objectMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
+    objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+    ObjectWriter xmlWriter = objectMapper.writer(new IndentedCDATAPrettyPrinter());
+
+    try {
+      return xmlWriter.writeValueAsString(configFile);
+    } catch (JsonProcessingException e) {
+      e.printStackTrace();
+    }
+    throw new RuntimeException("Failed to produce xml");
+  }
+
+  public static String buildJson(ConfigFile configFile) {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+    try {
+      return objectMapper.writeValueAsString(configFile);
+    } catch (JsonProcessingException e) {
+      e.printStackTrace();
+    }
+    throw new RuntimeException("Failed to produce json");
   }
 }

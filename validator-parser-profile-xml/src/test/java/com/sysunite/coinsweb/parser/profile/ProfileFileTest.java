@@ -38,6 +38,7 @@ public class ProfileFileTest {
   public void test981() throws IOException {
     testTemplate("profile.lite-9.81.xml");
     reSave("profile.lite-9.81.xml", "profile.lite-9.81-generated.xml");
+    testTemplate("profile.lite-9.81-generated.xml");
   }
   @Test
   public void test982() throws IOException {
@@ -51,10 +52,10 @@ public class ProfileFileTest {
   }
   public void testTemplate(String resourceFile) throws IOException {
 
-    XmlMapper objectMapper = new XmlMapper();
+
 
     InputStream file = getClass().getClassLoader().getResource(resourceFile).openStream();
-    ProfileFile profileFile = objectMapper.readValue(file, ProfileFile.class);
+    ProfileFile profileFile = ProfileFile.parse(file);
 
     System.out.println();
     System.out.println("name: " + profileFile.getName());
@@ -62,7 +63,7 @@ public class ProfileFileTest {
     System.out.println("author: " + profileFile.getAuthor() + "\n");
 
     if(profileFile.hasQueryConfiguration()) {
-      System.out.println("prefixes:\n" + profileFile.getQueryConfiguration().cleanDefaultPrefixes() + "\n");
+      System.out.println("prefixes:\n>>>>>" + profileFile.getQueryConfiguration().getDefaultPrefixes() + "<<<<<");
     }
 
     for(Bundle bundle : profileFile.getBundles()) {
@@ -72,8 +73,8 @@ public class ProfileFileTest {
 
       for(Query query : bundle.getQueries()) {
         System.out.println("query reference: " + query.getDescription());
-        System.out.println("query format:\n" + query.cleanFormat());
-        System.out.println("query body:\n" + query.cleanQuery() + "\n");
+        System.out.println("query format:\n>>>>>" + query.getResultFormat() + "<<<<<");
+        System.out.println("query body:\n>>>>>" + query.getQuery() + "<<<<<");
 
       }
     }

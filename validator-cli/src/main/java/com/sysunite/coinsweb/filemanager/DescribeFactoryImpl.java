@@ -45,7 +45,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
     log.info("Expand graph settings for container of type "+container.getType());
     ContainerFile containerFile = null;
     if(!container.isVirtual()) {
-      containerFile = new ContainerFileImpl(FileFactory.toFile(container.getLocation()).getPath());
+      containerFile = new ContainerFileImpl(container);
     }
     Graph[] expandedGraphs = loadList(container.getGraphs(), containerFile).toArray(new Graph[0]);
     container.setGraphs(expandedGraphs);

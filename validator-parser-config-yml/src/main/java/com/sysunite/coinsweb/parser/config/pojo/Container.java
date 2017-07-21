@@ -5,11 +5,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
+import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.GraphVar;
+import com.sysunite.coinsweb.steps.ValidationStep;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import static com.sysunite.coinsweb.parser.Parser.*;
@@ -32,6 +35,11 @@ public class Container extends ConfigPart {
   private Graph[] graphs = new Graph[0];
   @JsonInclude(Include.NON_EMPTY)
   private Attachment[] attachments = new Attachment[0];
+  @JsonInclude(Include.NON_EMPTY)
+  private ArrayList<ValidationStep> steps = new ArrayList();
+  private Boolean valid;
+  @JsonIgnore
+  private ContainerFile containerFile;
 
   @JsonIgnore
   private String code;
@@ -62,6 +70,15 @@ public class Container extends ConfigPart {
   }
   public Attachment[] getAttachments() {
     return attachments;
+  }
+  public ArrayList<ValidationStep> getSteps() {
+    return steps;
+  }
+  public Boolean getValid() {
+    return valid;
+  }
+  public ContainerFile getContainerFile() {
+    return containerFile;
   }
 
   @JsonIgnore
@@ -99,6 +116,15 @@ public class Container extends ConfigPart {
     for(Attachment attachment : this.attachments) {
       attachment.setParent(this.getParent());
     }
+  }
+  public void addStep(ValidationStep step) {
+    this.steps.add(step);
+  }
+  public void setValid(Boolean valid) {
+    this.valid = valid;
+  }
+  public void setContainer(ContainerFile containerFile) {
+    this.containerFile = containerFile;
   }
 
   @Override

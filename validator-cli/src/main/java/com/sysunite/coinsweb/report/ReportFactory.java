@@ -176,26 +176,26 @@ public class ReportFactory {
     return input;
   }
 
-  public static String buildXml(ConfigFile configFile) {
+  public static String buildXml(ReportFile reportFile) {
     XmlMapper objectMapper = new XmlMapper();
     objectMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
     ObjectWriter xmlWriter = objectMapper.writer(new IndentedCDATAPrettyPrinter());
 
     try {
-      return xmlWriter.writeValueAsString(configFile);
+      return xmlWriter.writeValueAsString(reportFile);
     } catch (JsonProcessingException e) {
       e.printStackTrace();
     }
     throw new RuntimeException("Failed to produce xml");
   }
 
-  public static String buildJson(ConfigFile configFile) {
+  public static String buildJson(ReportFile reportFile) {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
     try {
-      return objectMapper.writeValueAsString(configFile);
+      return objectMapper.writeValueAsString(reportFile);
     } catch (JsonProcessingException e) {
       e.printStackTrace();
     }

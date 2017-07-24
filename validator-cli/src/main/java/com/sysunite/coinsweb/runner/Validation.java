@@ -15,6 +15,7 @@ import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.parser.config.pojo.Locator;
 import com.sysunite.coinsweb.parser.config.pojo.Report;
 import com.sysunite.coinsweb.report.ReportFactory;
+import com.sysunite.coinsweb.report.ReportFile;
 import com.sysunite.coinsweb.steps.ValidationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,11 +107,15 @@ public class Validation {
     for(Report report : configFile.getRun().getReports()) {
 
       String payload = null;
-      if(Report.JSON.equals(report.getType())) {
-        payload = ReportFactory.buildJson(configFile);
-      }
       if(Report.XML.equals(report.getType())) {
-        payload = ReportFactory.buildXml(configFile);
+        ReportFile reportFile = new ReportFile();
+        reportFile.setContainers(configFile.getRun().getContainers());
+        payload = ReportFactory.buildXml(reportFile);
+      }
+      if(Report.JSON.equals(report.getType())) {
+        ReportFile reportFile = new ReportFile();
+        reportFile.setContainers(configFile.getRun().getContainers());
+        payload = ReportFactory.buildJson(reportFile);
       }
       if(Report.HTML.equals(report.getType())) {
         payload = ReportFactory.buildHtml(configFile);

@@ -1,0 +1,76 @@
+environment:
+
+  store:
+    type: graphdb
+    config:
+      endpoint: http://themountain:7200
+  cleanUp: false
+  createRepo: true
+  destroyRepo: false
+  loadingStrategy: permanent-sorted-hashes-in-graphname
+
+run:
+  containers:
+  - type: container
+    location:
+      type: file
+      path: override.ccr
+
+
+    variables:
+    - graphname: http://full/union
+      variable: FULL_UNION_GRAPH
+    - graphname: http://instances/union
+      variable: INSTANCE_UNION_GRAPH
+    - graphname: http://library/union
+      variable: SCHEMA_UNION_GRAPH
+
+    graphs:
+    - source:
+        type: container
+        path: bim/*
+        graphname: '*'
+      as:
+      - INSTANCE_UNION_GRAPH
+    - source:
+        type: container
+        path: bim/repository/*
+        graphname: '*'
+      as:
+      - SCHEMA_UNION_GRAPH
+    - source:
+        type: store
+        graphs:
+        - SCHEMA_UNION_GRAPH
+        - INSTANCE_UNION_GRAPH
+      as:
+      - FULL_UNION_GRAPH
+
+      
+  steps:
+
+  - type: FileSystemValidation
+    lookIn: INSTANCE_UNION_GRAPH
+
+  - type: DocumentReferenceValidation
+    lookIn: INSTANCE_UNION_GRAPH
+
+  - type: ProfileValidation
+    profile:
+      type: file
+      path: profiles/profile.lite-9.84-generated.xml
+    maxResults: 0
+
+  reports:
+  - type: json
+    location:
+      type: file
+      path: report.json
+  - type: xml
+    location:
+      type: file
+      path: report.xml
+  - type: html
+    location:
+      type: file
+      path: report.html

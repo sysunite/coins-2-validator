@@ -35,12 +35,6 @@ public class ProfileFileTest {
     testTemplate("profile.lite-9.79.xml");
   }
   @Test
-  public void test981() throws IOException {
-    testTemplate("profile.lite-9.81.xml");
-    reSave("profile.lite-9.81.xml", "profile.lite-9.81-generated.xml");
-    testTemplate("profile.lite-9.81-generated.xml");
-  }
-  @Test
   public void test982() throws IOException {
     testTemplate("profile.lite-9.82.xml");
     reSave("profile.lite-9.82.xml", "profile.lite-9.82-generated.xml");
@@ -49,6 +43,12 @@ public class ProfileFileTest {
   public void test983() throws IOException {
     testTemplate("profile.lite-9.83.xml");
     reSave("profile.lite-9.83.xml", "profile.lite-9.83-generated.xml");
+  }
+  @Test
+  public void test984() throws IOException {
+    testTemplate("profile.lite-9.84.xml");
+    reSave("profile.lite-9.84.xml", "profile.lite-9.84-generated.xml");
+    testTemplate("profile.lite-9.84-generated.xml");
   }
   public void testTemplate(String resourceFile) throws IOException {
 
@@ -72,7 +72,7 @@ public class ProfileFileTest {
       System.out.println("bundle description: " + bundle.getDescription());
 
       for(Query query : bundle.getQueries()) {
-        System.out.println("query reference: " + query.getDescription());
+        System.out.println("query reference: " + query.parseDescription());
         System.out.println("query format:\n>>>>>" + query.getResultFormat() + "<<<<<");
         System.out.println("query body:\n>>>>>" + query.getQuery() + "<<<<<");
 

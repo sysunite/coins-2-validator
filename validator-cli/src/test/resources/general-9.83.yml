@@ -1,0 +1,60 @@
+environment:
+
+  store:
+    type: graphdb
+    config:
+      endpoint: http://themountain:7200
+  cleanUp: false
+  createRepo: false
+  destroyRepo: false
+  loadingStrategy: permanent-sorted-hashes-in-graphname
+
+
+
+run:
+  containers:
+  - type: container
+    location:
+      type: file
+      path: override.ccr
+
+    variables:
+    - graphname: http://instances/union
+      variable: DATA_GRAPH
+    - graphname: http://library/union
+      variable: SCHEMA_GRAPH
+
+    graphs:
+    - source:
+        type: container
+        path: bim/*
+        graphname: '*'
+      as:
+      - DATA_GRAPH
+
+    - source:
+        type: container
+        path: bim/repository/*
+        graphname: '*'
+      as:
+      - SCHEMA_GRAPH
+
+  steps:
+
+  - type: FileSystemValidation
+    lookIn: DATA_GRAPH
+
+  - type: DocumentReferenceValidation
+    lookIn: DATA_GRAPH
+
+  - type: ProfileValidation
+    profile:
+      type: file
+      path: profiles/profile.lite-9.83-generated.xml
+    maxResults: 50
+
+  reports:
+  - type: html
+    location:
+      type: file
+      path: report.html

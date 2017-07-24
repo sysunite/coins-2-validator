@@ -105,6 +105,9 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   }
 
   public List<String> getImports(GraphVar graphVar) {
+    if(requiresLoad()) {
+      load();
+    }
 
     String context = contextMap().get(graphVar);
 

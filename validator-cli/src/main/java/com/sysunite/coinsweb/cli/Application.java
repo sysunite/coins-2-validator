@@ -179,11 +179,6 @@ public class Application {
 
         boolean successful = Validation.run(configFile);
 
-        // Optionally print the config.yml that was executed eventually
-        if(options.ymlToConsole()) {
-          System.out.print(ConfigFactory.getDefaultConfigString(configFile));
-        }
-
         if(successful) {
 
           log.info("Finished successfully, quitting");

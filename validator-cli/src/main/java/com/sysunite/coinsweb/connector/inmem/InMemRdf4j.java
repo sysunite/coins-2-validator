@@ -36,10 +36,18 @@ public class InMemRdf4j extends Rdf4jConnector {
 
     log.info("Initialize connector ("+REFERENCE+")");
 
-    repository = new SailRepository(new MemoryStore());
+    MemoryStore memStore = new MemoryStore();
+    repository = new SailRepository(memStore);
     repository.initialize();
 
     initialized = true;
+  }
+
+  public void close() {
+    if(!initialized) {
+      return;
+    }
+    repository.shutDown();
   }
 
 

@@ -97,12 +97,11 @@ public class GraphSetFactory {
         if(keyToHashArray.containsKey(key)) {
           sort(keyToHashArray.get(key));
           String fullNamespace = mapping.get(key) + "-" + String.join("-", keyToHashArray.get(key));
-          log.info("Use for " + key + " graphname " + fullNamespace);
+          log.info("Use sorted hash url for " + key + " graphname: " + fullNamespace);
           sortedHashMapping.put(key, fullNamespace);
 
           // Fill the whiteList
           if (Utils.containsNamespace(fullNamespace, availableContexts)) {
-            log.info("Adding key " + key + " to the whiteList, this graph is already available: " + fullNamespace);
             whiteList.add(key);
           }
         } else {
@@ -110,29 +109,19 @@ public class GraphSetFactory {
         }
       }
 
-
-      for (Graph graph : loadList) {
-        if(Source.ONLINE.equals(graph.getSource().getType()) ||
-           Source.CONTAINER.equals(graph.getSource().getType()) ||
-           Source.FILE.equals(graph.getSource().getType())) {
-          executeLoad(graph, connector, container, sortedHashMapping, whiteList);
-        }
-      }
-      executeCompose(originalGraphs, connector, sortedHashMapping);
-      return sortedHashMapping;
-
-    } else {
-
-      for (Graph graph : loadList) {
-        if(Source.ONLINE.equals(graph.getSource().getType()) ||
-           Source.CONTAINER.equals(graph.getSource().getType()) ||
-           Source.FILE.equals(graph.getSource().getType())) {
-          executeLoad(graph, connector, container, mapping, whiteList);
-        }
-      }
-      executeCompose(originalGraphs, connector, mapping);
-      return mapping;
+      containerConfig.updateVariables(sortedHashMapping);
+      mapping = sortedHashMapping;
     }
+
+    for (Graph graph : loadList) {
+      if(Source.ONLINE.equals(graph.getSource().getType()) ||
+         Source.CONTAINER.equals(graph.getSource().getType()) ||
+         Source.FILE.equals(graph.getSource().getType())) {
+        executeLoad(graph, connector, container, mapping, whiteList);
+      }
+    }
+    executeCompose(originalGraphs, connector, mapping);
+    return mapping;
   }
 
   private static void executeLoad(Graph graph, Connector connector, ContainerFile container, HashMap<GraphVar, String> mapping, ArrayList<GraphVar> whiteList) {
@@ -150,10 +139,36 @@ public class GraphSetFactory {
     }
 
     if(!graphNames.isEmpty()) {
-      log.info("Upload rdf file to connector: " + fileName);
+      log.info("Upload rdf-file to connector: " + fileName);
       connector.uploadFile(FileFactory.toInputStream(graph.getSource(), container), fileName, graph.getSource().getGraphname(), graphNames);
+    } else {
+      log.info("\u2728 Not uploading file because it is already uploaded: "+fileName);
+    }
+  }
+
+  public static boolean testCompose(Graph[] graphs, HashMap<GraphVar, String> mapping) {
+    log.info("Test compose: ");
+    for(Graph graph : graphs) {
+      if(Source.FILE.equals(graph.getSource().getType())) {
+        log.info("(" + graph.getSource().getPath() + ") -> (" + String.join(", ", graph.getAs()) + ")");
+      }
+      if(Source.CONTAINER.equals(graph.getSource().getType())) {
+        log.info("(" + graph.getSource().getPath() + ") -> (" + String.join(", ", graph.getAs()) + ")");
+      }
+      if(Source.ONLINE.equals(graph.getSource().getType())) {
+        log.info("(" + graph.getSource().getUri() + ") -> (" + String.join(", ", graph.getAs()) + ")");
+      }
+      if(Source.STORE.equals(graph.getSource().getType())) {
+        log.info("(" + String.join(", ", graph.getSource().getGraphs()) + ") -> (" + String.join(", ", graph.getAs()) + ")");
+      }
     }
 
+    try {
+      executeCompose(graphs, null, mapping);
+    } catch(RuntimeException e) {
+      return false;
+    }
+    return true;
   }
 
   private static void executeCompose(Graph[] graphs, Connector connector, HashMap<GraphVar, String> mapping) {
@@ -170,6 +185,7 @@ public class GraphSetFactory {
       }
     }
 
+
     int benchmark = graphs.length;
     int toDo = 0;
 
@@ -181,13 +197,21 @@ public class GraphSetFactory {
 
       // If previous run had the same amount as the benchmark some copy actions are not possible to execute;
       if(toDo == benchmark) {
-        throw new RuntimeException("This many of Sources of type 'store' can not be mapped: "+toDo);
+        String graphList = "";
+        for(Graph graph : graphs) {
+          if (Source.STORE.equals(graph.getSource().getType())) {
+            graphList += "\n(" + String.join(", ", graph.getSource().getGraphs()) + ") -> (" + String.join(", ", graph.getAs()) + ")";
+          }
+        }
+        throw new RuntimeException("Some "+toDo+" Sources of type 'store' can not be mapped: "+graphList);
       }
       benchmark = toDo;
       toDo = 0;
 
       for (Graph graph : graphs) {
         if (Source.STORE.equals(graph.getSource().getType())) {
+
+          log.info("Check (" + String.join(", ", graph.getSource().getGraphs()) + ") -> (" + String.join(", ", graph.getAs()) + ")");
 
           if(finished.contains(graph)) {
             continue;
@@ -208,10 +232,6 @@ public class GraphSetFactory {
           // Execute it
           if(resolvable) {
 
-
-
-            log.info("Found a Source of type 'store' that is resolvable");
-
             // First use COPY and for all the others ADD
             for (GraphVarImpl to : graph.getAs()) {
               boolean first = true;
@@ -220,13 +240,15 @@ public class GraphSetFactory {
                 String fromContext = mapping.get(from);
                 String toContext = mapping.get(to);
 
-                if(first) {
-                  log.info("Copy "+fromContext+" to "+toContext);
-                  connector.sparqlCopy(fromContext, toContext);
-                  first = false;
-                } else {
-                  log.info("Add all triples from "+fromContext+" to "+toContext);
-                  connector.sparqlAdd(fromContext, toContext);
+                if(connector != null) {
+                  if (first) {
+                    log.info("Copy " + fromContext + " to " + toContext);
+                    connector.sparqlCopy(fromContext, toContext);
+                    first = false;
+                  } else {
+                    log.info("Add all triples from " + fromContext + " to " + toContext);
+                    connector.sparqlAdd(fromContext, toContext);
+                  }
                 }
               }
               resolvedGraphs.add(to);

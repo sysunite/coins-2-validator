@@ -58,6 +58,11 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     log.info("Will now expand any wildcard usage in the config.yml section of this file");
     DescribeFactoryImpl.expandGraphConfig(containerConfig);
 
+    // Now test if
+    if(!GraphSetFactory.testCompose(containerConfig.getGraphs(), containerConfig.getVariablesMap())) {
+      throw new RuntimeException("The ContainerGraphSet can not be loaded because the graph description composition plan contains an error");
+    }
+
     if(disabled) {
       return;
     }

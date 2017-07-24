@@ -22,6 +22,14 @@ public class Mapping extends ConfigPart {
   private String graphname;
   private GraphVarImpl variable;
 
+  public Mapping() {
+  }
+
+  public Mapping(GraphVarImpl graphVar, String graphName) {
+    this.variable = graphVar;
+    this.graphname = graphName;
+  }
+
   public String getGraphname() {
     return graphname;
   }

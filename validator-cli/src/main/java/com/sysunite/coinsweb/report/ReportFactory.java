@@ -49,6 +49,7 @@ public class ReportFactory {
     Map<String, Object> reportItems = new HashMap();
     reportItems.put("runConfig", configFile);
     reportItems.put("instanceOf", new InstanceOfMethod());
+    reportItems.put("printBoolean", new NullTrueFalseMethod());
 
     try {
 
@@ -74,6 +75,7 @@ public class ReportFactory {
     Map<String, Object> reportItems = new HashMap();
     reportItems.put("runConfig", configFile);
     reportItems.put("instanceOf", new InstanceOfMethod());
+    reportItems.put("printBoolean", new NullTrueFalseMethod());
 
     try {
 

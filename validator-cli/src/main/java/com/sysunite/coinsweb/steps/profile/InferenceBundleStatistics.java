@@ -26,6 +26,8 @@ package com.sysunite.coinsweb.steps.profile;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.sysunite.coinsweb.graphset.GraphVar;
 import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
@@ -40,10 +42,12 @@ import java.util.Map;
 /**
  * @author Bastiaan Bijl, Sysunite 2016
  */
+@JsonInclude(Include.NON_NULL)
 public class InferenceBundleStatistics extends Bundle {
 
   private static final Logger log = LoggerFactory.getLogger(InferenceBundleStatistics.class);
 
+  @JsonIgnore
   private String id;
   private long executionTimeMs = 0l;
   @JsonIgnore
@@ -51,7 +55,11 @@ public class InferenceBundleStatistics extends Bundle {
   private List<Map<GraphVar, Long>> runStatistics = new ArrayList<>();
   private int runs = 0;
   private long quadsAdded = 0l;
-  private boolean valid = false;
+  @JsonInclude(Include.NON_NULL)
+  private Boolean valid;
+
+  @JsonInclude(Include.NON_NULL)
+  private Boolean skipped;
 
   public InferenceBundleStatistics(Bundle bundleConfig) {
 
@@ -89,6 +97,9 @@ public class InferenceBundleStatistics extends Bundle {
   public long getQuadsAdded() {
     return quadsAdded;
   }
+  public Boolean getSkipped() {
+    return skipped;
+  }
 
   @Override
   public ArrayList<Query> getQueries() {
@@ -109,6 +120,12 @@ public class InferenceBundleStatistics extends Bundle {
   public void addQuadsAdded(long count) {
     this.quadsAdded += count;
   }
+  public void setSkipped(Boolean skipped) {
+    this.skipped = skipped;
+    if(this.skipped != null && this.skipped) {
+      this.queryMap = new HashMap<>();
+    }
+  }
 
   public void updateQuery(Query query) {
     this.queryMap.put(query.getReference(), query);
@@ -124,10 +141,10 @@ public class InferenceBundleStatistics extends Bundle {
     return (QueryStatistics) this.queryMap.get(reference);
   }
 
-  public boolean getValid() {
+  public Boolean getValid() {
     return valid;
   }
-  public void setValid(boolean valid) {
+  public void setValid(Boolean valid) {
     this.valid = valid;
   }
 }

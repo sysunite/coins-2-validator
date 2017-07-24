@@ -83,6 +83,7 @@ public class Validation {
         step.execute(containerFile, graphSet);
 
         if(step.getFailed()) {
+          containerConfig.addStep(step);
           valid &= false;
           break;
         } else {

@@ -26,6 +26,8 @@ package com.sysunite.coinsweb.steps.profile;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
 import org.slf4j.Logger;
@@ -37,15 +39,17 @@ import java.util.HashMap;
 /**
  * @author Bastiaan Bijl, Sysunite 2016
  */
+@JsonInclude(Include.NON_NULL)
 public class ValidationBundleStatistics extends Bundle {
 
   private static final Logger log = LoggerFactory.getLogger(ValidationBundleStatistics.class);
 
+  @JsonIgnore
   private String id;
   private long executionTimeMs = 0l;
   @JsonIgnore
   private HashMap<String, Query> queryMap;
-  private boolean valid = false;
+  private Boolean valid;
 
   public ValidationBundleStatistics(Bundle bundleConfig) {
 
@@ -86,7 +90,7 @@ public class ValidationBundleStatistics extends Bundle {
   }
 
 
-  public void addExecutionTime(long executionTimeMs) {
+  public void addExecutionTimeMs(long executionTimeMs) {
     this.executionTimeMs += executionTimeMs;
   }
   public void updateQuery(Query query) {

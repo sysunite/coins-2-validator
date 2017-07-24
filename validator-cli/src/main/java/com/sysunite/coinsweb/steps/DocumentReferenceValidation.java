@@ -2,6 +2,11 @@ package com.sysunite.coinsweb.steps;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigPart;
@@ -10,8 +15,9 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
@@ -19,7 +25,7 @@ import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 /**
  * @author bastbijl, Sysunite 2017
  */
-@JsonInclude(JsonInclude.Include.NON_NULL) // todo wrong this line?
+@JsonInclude(Include.NON_NULL)
 public class DocumentReferenceValidation extends ConfigPart implements ValidationStep {
 
   private static final Logger log = LoggerFactory.getLogger(DocumentReferenceValidation.class);
@@ -62,12 +68,22 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
     this.valid = valid;
   }
 
-  private List<String> internalDocumentReferences;
-  public List<String> getInternalDocumentReferences() {
+  @JsonSerialize(using = DocumentReferenceSerializer.class)
+  private HashMap<String, String> internalDocumentReferences = new HashMap<>();
+  public HashMap<String, String> getInternalDocumentReferences() {
     return internalDocumentReferences;
   }
-  public void setInternalDocumentReferences(List<String> internalDocumentReferences) {
+  public void setInternalDocumentReferences(HashMap<String, String> internalDocumentReferences) {
     this.internalDocumentReferences = internalDocumentReferences;
+  }
+
+  @JsonSerialize(using = DocumentReferenceSerializer.class)
+  private HashMap<String, String> unmatchedInternalDocumentReferences = new HashMap<>();
+  public HashMap<String, String> getUnmatchedInternalDocumentReferences() {
+    return unmatchedInternalDocumentReferences;
+  }
+  public void setUnmatchedInternalDocumentReferences(HashMap<String, String> unmatchedInternalDocumentReferences) {
+    this.unmatchedInternalDocumentReferences = unmatchedInternalDocumentReferences;
   }
 
 
@@ -81,8 +97,6 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
     try {
 
       boolean allReferencesAreSatisfied = true;
-
-      ArrayList<String> ids = new ArrayList();
 
       if (graphSet.hasContext(getLookIn())) {
 
@@ -120,6 +134,11 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
               break;
             }
           }
+          if(found) {
+            internalDocumentReferences.put(document, value);
+          } else {
+            unmatchedInternalDocumentReferences.put(document, value);
+          }
           allReferencesAreSatisfied &= found;
         }
       }
@@ -130,7 +149,6 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
 
 
 
-      this.internalDocumentReferences = ids;
 
     } catch (RuntimeException e) {
       log.warn("Executing failed validationStep of type "+getType());
@@ -160,10 +178,36 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
     clone.setParent(this.getParent());
 
     // Results
-    clone.setInternalDocumentReferences(this.getInternalDocumentReferences());
-    clone.setValid(this.getValid());
-    clone.setFailed(this.getFailed());
+//    clone.setInternalDocumentReferences(this.getInternalDocumentReferences());
+//    clone.setValid(this.getValid());
+//    clone.setFailed(this.getFailed());
     return clone;
   }
 
+}
+class DocumentReferenceSerializer extends StdSerializer<HashMap<String, String>> {
+
+  public DocumentReferenceSerializer() {
+    this(null);
+  }
+
+  public DocumentReferenceSerializer(Class<HashMap<String, String>> t) {
+    super(t);
+  }
+
+  @Override
+  public void serialize(HashMap<String, String> map, JsonGenerator gen, SerializerProvider provider) throws IOException {
+
+    gen.writeRawValue("");
+
+    for(String key : map.keySet()) {
+      gen.writeFieldName("document");
+      gen.writeStartObject();
+      gen.writeStringField("uri", key);
+      gen.writeStringField("fileName", map.get(key));
+      gen.writeEndObject();
+    }
+
+
+  }
 }

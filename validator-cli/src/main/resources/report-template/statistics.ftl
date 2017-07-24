@@ -17,7 +17,7 @@
     <#if contentFiles?has_content>
       <td>
         <#list 0..contentFiles?size-1 as i>
-          &#x1F4C4; ${contentFiles[i]}<br/>
+          &#x1F4C4;&nbsp;&nbsp;${contentFiles[i]}<br/>
         </#list>
       </td>
     <#else>
@@ -38,7 +38,7 @@
 
 
             <#assign availableNamespaces = containerFile.getRepositoryFileNamespaces(libraries[i])?join(", ", "")>
-            &#x1F4D3; ${libraries[i]} (${availableNamespaces})<br/>
+            &#x1F4D3;&nbsp;&nbsp;${libraries[i]} (${availableNamespaces})<br/>
 
           </#list>
         <#else>
@@ -46,7 +46,7 @@
 
 
             <#assign availableNamespaces = containerFile.getRepositoryFileNamespaces(libraries[i])?join(", ", "")>
-            &#x1F4D3; ${libraries[i]}  (${availableNamespaces})<br/>
+            &#x1F4D3;&nbsp;&nbsp;${libraries[i]}  (${availableNamespaces})<br/>
 
           </#list>
           <div style="display:none" id="libraries_list_${container.code}">
@@ -55,7 +55,7 @@
 
 
               <#assign availableNamespaces = containerFile.getRepositoryFileNamespaces(libraries[i])?join(", ", "")>
-              &#x1F4D3; ${libraries[i]} (${availableNamespaces})<br/>
+              &#x1F4D3;&nbsp;&nbsp;${libraries[i]} (${availableNamespaces})<br/>
 
             </#list>
           </div>
@@ -69,48 +69,22 @@
     </#if>
   </tr>
 
-
-  <#--<#if stepNames?seq_contains("FileSystemValidation")>-->
-    <#--<tr><th>imports</th><td>-->
-      <#--<#if validation.imports?has_content>-->
-        <#--<#if validation.imports?size lt 10>-->
-          <#--<#list 0..validation.imports?size-1 as i>-->
-          <#--${validation.imports[i]} <br/>-->
-          <#--</#list>-->
-        <#--<#else>-->
-          <#--<#list 0..9 as i>-->
-          <#--${validation.validation.imports[i]} <br/>-->
-          <#--</#list>-->
-          <#--<div style="display:none" id="imports_list_${container.code}">-->
-
-            <#--<#list 10..validation.imports?size-1 as i>-->
-              <#--${validation.imports[i]} <br/>-->
-            <#--</#list>-->
-          <#--</div>-->
-          <#--<div onclick="document.getElementById('imports_list_${container.code}').className+=' active';">show all...</div>-->
-        <#--</#if>-->
-      <#--<#else>-->
-        <#--<i>none</i>-->
-      <#--</#if>-->
-    <#--</td></tr>-->
-  <#--</#if>-->
-
   <tr>
     <th>attachments</th>
     <td>
       <#if attachments?has_content>
         <#if attachments?size lt 10>
           <#list 0..attachments?size-1 as i>
-            &#x1F4CE; ${attachments[i]}<br/>
+            &#x1F4CE;&nbsp;&nbsp;${attachments[i]}<br/>
           </#list>
         <#else>
           <#list 0..9 as i>
-            &#x1F4CE; ${attachments[i]} <br/>
+            &#x1F4CE;&nbsp;&nbsp;${attachments[i]} <br/>
           </#list>
           <div style="display:none" id="attachment_list_${container.code}">
 
             <#list 10..attachments?size-1 as i>
-              &#x1F4CE; ${attachments[i]} <br/>
+              &#x1F4CE;&nbsp;&nbsp;${attachments[i]} <br/>
             </#list>
           </div>
           <div onclick="document.getElementById('attachment_list_${container.code}').className+=' active';">show all...</div>
@@ -122,11 +96,17 @@
   </tr>
 
 
-  <#--<#else>-->
 
-  <#list container.steps as step>
-    <#assign stepName = step.type>
-    <tr><th>${stepName}</th><td><a href="#${container.code}_${stepName}"><#if step.valid>&#x2705;<#else>&#x1F6AB;</#if></a></td></tr>
-  </#list>
+
+  <tr>
+    <th>steps</th>
+    <td>
+      <#list container.steps as step>
+        <#assign stepName = step.type>
+        <#if step.valid>&#x2705;<#else>&#x26D4;</#if>&nbsp;&nbsp;<a href="#${container.code}_${stepName}">${stepName}</a><br/>
+      </#list>
+    </td>
+  </tr>
+
+
 </table>
-<#--</#if>-->

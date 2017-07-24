@@ -1,34 +1,44 @@
-<#list validation.bundleNames as bundleKey>
+<#assign stepName = step.type>
 
-  <table>
+<a name="${container.code}_${stepName}"></a>
 
-    <#assign bundle = validation.bundleResults[bundleKey] />
-    <#if instanceOf(bundle, "InferenceBundleStatistics")>
-      <#--<tr><th colspan="3">${bundleKey}</th></tr>-->
-      <#--<tr><th>${bundle.reference}</th><td>${bundle.description}</td><td>${bundle.quadsAdded} (${bundle.runs})</td></tr>-->
-    <#else>
+<#list step.bundleNames as bundleKey>
+<#assign bundle = step.bundles[bundleKey]>
+
+  <#if instanceOf(bundle, "ValidationBundleStatistics")>
+    <h4><#if bundle.valid >&#x2705;<#else>&#x26D4;</#if>&nbsp;&nbsp;${stepName+'/'+bundleKey}</h4>
+
+    <table>
       <tr><th colspan="4">${bundleKey}</th></tr>
-      <#list bundle?keys as queryKey>
-        <#assign query = bundle[queryKey] />
+      <#list bundle.queries as query>
 
 
-        <#if instanceOf(query, "ValidationQueryResult")>
 
-          <tr><td><#if query.passed>&#x2705;<#else>&#x1F6AB;</#if></td><th>${query.reference}</th><td>${query.description}</td></tr>
+        <tr><td><#if query.valid>&#x2705;<#else>&#x26D4;</#if></td><th>${query.reference}</th><td>${query.parseDescription()}</td></tr>
 
-          <#if query.formattedResults?has_content>
-            <tr><td colspan="3">
-              <ul>
-                <#list 0..query.formattedResults?size-1 as i>
-                  <li>${query.formattedResults[i]}</li>
-                </#list>
-              </ul>
-            </td></tr>
-          </#if>
+        <#if query.formattedResults?has_content>
+        <tr><td colspan="3">
+        <ul>
+        <#list 0..query.formattedResults?size-1 as i>
+          <li>${query.formattedResults[i]}</li>
+        </#list>
+        </ul>
+        </td></tr>
         </#if>
 
+
       </#list>
-    </#if>
-  </table>
+    </table>
+  <#else>
+
+    <#--<h4><#if bundle.valid >&#x2705;<#else>&#x26D4;</#if>&nbsp;&nbsp;${stepName+'/'+bundleKey}</h4>-->
+    <#--<table>-->
+      <#--<tr><th colspan="4">${bundleKey}</th></tr>-->
+      <#--<tr><th>${bundle.reference}</th><td>${bundle.description}</td><td>${bundle.quadsAdded} (${bundle.runs})</td></tr>-->
+    <#--</table>-->
+
+  </#if>
+
 
 </#list>
+

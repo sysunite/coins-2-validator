@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphVar;
@@ -21,7 +23,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -93,6 +98,8 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     this.valid = valid;
   }
 
+  @JacksonXmlProperty(localName = "name")
+  @JacksonXmlElementWrapper(localName="bundleNames")
   private List<String> bundleNames = new ArrayList();
   public List<String> getBundleNames() {
     return bundleNames;
@@ -143,7 +150,7 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
 
     } catch (RuntimeException e) {
       log.warn("Executing failed validationStep of type "+getType());
-      log.warn(e.getMessage());
+      log.warn(e.getMessage(), e);
       failed = true;
     }
 
@@ -172,10 +179,10 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     clone.setParent(this.getParent());
 
     // Results
-    clone.setBundleNames(this.getBundleNames());
-    clone.setBundles(this.getBundles());
-    clone.setValid(this.getValid());
-    clone.setFailed(this.getFailed());
+//    clone.setBundleNames(this.getBundleNames());
+//    clone.setBundles(this.getBundles());
+//    clone.setValid(this.getValid());
+//    clone.setFailed(this.getFailed());
     return clone;
   }
 

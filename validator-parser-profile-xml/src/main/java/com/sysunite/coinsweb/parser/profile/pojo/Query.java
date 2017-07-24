@@ -47,8 +47,11 @@ public class Query {
   }
 
 
-  public String getDescription() {
+  public String parseDescription() {
     return Markdown.parseLinksToHtml(description);
+  }
+  public String getDescription() {
+    return description;
   }
   public void setDescription(String description) {
     this.description = description;
@@ -59,7 +62,11 @@ public class Query {
     return Markdown.parseLinksToHtml(resultFormat);
   }
   public void setResultFormat(String resultFormat) {
-    this.resultFormat = IndentedCDATAPrettyPrinter.indentText(resultFormat, 0).trim();
+    if(resultFormat != null && !resultFormat.isEmpty()) {
+      this.resultFormat = IndentedCDATAPrettyPrinter.indentText(resultFormat, 0).trim();
+    } else {
+      this.resultFormat = "";
+    }
   }
   @JsonIgnore
   private Template formatTemplate ;

@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import static com.sysunite.coinsweb.parser.Parser.*;
 
@@ -104,6 +105,13 @@ public class Container extends ConfigPart {
     for(Mapping mapping : this.variables) {
       mapping.setParent(this.getParent());
     }
+  }
+  public void updateVariables(Map<GraphVar, String> map) {
+    ArrayList<Mapping> list = new ArrayList<>();
+    for(GraphVar graphVar : map.keySet()) {
+      list.add(new Mapping((GraphVarImpl)graphVar, map.get(graphVar)));
+    }
+    setVariables(list.toArray(new Mapping[0]));
   }
   public void setGraphs(Graph[] graphs) {
     this.graphs = graphs;

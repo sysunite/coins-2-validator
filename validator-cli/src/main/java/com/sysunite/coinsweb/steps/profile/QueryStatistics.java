@@ -39,13 +39,16 @@ import java.util.Map;
 /**
  * @author Bastiaan Bijl, Sysunite 2016
  */
+@JsonInclude(Include.NON_NULL)
 public class QueryStatistics extends Query {
 
   private static final Logger log = LoggerFactory.getLogger(QueryStatistics.class);
 
   private long executionTimeMs;
-  @JsonInclude(Include.NON_NULL)
+
+  @JsonInclude(Include.NON_EMPTY)
   private Map<String,String> resultSet;
+
   @JsonIgnore
   private List<String> formattedResults = new ArrayList<>();
   private String executedQuery;
@@ -57,9 +60,17 @@ public class QueryStatistics extends Query {
 
     // Copy fields
     setReference(queryConfig.getReference());
-    setDescription(queryConfig.getDescription());
+    setDescription(queryConfig.parseDescription());
     setQuery(queryConfig.getQuery());
     setResultFormat(queryConfig.getResultFormat());
+  }
+
+
+  public Boolean getValid() {
+    if(resultSet == null) {
+      return null;
+    }
+    return resultSet.isEmpty();
   }
 
 

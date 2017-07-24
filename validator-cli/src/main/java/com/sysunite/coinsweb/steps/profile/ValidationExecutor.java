@@ -36,6 +36,7 @@ import com.sysunite.coinsweb.report.ReportFactory;
 import com.sysunite.coinsweb.steps.ProfileValidation;
 import freemarker.template.Template;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,36 +97,33 @@ public class ValidationExecutor {
 
     boolean valid = true;
 
-//    ArrayList<Bundle> enhancedBundles = new ArrayList();
 
     // Execute bundles in order of appearance
     for(Bundle bundle : profile.getBundles()) {
 
-
+      long start = new Date().getTime();
 
       if(Bundle.INFERENCE.equals(bundle.getType())) {
 
         InferenceBundleStatistics enhanced = executeInferenceBundle(bundle);
         validationConfig.addBundle(enhanced);
-//        enhancedBundles.add(enhanced);
-
+        long executionTime = (new Date().getTime()) - start;
+        enhanced.addExecutionTimeMs(executionTime);
 
       } else if(Bundle.VALIDATION.equals(bundle.getType())) {
 
         ValidationBundleStatistics enhanced = executeValidationBundle(bundle);
         validationConfig.addBundle(enhanced);
-//        enhancedBundles.add(enhanced);
 
         valid &= enhanced.getValid();
 
+        long executionTime = (new Date().getTime()) - start;
+        enhanced.addExecutionTimeMs(executionTime);
 
       } else {
         throw new RuntimeException("Bundle type "+bundle.getType()+" not supported");
       }
-
     }
-
-//    profile.setBundles(enhancedBundles);
 
     validationConfig.setFailed(false);
     validationConfig.setValid(valid);
@@ -151,7 +149,8 @@ public class ValidationExecutor {
       log.info("- "+graphVar+" > "+context+" has >>"+String.join("<<, >>", list)+"<<");
       for(String existingInferenceCode : list) {
         if(inferenceCodeWithoutRef(existingInferenceCode).equals(inferenceCodeWithoutRef(inferenceCode))) {
-          log.info("Inference >>" + inferenceCode + "<< was executed before");
+          log.info("\u2728 Inference >>" + inferenceCode + "<< was executed before");
+          bundleStats.setSkipped(true);
           return bundleStats;
         } else {
           throw new RuntimeException("Some other >>" + executedInferences.get(context) + "<< inference was executed before, this connector can not be used");
@@ -162,7 +161,7 @@ public class ValidationExecutor {
     }
 
 
-    long quadsAddedThisRun = 0l;
+    long quadsAddedThisRunSum = 0l;
     Map<GraphVar, Long> previous = graphSet.quadCount();
     Map<GraphVar, Long> beforeBundle = previous;
 
@@ -197,10 +196,12 @@ public class ValidationExecutor {
 
 
       Map<GraphVar, Long> current = graphSet.quadCount();
-      bundleStats.addRunStatistics(current);
-      quadsAddedThisRun = quadsAdded(previous, current);
+
+      Map<GraphVar, Long> quadsAddedThisRun = quadsAddedPerGraph(previous, current);
+      bundleStats.addRunStatistics(quadsAddedThisRun);
+      quadsAddedThisRunSum = quadsAdded(previous, current);
       previous = current;
-      bundleStats.addQuadsAdded(quadsAddedThisRun);
+      bundleStats.addQuadsAdded(quadsAddedThisRunSum);
       bundleStats.addExecutionTimeMs(executionTime);
       bundleStats.addRun();
 
@@ -208,7 +209,7 @@ public class ValidationExecutor {
 
 
       run++;
-    } while(quadsAddedThisRun > 0);
+    } while(quadsAddedThisRunSum > 0);
 
     // Store that this  inference bundle was executed
     if(Bundle.INFERENCE.equals(bundle.getType())) {
@@ -262,7 +263,10 @@ public class ValidationExecutor {
           for(Object bindingSet : result) {
             BindingSet row = (BindingSet) bindingSet;
             for(String binding : row.getBindingNames()) {
-              results.put(binding, row.getValue(binding).stringValue());
+              Value value = row.getValue(binding);
+              if(value != null) {
+                results.put(binding, value.stringValue());
+              }
             }
             formattedResults.add(ReportFactory.formatResult(row, formatTemplate));
           }

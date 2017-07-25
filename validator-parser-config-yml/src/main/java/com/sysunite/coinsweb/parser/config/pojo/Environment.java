@@ -29,6 +29,7 @@ public class Environment extends ConfigPart {
   private boolean cleanUp = false;
   private boolean createRepo = true;
   private boolean destroyRepo = false;
+  private boolean useDisk = true;
 
   public Store getStore() {
     return store;
@@ -47,6 +48,9 @@ public class Environment extends ConfigPart {
   }
   public boolean getDestroyRepo() {
     return destroyRepo;
+  }
+  public boolean getUseDisk() {
+    return useDisk;
   }
 
   public void setStore(Store store) {
@@ -69,6 +73,9 @@ public class Environment extends ConfigPart {
   }
   public void setDestroyRepo(boolean destroyRepo) {
     this.destroyRepo = destroyRepo;
+  }
+  public void setUseDisk(boolean useDisk) {
+    this.useDisk = useDisk;
   }
 
   @Override

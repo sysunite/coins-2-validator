@@ -50,6 +50,12 @@ public class ProfileFileTest {
     reSave("profile.lite-9.84.xml", "profile.lite-9.84-generated.xml");
     testTemplate("profile.lite-9.84-generated.xml");
   }
+  @Test
+  public void test985() throws IOException {
+    testTemplate("profile.lite-9.85.xml");
+    reSave("profile.lite-9.85.xml", "profile.lite-9.85-generated.xml");
+    testTemplate("profile.lite-9.85-generated.xml");
+  }
   public void testTemplate(String resourceFile) throws IOException {
 
 
@@ -79,6 +85,7 @@ public class ProfileFileTest {
       }
     }
   }
+
   public void reSave(String resourceFile, String to) throws IOException {
 
     XmlMapper objectMapper = new XmlMapper();

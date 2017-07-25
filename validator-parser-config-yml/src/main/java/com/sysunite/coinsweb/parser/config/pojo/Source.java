@@ -40,7 +40,11 @@ public class Source extends ConfigPart {
     return type;
   }
   public String getPath() {
-    return FilenameUtils.separatorsToSystem(path);
+    if(CONTAINER.equals(getType())) {
+      return FilenameUtils.separatorsToUnix(path);
+    } else {
+      return FilenameUtils.separatorsToSystem(path);
+    }
   }
   public String getUri() {
     return uri;

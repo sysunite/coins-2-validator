@@ -170,7 +170,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
       Path zePath;
 
       while(ze != null) {
-        zePath = Paths.get(FilenameUtils.separatorsToSystem(ze.getName()));
+        zePath = Paths.get(FilenameUtils.separatorsToUnix(ze.getName()));
 
         if(ze.isDirectory()) {
           ze = zis.getNextEntry();
@@ -230,7 +230,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
           continue;
         }
 
-        Path zipPath = Paths.get(FilenameUtils.separatorsToSystem(ze.getName()));
+        Path zipPath = Paths.get(FilenameUtils.separatorsToUnix(ze.getName()));
 
         // Detect wrong slashes
         if(ze.getName().contains("\\")) {

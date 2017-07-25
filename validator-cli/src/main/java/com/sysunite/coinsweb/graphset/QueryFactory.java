@@ -71,6 +71,44 @@ public class QueryFactory {
 
 
 
+  public static String toSelectQuery(String insertQuery) {
+
+    if(!insertQuery.toLowerCase().contains("insert")) {
+      throw new RuntimeException("Please only call this for queries with an insert");
+    }
+
+    String mappedQuery = "";
+
+    boolean atHeader = true;
+    boolean atInsert = false;
+    boolean atWhere = false;
+
+    String[] lines = insertQuery.split("\n");
+    for(String line : lines) {
+      if(line == null || line.isEmpty()) {
+        continue;
+      }
+      String cleanLine = line.trim().toLowerCase();
+
+      // State switches
+      if(atHeader && cleanLine.startsWith("insert")) {
+        atHeader = false;
+        atInsert = true;
+
+        mappedQuery += "SELECT * \n";
+      }
+      if(atInsert && cleanLine.startsWith("where")) {
+        atInsert = false;
+        atWhere = true;
+      }
+
+      if(atHeader || atWhere) {
+        mappedQuery += line+"\n";
+      }
+    }
+    return mappedQuery;
+  }
+
 
 
   private static String parseFreemarker(String queryTemplate, Map<String, String> data) {

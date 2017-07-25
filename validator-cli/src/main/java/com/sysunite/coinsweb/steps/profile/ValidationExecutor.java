@@ -189,10 +189,38 @@ public class ValidationExecutor {
         long executionTimeQuery = (new Date().getTime()) - startQuery;
         queryStats.addExecutionTimeMs(executionTimeQuery);
 
+        // Do extra run outside executionTime
+        if(validationConfig.getReportInferenceResults()) {
+
+          List<Object> result = graphSet.select(QueryFactory.toSelectQuery(queryString));
+
+          if(queryStats.getResultSet() == null) {
+            queryStats.setResultSet(new LinkedList<>());
+          }
+          List<Map<String, String>> results = queryStats.getResultSet();
+
+          if(!result.isEmpty()) {
+            log.info("Reporting "+results.size()+" results of inference query \""+query.getReference()+"\"");
+
+            for(Object bindingSet : result) {
+              BindingSet resultRow = (BindingSet) bindingSet;
+              HashMap<String, String> row = new HashMap<>();
+              for(String binding : resultRow.getBindingNames()) {
+                Value value = resultRow.getValue(binding);
+                if(value == null) {
+                  row.put(binding, "NULL");
+                } else {
+                  row.put(binding, value.stringValue());
+                }
+              }
+              results.add(row);
+            }
+          }
+        }
+
       }
 
       long executionTime = (new Date().getTime()) - start;
-
 
 
       Map<GraphVar, Long> current = graphSet.quadCount();

@@ -44,6 +44,7 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
   private Locator profile;
   private int maxResults = 0;
   private int maxInferenceRuns = 50;
+  private boolean reportInferenceResults = false;
 
   public String getType() {
     return type;
@@ -56,6 +57,9 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
   }
   public int getMaxInferenceRuns() {
     return maxInferenceRuns;
+  }
+  public boolean getReportInferenceResults() {
+    return reportInferenceResults;
   }
 
   public void setType(String type) {
@@ -70,6 +74,9 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
   }
   public void setMaxInferenceRuns(int maxInferenceRuns) {
     this.maxInferenceRuns = maxInferenceRuns;
+  }
+  public void setReportInferenceResults(boolean reportInferenceResults) {
+    this.reportInferenceResults = reportInferenceResults;
   }
 
   @Override
@@ -176,6 +183,7 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     clone.setProfile(this.getProfile().clone());
     clone.setMaxResults(this.getMaxResults());
     clone.setMaxInferenceRuns(this.getMaxInferenceRuns());
+    clone.setReportInferenceResults(this.getReportInferenceResults());
     clone.setParent(this.getParent());
 
     // Results

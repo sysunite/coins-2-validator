@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static com.sysunite.coinsweb.parser.Parser.isResolvable;
 import static com.sysunite.coinsweb.parser.Parser.validate;
@@ -33,18 +31,11 @@ public class Locator extends ConfigPart {
   private String path;
   private String uri;
 
-  @JsonIgnore
-  private Path localizeTo;
-
   public String getType() {
     return type;
   }
   public String getPath() {
-    String cleanPath = FilenameUtils.separatorsToSystem(path);
-    if(localizeTo == null) {
-      return cleanPath;
-    }
-    return localizeTo.relativize(Paths.get(cleanPath)).toString();
+    return path;
   }
   public String getUri() {
     return uri;
@@ -56,15 +47,11 @@ public class Locator extends ConfigPart {
   }
 
   public void setPath(String path) {
-    this.path = path;
+    this.path = FilenameUtils.separatorsToSystem(path);
   }
 
   public void setUri(String uri) {
     this.uri = uri;
-  }
-
-  public void localizeTo(Path path) {
-    this.localizeTo = path;
   }
 
   @JsonIgnore
@@ -90,7 +77,6 @@ public class Locator extends ConfigPart {
     clone.setType(this.type);
     clone.setPath(this.path);
     clone.setUri(this.uri);
-    clone.localizeTo(this.localizeTo);
     clone.setParent(this.getParent());
     return clone;
   }

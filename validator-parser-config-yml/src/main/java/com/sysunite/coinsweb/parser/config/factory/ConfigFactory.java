@@ -123,7 +123,6 @@ public class ConfigFactory {
     Path reportLocation = localizeTo.resolve("report.html");
 
     Locator reportLocator = new Locator();
-    reportLocator.localizeTo(localizeTo);
     reportLocator.setType("file");
     reportLocator.setPath(reportLocation.toString());
 
@@ -139,7 +138,6 @@ public class ConfigFactory {
   public static Container getDefaultContainer(File containerFile, Path localizeTo) {
 
     Locator locator = new Locator();
-    locator.localizeTo(localizeTo);
     locator.setType("file");
     locator.setPath(containerFile.toString());
 

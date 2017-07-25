@@ -28,6 +28,8 @@ package com.sysunite.coinsweb.steps.profile;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +49,8 @@ public class QueryStatistics extends Query {
   private long executionTimeMs;
 
   @JsonInclude(Include.NON_EMPTY)
+  @JacksonXmlProperty(localName = "row")
+  @JacksonXmlElementWrapper(localName="resultSet")
   private List<Map<String, String>> resultSet;
 
   @JsonIgnore
@@ -60,7 +64,7 @@ public class QueryStatistics extends Query {
 
     // Copy fields
     setReference(queryConfig.getReference());
-    setDescription(queryConfig.parseDescription());
+    setDescription(queryConfig.getDescription());
     setQuery(queryConfig.getQuery());
     setResultFormat(queryConfig.getResultFormat());
   }

@@ -55,11 +55,16 @@ public class IndentedCDATAPrettyPrinter extends DefaultXmlPrettyPrinter {
     return result;
   }
 
-  public static String INDENT = "  ";
+  public static final String INDENT = "  ";
   public static String indentText(String body, int level) {
     String result = "";
     String indent = String.join("", Collections.nCopies(level, INDENT));
-    String[] lines = body.split(System.lineSeparator());
+
+    // Handle both windows and non-windows source
+    body = body.replaceAll("\\r\\n", "\n");
+    body = body.replaceAll("\\r", "\n");
+    String[] lines = body.split("\n");
+
     int cutoff = -1;
     boolean skipping = true;
     for(String line : lines) {

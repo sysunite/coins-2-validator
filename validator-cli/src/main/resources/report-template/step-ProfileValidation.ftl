@@ -8,6 +8,8 @@
   <#if instanceOf(bundle, "ValidationBundleStatistics")>
     <h4><#if bundle.valid >&#x2705;<#else>&#x26D4;</#if>&nbsp;&nbsp;${stepName+'/'+bundleKey}</h4>
 
+    <p>${bundle.parseDescription()}</p>
+
     <table>
       <tr><th colspan="4">${bundleKey}</th></tr>
       <#list bundle.queries as query>

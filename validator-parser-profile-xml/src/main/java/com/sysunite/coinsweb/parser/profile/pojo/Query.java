@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.parser.profile.pojo;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -27,7 +28,6 @@ public class Query {
   @JacksonXmlProperty(localName = "reference", isAttribute = true)
   private String reference;
 
-  @JacksonXmlProperty(localName = "description")
   private String description;
 
   @JsonInclude(Include.NON_NULL)
@@ -47,18 +47,22 @@ public class Query {
   }
 
 
-  public String parseDescription() {
-    return Markdown.parseLinksToHtml(description);
-  }
+  @JsonGetter("description")
   public String getDescription() {
     return description;
+  }
+  public String parseDescription() {
+    return Markdown.parseLinksToHtml(description);
   }
   public void setDescription(String description) {
     this.description = description;
   }
 
-
+  @JsonGetter("resultFormat")
   public String getResultFormat() {
+    return resultFormat;
+  }
+  public String parseResultFormat() {
     return Markdown.parseLinksToHtml(resultFormat);
   }
   public void setResultFormat(String resultFormat) {
@@ -76,7 +80,7 @@ public class Query {
       StringTemplateLoader templateLoader = new StringTemplateLoader();
       Configuration cfg = new Configuration();
       cfg.setTemplateLoader(templateLoader);
-      templateLoader.putTemplate("resultFormat", getResultFormat());
+      templateLoader.putTemplate("resultFormat", parseResultFormat());
       try {
         formatTemplate = cfg.getTemplate("resultFormat");
       } catch (IOException e) {

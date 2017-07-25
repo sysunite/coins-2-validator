@@ -69,11 +69,11 @@ public class ProfileFileTest {
     for(Bundle bundle : profileFile.getBundles()) {
       System.out.println("bundle type: " + bundle.getType());
       System.out.println("bundle reference: " + bundle.getReference());
-      System.out.println("bundle description: " + bundle.getDescription());
+      System.out.println("bundle description: " + bundle.parseDescription());
 
       for(Query query : bundle.getQueries()) {
         System.out.println("query reference: " + query.parseDescription());
-        System.out.println("query format:\n>>>>>" + query.getResultFormat() + "<<<<<");
+        System.out.println("query format:\n>>>>>" + query.parseResultFormat() + "<<<<<");
         System.out.println("query body:\n>>>>>" + query.getQuery() + "<<<<<");
 
       }

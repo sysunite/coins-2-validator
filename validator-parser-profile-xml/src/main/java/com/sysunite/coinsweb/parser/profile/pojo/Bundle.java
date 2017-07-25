@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.parser.profile.pojo;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.sysunite.coinsweb.parser.profile.util.Markdown;
@@ -24,7 +25,6 @@ public class Bundle {
   @JacksonXmlProperty(localName = "reference", isAttribute = true)
   private String reference;
 
-  @JacksonXmlProperty(localName = "description")
   private String description;
 
   @JacksonXmlProperty(localName = "query")
@@ -48,7 +48,11 @@ public class Bundle {
   }
 
 
+  @JsonGetter("description")
   public String getDescription() {
+    return description;
+  }
+  public String parseDescription() {
     return Markdown.parseLinksToHtml(description);
   }
   public void setDescription(String description) {

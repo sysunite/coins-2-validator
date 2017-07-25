@@ -47,7 +47,7 @@ public class QueryStatistics extends Query {
   private long executionTimeMs;
 
   @JsonInclude(Include.NON_EMPTY)
-  private Map<String,String> resultSet;
+  private List<Map<String, String>> resultSet;
 
   @JsonIgnore
   private List<String> formattedResults = new ArrayList<>();
@@ -87,7 +87,7 @@ public class QueryStatistics extends Query {
   public long getExecutionTimeMs() {
     return executionTimeMs;
   }
-  public Map<String,String> getResultSet() {
+  public List<Map<String, String>> getResultSet() {
     return resultSet;
   }
   public List<String> getFormattedResults() {
@@ -102,7 +102,7 @@ public class QueryStatistics extends Query {
   public void addExecutionTimeMs(long executionTimeMs) {
     this.executionTimeMs += executionTimeMs;
   }
-  public void setResultSet(Map<String, String> resultSet) {
+  public void setResultSet(List<Map<String, String>> resultSet) {
     this.resultSet = resultSet;
   }
   public void addFormattedResults(List<String> formattedResults) {

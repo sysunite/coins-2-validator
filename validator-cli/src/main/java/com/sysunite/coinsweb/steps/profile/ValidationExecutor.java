@@ -242,7 +242,7 @@ public class ValidationExecutor {
       List<Object> result = graphSet.select(queryString);
 
 
-      HashMap<String, String> results = new HashMap();
+      LinkedList<Map<String, String>> results = new LinkedList<>();
       ArrayList<String> formattedResults = new ArrayList<>();
 
       boolean hasNoResults;
@@ -261,14 +261,18 @@ public class ValidationExecutor {
 
         if(formatTemplate != null) {
           for(Object bindingSet : result) {
-            BindingSet row = (BindingSet) bindingSet;
-            for(String binding : row.getBindingNames()) {
-              Value value = row.getValue(binding);
-              if(value != null) {
-                results.put(binding, value.stringValue());
+            BindingSet resultRow = (BindingSet) bindingSet;
+            HashMap<String, String> row = new HashMap<>();
+            for(String binding : resultRow.getBindingNames()) {
+              Value value = resultRow.getValue(binding);
+              if(value == null) {
+                row.put(binding, "NULL");
+              } else {
+                row.put(binding, value.stringValue());
               }
             }
-            formattedResults.add(ReportFactory.formatResult(row, formatTemplate));
+            results.add(row);
+            formattedResults.add(ReportFactory.formatResult(resultRow, formatTemplate));
           }
         }
       }

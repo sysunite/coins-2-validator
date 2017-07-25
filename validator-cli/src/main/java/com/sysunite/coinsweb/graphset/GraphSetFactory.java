@@ -120,7 +120,7 @@ public class GraphSetFactory {
         executeLoad(graph, connector, container, mapping, whiteList);
       }
     }
-    executeCompose(originalGraphs, connector, mapping);
+    executeCompose(originalGraphs, connector, mapping, true);
     return mapping;
   }
 
@@ -167,14 +167,14 @@ public class GraphSetFactory {
     }
 
     try {
-      executeCompose(graphs, null, mapping);
+      executeCompose(graphs, null, mapping, true);
     } catch(RuntimeException e) {
       return false;
     }
     return true;
   }
 
-  private static void executeCompose(Graph[] graphs, Connector connector, HashMap<GraphVar, String> mapping) {
+  public static void executeCompose(Graph[] graphs, Connector connector, HashMap<GraphVar, String> mapping, boolean clearDestination) {
 
     if(graphs == null || graphs.length < 1) {
       return;
@@ -244,13 +244,16 @@ public class GraphSetFactory {
                 String toContext = mapping.get(to);
 
                 if(connector != null) {
-                  if (first) {
+                  if (clearDestination && first) {
                     log.info("Copy " + fromContext + " to " + toContext);
                     connector.sparqlCopy(fromContext, toContext);
-                    first = false;
                   } else {
                     log.info("Add all triples from " + fromContext + " to " + toContext);
                     connector.sparqlAdd(fromContext, toContext);
+                  }
+
+                  if(first) {
+                    first = false;
                   }
                 }
               }

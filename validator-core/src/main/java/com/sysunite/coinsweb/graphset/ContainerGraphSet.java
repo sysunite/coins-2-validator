@@ -39,4 +39,6 @@ public interface ContainerGraphSet {
   String graphExists(GraphVar graphVar);
 
   void writeContextToFile(String[] contexts, OutputStream outputStream);
+
+  void pushUpdatesToCompose();
 }

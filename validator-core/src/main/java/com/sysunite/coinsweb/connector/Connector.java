@@ -27,6 +27,7 @@ public interface Connector {
 
   void uploadFile(File file, String[] contexts);
   void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts);
+  void storeGraphExists(String context, String originalContext);
 
   long quadCount(String context);
   List<String> getContexts();

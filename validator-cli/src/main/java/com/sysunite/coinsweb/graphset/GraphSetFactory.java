@@ -141,6 +141,9 @@ public class GraphSetFactory {
     if(!graphNames.isEmpty()) {
       log.info("Upload rdf-file to connector: " + fileName);
       connector.uploadFile(FileFactory.toInputStream(graph.getSource(), container), fileName, graph.getSource().getGraphname(), graphNames);
+      for(String context : graphNames) {
+        connector.storeGraphExists(context, graph.getSource().getGraphname());
+      }
     } else {
       log.info("\u2728 Not uploading file because it is already uploaded: "+fileName);
     }

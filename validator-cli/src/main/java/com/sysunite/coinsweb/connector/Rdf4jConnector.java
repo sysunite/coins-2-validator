@@ -103,7 +103,7 @@ public abstract class Rdf4jConnector implements Connector {
   @Override
   public void sparqlCopy(String fromContext, String toContext) {
     update("COPY <"+fromContext+"> TO <"+toContext+">");
-    storeGraphExists(toContext);
+    storeGraphExists(toContext, fromContext);
   }
   @Override
   public void sparqlAdd(String fromContext, String toContext) {
@@ -143,9 +143,6 @@ public abstract class Rdf4jConnector implements Connector {
         throw new RuntimeException("Could not determine the type of file this is: " + file.getName());
       }
       con.add(file, null, format.get(), asResource(contexts));
-      for(String context : contexts) {
-        storeGraphExists(context);
-      }
 
     } catch (IOException e) {
       log.error(e.getMessage(), e);
@@ -163,22 +160,25 @@ public abstract class Rdf4jConnector implements Connector {
     String query =
 
     "PREFIX val: <"+ QueryFactory.VALIDATOR_NS+"> " +
-    "SELECT ?creationDate " +
+    "SELECT ?originalContext ?creationDate " +
     "FROM NAMED <"+context+"> " +
     "WHERE { graph <"+context+"> { " +
-    "  <"+context+"> val:uploaded ?creationDate . " +
+    "  ?originalContext val:uploaded ?creationDate . " +
     "}}";
 
+    String originalContext = null;
     String creationDate = null;
     List<Object> result = query(query);
     if (!result.isEmpty()) {
       BindingSet row = (BindingSet) result.get(0);
+      originalContext = row.getBinding("originalContext").getValue().stringValue();
       creationDate = row.getBinding("creationDate").getValue().stringValue();
     }
-    return creationDate;
+    return originalContext;
   }
 
-  private void storeGraphExists(String context) {
+  // todo: add the full hash of the file
+  public void storeGraphExists(String context, String originalContext) {
 
     String timestamp = new Timestamp(System.currentTimeMillis()).toString();
 
@@ -187,7 +187,10 @@ public abstract class Rdf4jConnector implements Connector {
     String query =
 
     "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
-    "INSERT DATA { GRAPH <"+context+"> { <"+context+"> val:uploaded \""+timestamp+"\" . }}";
+    "INSERT DATA { GRAPH <"+context+"> { " +
+    "<"+originalContext+"> val:uploaded \""+timestamp+"\" . " +
+//    "<"+originalContext+"> val:fullHash \""+fullHash+"\" . " +
+    "}}";
 
     update(query);
   }
@@ -204,9 +207,7 @@ public abstract class Rdf4jConnector implements Connector {
         throw new RuntimeException("Could not determine the type of file this is: " + fileName);
       }
       con.add(inputStream, baseUri, format.get(), asResource(contexts.toArray(new String[0])));
-      for(String context : contexts) {
-        storeGraphExists(context);
-      }
+
 
     } catch (IOException e) {
       log.error(e.getMessage(), e);

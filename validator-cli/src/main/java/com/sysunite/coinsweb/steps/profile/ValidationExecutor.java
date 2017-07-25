@@ -77,8 +77,8 @@ public class ValidationExecutor {
       String context = graphSet.contextMap().get(graphVar);
       log.info("- " + graphVar + " > "+context);
 
-      String uploadDate = graphSet.graphExists(graphVar);
-      if(uploadDate == null) {
+      String originalContext = graphSet.graphExists(graphVar);
+      if(originalContext == null) {
         throw new RuntimeException("The graph "+graphVar+" ("+context+") is not available in the store");
       }
 

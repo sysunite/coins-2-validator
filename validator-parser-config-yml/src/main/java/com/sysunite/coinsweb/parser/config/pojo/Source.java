@@ -9,7 +9,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import static com.sysunite.coinsweb.parser.Parser.*;
@@ -93,7 +92,7 @@ public class Source extends ConfigPart {
   }
   @JsonIgnore
   public boolean anyContentFile() {
-    boolean anyContentFile = CONTAINER.equals(type) && getPath() != null && getPath().equals("bim" + File.separator + "*");
+    boolean anyContentFile = CONTAINER.equals(type) && getPath() != null && getPath().equals("bim/*");
     if(anyContentFile && !"*".equals(graphname)) {
       throw new RuntimeException("Set graphname to \"*\" when using an asterisk in the container path, it was "+graphname);
     }
@@ -101,7 +100,7 @@ public class Source extends ConfigPart {
   }
   @JsonIgnore
   public boolean anyLibraryFile() {
-    boolean anyLibraryFile = CONTAINER.equals(type) && getPath() != null && getPath().equals("bim" + File.separator + "repository" + File.separator + "*");
+    boolean anyLibraryFile = CONTAINER.equals(type) && getPath() != null && getPath().equals("bim/repository/*");
     if(anyLibraryFile && !"*".equals(graphname)) {
       throw new RuntimeException("Set graphname to \"*\" when using an asterisk in the container path, it was "+graphname);
     }

@@ -166,7 +166,7 @@ public class ConfigFactory {
 
       Source instanceGraphSource = new Source();
       instanceGraphSource.setType("container");
-      instanceGraphSource.setPath("bim"+File.separator+"*");
+      instanceGraphSource.setPath("bim/*");
       instanceGraphSource.setGraphname("*");
 
       Graph instanceGraphPattern = new Graph();
@@ -179,7 +179,7 @@ public class ConfigFactory {
 
       Source librarySource = new Source();
       librarySource.setType("container");
-      librarySource.setPath("bim"+File.separator+"repository"+File.separator+"*");
+      librarySource.setPath("bim/repository/*");
       librarySource.setGraphname("*");
 
       Graph libraryGraphPattern = new Graph();

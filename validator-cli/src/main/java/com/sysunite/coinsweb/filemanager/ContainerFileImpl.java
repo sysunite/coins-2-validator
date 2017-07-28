@@ -16,9 +16,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -31,8 +33,11 @@ public class ContainerFileImpl extends File implements ContainerFile {
   private boolean wrongSlashes = false;
   private boolean corruptZip = false;
 
+  private Container containerConfig;
+
   public ContainerFileImpl(Container containerConfig) {
-    super(FileFactory.toFile(containerConfig.getLocation()).getPath());
+    super(FileFactory.toFile(containerConfig).getPath());
+    this.containerConfig = containerConfig;
   }
 
   public ContainerFileImpl(String pathname) {
@@ -324,4 +329,81 @@ public class ContainerFileImpl extends File implements ContainerFile {
     scanned = true;
   }
 
+
+  private HashMap<String, File> pendingContentFile = new HashMap();
+  public void addContentFile(File file, String namespace) {
+    pendingContentFile.put(namespace, file);
+  }
+
+  private HashMap<String, File> pendingLibraryFiles = new HashMap();
+  public void addLibraryFile(File file, String namespace) {
+    pendingLibraryFiles.put(namespace, file);
+  }
+
+  private List<File> pendingAttachmentFiles = new ArrayList();
+  public void addAttachmentFile(File file) {
+    pendingAttachmentFiles.add(file);
+  }
+
+  public void writeZip(Path containerFile) {
+    log.info("Will create container file at "+containerFile.toString());
+
+    byte[] buffer = new byte[1024];
+
+    try {
+
+      // Get the zip file content
+      ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(containerFile.toFile()));
+
+
+      for(String context : pendingContentFile.keySet()) {
+        String zipPath = "bim/content.rdf";
+        log.info("Adding to zip "+zipPath);
+        ZipEntry ze = new ZipEntry(zipPath);
+        zout.putNextEntry(ze);
+        DeleteOnCloseFileInputStream inputStream = new DeleteOnCloseFileInputStream(pendingContentFile.get(context));
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1)
+          zout.write(buffer, 0, bytesRead);
+        zout.closeEntry();
+        inputStream.close();
+      }
+
+      int count = 1;
+      for(String context : pendingLibraryFiles.keySet()) {
+        String zipPath = "bim/repository/library_"+(count++)+".rdf";
+        log.info("Adding to zip "+zipPath);
+        ZipEntry ze = new ZipEntry(zipPath);
+        zout.putNextEntry(ze);
+        DeleteOnCloseFileInputStream inputStream = new DeleteOnCloseFileInputStream(pendingLibraryFiles.get(context));
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1)
+          zout.write(buffer, 0, bytesRead);
+        zout.closeEntry();
+        inputStream.close();
+      }
+
+      for(File attachmentFile : pendingAttachmentFiles) {
+        String zipPath = "doc/"+attachmentFile.getName();
+        log.info("Adding to zip "+zipPath);
+        ZipEntry ze = new ZipEntry(zipPath);
+        zout.putNextEntry(ze);
+        FileInputStream inputStream = new FileInputStream(attachmentFile);
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1)
+          zout.write(buffer, 0, bytesRead);
+        zout.closeEntry();
+        inputStream.close();
+      }
+
+      zout.close();
+
+    } catch(IOException e) {
+      log.error(e.getMessage(), e);
+    }
+  }
+
+  public Container getConfig() {
+    return containerConfig;
+  }
 }

@@ -4,6 +4,7 @@ package com.sysunite.coinsweb.parser.config.factory;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.DeleteOnCloseFileInputStream;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
+import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.parser.config.pojo.Locator;
 import com.sysunite.coinsweb.parser.config.pojo.Source;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +26,19 @@ import java.security.NoSuchAlgorithmException;
 public class FileFactory {
 
   private static final Logger log = LoggerFactory.getLogger(ConfigFactory.class);
+
+  public static File toFile(Container containerConfig) {
+    if(containerConfig.isVirtual()) {
+      try {
+        return File.createTempFile("container", ".rdf");
+      } catch (IOException e) {
+        log.error(e.getMessage(), e);
+        throw new RuntimeException();
+      }
+    } else {
+      return toFile(containerConfig.getLocation());
+    }
+  }
 
   public static File toFile(Locator locator) {
 

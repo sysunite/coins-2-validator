@@ -21,8 +21,7 @@ public interface ContainerGraphSet {
   List<String> getImports(GraphVar graphVar);
   boolean hasContext(GraphVar graphVar);
 
-  void setContainerFile(ContainerFile container);
-  void setContainerConfig(Object containerConfig);
+  void lazyLoad(ContainerFile container);
   void setConfigFile(Object configFile);
   Map<GraphVar, String> contextMap();
   Map<GraphVar, Long> quadCount();
@@ -32,7 +31,6 @@ public interface ContainerGraphSet {
 
   void load();
   boolean requiresLoad();
-  void setAllLoaded();
 
   Object getMain();
   void setMain(Object graphVar);

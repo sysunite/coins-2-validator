@@ -13,13 +13,14 @@ import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 /**
  * @author bastbijl, Sysunite 2017
  */
-@JsonInclude(Include.NON_DEFAULT)
+@JsonInclude(Include.NON_NULL)
 @JsonDeserialize(converter=MappingSanitizer.class)
 public class Mapping extends ConfigPart {
 
   private static final Logger log = LoggerFactory.getLogger(Mapping.class);
 
   private String graphname;
+  private String filename;
   private GraphVarImpl variable;
 
   public Mapping() {
@@ -29,9 +30,17 @@ public class Mapping extends ConfigPart {
     this.variable = graphVar;
     this.graphname = graphName;
   }
+  public Mapping(GraphVarImpl graphVar, String graphName, String fileName) {
+    this.variable = graphVar;
+    this.graphname = graphName;
+    this.filename = fileName;
+  }
 
   public String getGraphname() {
     return graphname;
+  }
+  public String getFilename() {
+    return filename;
   }
   public GraphVarImpl getVariable() {
     return variable;
@@ -39,6 +48,9 @@ public class Mapping extends ConfigPart {
 
   public void setGraphname(String graphname) {
     this.graphname = graphname;
+  }
+  public void setFilename(String filename) {
+    this.filename = filename;
   }
   public void setVariable(GraphVarImpl variable) {
     this.variable = variable;
@@ -48,6 +60,7 @@ public class Mapping extends ConfigPart {
   public Mapping clone() {
     Mapping clone = new Mapping();
     clone.setGraphname(this.graphname);
+    clone.setFilename(this.filename);
     clone.setVariable(this.variable);
     clone.setParent(this.getParent());
     return clone;

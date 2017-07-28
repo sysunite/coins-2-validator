@@ -2,6 +2,7 @@ package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
+import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.parser.config.pojo.*;
@@ -17,9 +18,9 @@ import static java.util.Collections.sort;
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class GraphSetFactory {
+public class ContainerGraphSetFactory {
 
-  private static final Logger log = LoggerFactory.getLogger(GraphSetFactory.class);
+  private static final Logger log = LoggerFactory.getLogger(ContainerGraphSetFactory.class);
 
   public static ContainerGraphSet lazyLoad(ContainerFile container, Container containerConfig, Connector connector) {
     Environment environment = containerConfig.getParent().getEnvironment();
@@ -30,9 +31,8 @@ public class GraphSetFactory {
 
     log.info("Construct and lazy load graphSet");
     ContainerGraphSet graphSet = new ContainerGraphSetImpl(connector);
-    graphSet.setContainerFile(container);
-    graphSet.setContainerConfig(containerConfig);
     graphSet.setConfigFile(containerConfig.getParent());
+    graphSet.lazyLoad(container);
 
     Graph main = null;
     for(Graph graph : containerConfig.getGraphs()) {
@@ -55,8 +55,8 @@ public class GraphSetFactory {
    * Returns a map that maps
    *
    */
-  public static HashMap<GraphVar, String> load(Container containerConfig, Connector connector, ContainerFile container, ConfigFile configFile) {
-
+  public static HashMap<GraphVar, String> load(Connector connector, ContainerFile container, ConfigFile configFile) {
+    Container containerConfig = ((ContainerFileImpl)container).getConfig();
     Graph[] originalGraphs = containerConfig.getGraphs();
 
     connector.init();

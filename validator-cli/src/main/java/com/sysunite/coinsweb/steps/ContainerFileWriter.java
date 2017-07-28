@@ -3,14 +3,11 @@ package com.sysunite.coinsweb.steps;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
-import com.sysunite.coinsweb.filemanager.VirtualContainerFileImpl;
+import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphVar;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
-import com.sysunite.coinsweb.parser.config.pojo.Attachment;
-import com.sysunite.coinsweb.parser.config.pojo.ConfigPart;
-import com.sysunite.coinsweb.parser.config.pojo.Graph;
-import com.sysunite.coinsweb.parser.config.pojo.Locator;
+import com.sysunite.coinsweb.parser.config.pojo.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,19 +75,13 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
   @Override
   public void execute(ContainerFile container, ContainerGraphSet graphSet) {
 
-    if(!(container instanceof VirtualContainerFileImpl)) {
-      throw new RuntimeException("Only virtual container files can be stored for now");
-    }
 
     try {
-
-
-
 
       if(graphSet.getMain() == null) {
         throw new RuntimeException("No main context (graphname) is set");
       }
-      Graph main = (Graph) graphSet.getMain();
+      GraphVarImpl main = (GraphVarImpl) graphSet.getMain();
 
       try {
         log.info("Dump graphSet contexts to temp files:");
@@ -100,15 +91,15 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
           String context = graphSet.contextMap().get(graphVar);
           graphSet.writeContextToFile(new String[]{context}, outputStream);
           outputStream.close();
-          log.info("Compare "+context+" to "+main.getSource().getGraphname());
-          for(Graph graph : ((VirtualContainerFileImpl)container).getConfig().getGraphs()) {
+          log.info("Compare "+context+" to "+main);
+          for(Graph graph : ((ContainerFileImpl)container).getConfig().getGraphs()) {
             if(graph.getAs().contains(graphVar)) {
               if(graph.getMain() != null && graph.getMain()) {
                 log.info("- "+graphVar+" to "+rdfFile.getName()+" (is main)");
-                ((VirtualContainerFileImpl)container).addContentFile(rdfFile, graph.getSource().getGraphname());
+                ((ContainerFileImpl)container).addContentFile(rdfFile, graph.getSource().getGraphname());
               } else {
                 log.info("- "+graphVar+" to "+rdfFile.getName());
-                ((VirtualContainerFileImpl)container).addLibraryFile(rdfFile, graph.getSource().getGraphname());
+                ((ContainerFileImpl)container).addLibraryFile(rdfFile, graph.getSource().getGraphname());
               }
             }
           }
@@ -116,8 +107,8 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
         }
 
         log.info("Register the configured files as attachments:");
-        for(Attachment attachment : ((VirtualContainerFileImpl)container).getConfig().getAttachments()) {
-          ((VirtualContainerFileImpl)container).addAttachmentFile(FileFactory.toFile(attachment.getLocation()));
+        for(Attachment attachment : ((ContainerFileImpl)container).getConfig().getAttachments()) {
+          ((ContainerFileImpl)container).addAttachmentFile(FileFactory.toFile(attachment.getLocation()));
         }
       } catch (FileNotFoundException e) {
         e.printStackTrace();
@@ -134,7 +125,7 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
       }
 
       log.info("Save the container file to: "+ccrFile.getPath());
-      ((VirtualContainerFileImpl)container).writeZip(ccrFile.toPath());
+      ((ContainerFileImpl)container).writeZip(ccrFile.toPath());
 
 
 

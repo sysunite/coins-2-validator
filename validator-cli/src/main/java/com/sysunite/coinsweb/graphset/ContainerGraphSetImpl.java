@@ -2,10 +2,12 @@ package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
+import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.parser.config.pojo.Graph;
+import com.sysunite.coinsweb.parser.config.pojo.GraphVarImpl;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,15 +26,17 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   private static final Logger log = LoggerFactory.getLogger(ContainerGraphSetImpl.class);
 
 
-  protected boolean initialized = false;
+  private ContainerFileImpl lazyLoad = null;
+
   private boolean disabled;
   private Connector connector;
-  private ContainerFile container;
-  private Container containerConfig;
   private ConfigFile configFile;
   private HashMap<GraphVar, String> contextMap;
+  private Graph[] mapping;
 
-  private Graph main;
+  private GraphVarImpl main;
+
+  private Container containerConfig;
 
 
   public ContainerGraphSetImpl() {
@@ -48,18 +52,22 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     return main;
   }
   public void setMain(Object main) {
-    this.main = (Graph) main;
+    this.main = (GraphVarImpl) main;
   }
 
   // Execute postponed lazy load
   public void load() {
 
+    if(!requiresLoad()) {
+      return;
+    }
+
     // Essential step to get rid of the wildcards in the configFile
     log.info("Will now expand any wildcard usage in the config.yml section of this file");
-    DescribeFactoryImpl.expandGraphConfig(containerConfig);
+    DescribeFactoryImpl.expandGraphConfig(lazyLoad.getConfig());
 
     // Now test if
-    if(!GraphSetFactory.testCompose(containerConfig.getGraphs(), containerConfig.getVariablesMap())) {
+    if(!ContainerGraphSetFactory.testCompose(lazyLoad.getConfig().getGraphs(), lazyLoad.getConfig().getVariablesMap())) {
       throw new RuntimeException("The ContainerGraphSet can not be loaded because the graph description composition plan contains an error");
     }
 
@@ -68,9 +76,9 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     }
 
     log.info("Load stuff to connector");
-    contextMap = GraphSetFactory.load(containerConfig, connector, container, configFile);
+    contextMap = ContainerGraphSetFactory.load(connector, lazyLoad, configFile);
 
-    this.setAllLoaded();
+    this.lazyLoad = null;
   }
 
   /**
@@ -149,18 +157,12 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   }
 
   @Override
-  public void setContainerFile(ContainerFile container) {
-    this.container = container;
+  public void lazyLoad(ContainerFile container) {
+    this.lazyLoad = (ContainerFileImpl)container;
+    this.mapping = lazyLoad.getConfig().getGraphs();
   }
 
-  @Override
-  public void setContainerConfig(Object config) {
-    if(config instanceof Container) {
-      this.containerConfig = (Container) config;
-      return;
-    }
-    throw new RuntimeException("The object is not an instance of a Container configuration");
-  }
+
 
   @Override
   public void setConfigFile(Object configFile) {
@@ -201,10 +203,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   }
 
   public boolean requiresLoad() {
-    return !initialized;
-  }
-  public void setAllLoaded() {
-    initialized = true;
+    return (lazyLoad != null);
   }
 
   public void writeContextToFile(String[] contexts, OutputStream outputStream) {
@@ -213,6 +212,6 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
   @Override
   public void pushUpdatesToCompose() {
-    GraphSetFactory.executeCompose(containerConfig.getGraphs(), connector, containerConfig.getVariablesMap(), false);
+    ContainerGraphSetFactory.executeCompose(mapping, connector, contextMap, false);
   }
 }

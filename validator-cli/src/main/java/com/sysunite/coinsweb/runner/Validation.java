@@ -6,9 +6,8 @@ import com.sysunite.coinsweb.connector.ConnectorFactory;
 import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
-import com.sysunite.coinsweb.filemanager.VirtualContainerFileImpl;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
-import com.sysunite.coinsweb.graphset.GraphSetFactory;
+import com.sysunite.coinsweb.graphset.ContainerGraphSetFactory;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
@@ -53,23 +52,19 @@ public class Validation {
       Boolean valid = true;
 
       // Init containerFile
-      ContainerFile containerFile;
       if(containerConfig.isVirtual()) {
-
         log.info("\uD83D\uDCCF Validate a virtual file");
-        containerFile = new VirtualContainerFileImpl(containerConfig);
       } else {
-
         String containerFilePath = FileFactory.toFile(containerConfig.getLocation()).toString();
         log.info("\uD83D\uDCD0 Validate "+containerFilePath);
-        containerFile = new ContainerFileImpl(containerConfig);
       }
+      ContainerFile containerFile = new ContainerFileImpl(containerConfig);
 
       containerConfig.setContainer(containerFile);
 
 
       // Init graphSet
-      ContainerGraphSet graphSet = GraphSetFactory.lazyLoad(containerFile, containerConfig, connector);
+      ContainerGraphSet graphSet = ContainerGraphSetFactory.lazyLoad(containerFile, containerConfig, connector);
 
 
       // Execute the steps

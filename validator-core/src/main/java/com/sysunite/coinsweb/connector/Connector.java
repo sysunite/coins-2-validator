@@ -5,6 +5,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
 /**
  * Each graphSet needs a connector to connect to some graph database. A connector
@@ -16,23 +19,32 @@ public interface Connector {
 
   void init();
   boolean testConnection();
-  void cleanup(String[] contexts);
+  void cleanup(List<String> contexts);
   void close();
 
   List<Object> query(String queryString);
   void update(String queryString);
   void sparqlCopy(String fromContext, String toContext);
   void sparqlAdd(String fromContext, String toContext);
+  void replaceResource(String context, String resource, String replace);
 
 
-  void uploadFile(File file, String[] contexts);
+  void uploadFile(File file, List<String> contexts);
   void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts);
-  void storeGraphExists(String context, String originalContext);
+
+  void storePhiGraphExists(Object source, String context, String fileName, String hash);
+  void storeSigmaGraphExists(String context, Set<String> inclusionSet);
 
   long quadCount(String context);
   List<String> getContexts();
 
-  String graphExists(String context);
+//  String graphExists(String context);
 
-  void writeContextsToFile(String[] contexts, OutputStream outputStream);
+  List<Object> listPhiGraphs();
+  Map<String, Set<String>> listPhiSourceIdsPerHash();
+  Map<String, Set<String>> listSigmaGraphs();
+  Map<String, Set<String>> listInferencesPerSigmaGraph();
+
+  void writeContextsToFile(List<String> contexts, OutputStream outputStream);
+  void writeContextsToFile(List<String> contexts, OutputStream outputStream, Function filter);
 }

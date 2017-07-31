@@ -38,7 +38,6 @@ public class ConfigFactory {
 
     try {
       String yml = mapper.writeValueAsString(configFile);
-
       return yml;
 
     } catch (JsonProcessingException e) {
@@ -60,7 +59,7 @@ public class ConfigFactory {
     return configFile;
   }
 
-  public static Mapping[] getDefaultMapping(Graph[] graphs) {
+  public static ArrayList<Mapping> getDefaultMapping(ArrayList<Graph> graphs) {
 
     Set<GraphVarImpl> varSet = new HashSet();
     ArrayList<Mapping> mappings = new ArrayList();
@@ -77,7 +76,7 @@ public class ConfigFactory {
       mapping.setGraphname(graph.getSource().getGraphname());
       mappings.add(mapping);
     }
-    return mappings.toArray(new Mapping[0]);
+    return mappings;
   }
 
   public static ValidationStep[] getDefaultSteps() {
@@ -153,14 +152,17 @@ public class ConfigFactory {
     libraryMapping.setVariable(new GraphVarImpl("SCHEMA_UNION_GRAPH"));
     libraryMapping.setGraphname("http://library/union");
 
-    Mapping[] variables = {fullMapping, instancesMapping, libraryMapping};
+    ArrayList<Mapping> variables = new ArrayList<>();
+    variables.add(fullMapping);
+    variables.add(instancesMapping);
+    variables.add(libraryMapping);
 
 
     ArrayList<Graph> graphs;
     if(describeFactory != null) {
       ArrayList<GraphVarImpl> dataGraphs = new ArrayList<>(Arrays.asList(new GraphVarImpl("INSTANCE_UNION_GRAPH"), new GraphVarImpl("FULL_UNION_GRAPH")));
       ArrayList<GraphVarImpl> schemaGraphs = new ArrayList<>(Arrays.asList(new GraphVarImpl("SCHEMA_UNION_GRAPH"), new GraphVarImpl("FULL_UNION_GRAPH")));
-      graphs = describeFactory.graphsInContainer(containerFile, dataGraphs, schemaGraphs);
+      graphs = describeFactory.graphsInContainerFile(containerFile, dataGraphs, schemaGraphs);
     } else {
       graphs = new ArrayList();
 
@@ -195,7 +197,7 @@ public class ConfigFactory {
     container.setType("container");
     container.setLocation(locator);
     container.setVariables(variables);
-    container.setGraphs(graphs.toArray(new Graph[0]));
+    container.setGraphs(graphs);
 
     return container;
   }

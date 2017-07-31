@@ -5,6 +5,7 @@ import com.sysunite.coinsweb.filemanager.ContainerFile;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * A ContainerGraphSet is a collection of graphs (contexts) that is contained
@@ -34,9 +35,10 @@ public interface ContainerGraphSet {
 
   Object getMain();
   void setMain(Object graphVar);
-  String graphExists(GraphVar graphVar);
+//  String graphExists(GraphVar graphVar);
 
-  void writeContextToFile(String[] contexts, OutputStream outputStream);
+  void writeContextToFile(List<String> contexts, OutputStream outputStream);
+  void writeContextToFile(List<String> contexts, OutputStream outputStream, Function filter);
 
-  void pushUpdatesToCompose();
+//  void pushUpdatesToCompose(); todo
 }

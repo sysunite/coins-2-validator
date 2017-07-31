@@ -27,8 +27,8 @@ public class QueryFactory {
 
   private static final Logger log = LoggerFactory.getLogger(QueryFactory.class);
 
-
-  public static final String VALIDATOR_NS = "http://validator#";
+  public static final String VALIDATOR_HOST = "http://www.coinsweb.nl/";
+  public static final String VALIDATOR_NS = "http://www.coinsweb.nl/2017/07/validator#";
 
 
   public static String buildQuery(Query query, Map<String, String> data) {

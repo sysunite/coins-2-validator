@@ -6,7 +6,6 @@ import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
-import com.sysunite.coinsweb.parser.config.pojo.Graph;
 import com.sysunite.coinsweb.parser.config.pojo.GraphVarImpl;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.slf4j.Logger;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -31,21 +31,22 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   private boolean disabled;
   private Connector connector;
   private ConfigFile configFile;
-  private HashMap<GraphVar, String> contextMap;
-  private Graph[] mapping;
+  private ComposePlan composePlan;
 
   private GraphVarImpl main;
 
   private Container containerConfig;
 
 
-  public ContainerGraphSetImpl() {
+  public ContainerGraphSetImpl(Container containerConfig) {
+    this.containerConfig = containerConfig;
     this.disabled = true;
   }
 
-  public ContainerGraphSetImpl(Connector connector) {
-    this.disabled = false;
+  public ContainerGraphSetImpl(Container containerConfig, Connector connector) {
+    this.containerConfig = containerConfig;
     this.connector = connector;
+    this.disabled = false;
   }
 
   public Object getMain() {
@@ -66,17 +67,13 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     log.info("Will now expand any wildcard usage in the config.yml section of this file");
     DescribeFactoryImpl.expandGraphConfig(lazyLoad.getConfig());
 
-    // Now test if
-    if(!ContainerGraphSetFactory.testCompose(lazyLoad.getConfig().getGraphs(), lazyLoad.getConfig().getVariablesMap())) {
-      throw new RuntimeException("The ContainerGraphSet can not be loaded because the graph description composition plan contains an error");
-    }
-
     if(disabled) {
       return;
     }
 
     log.info("Load stuff to connector");
-    contextMap = ContainerGraphSetFactory.load(connector, lazyLoad, configFile);
+    composePlan = ContainerGraphSetFactory.load(connector, lazyLoad);
+    lazyLoad.getConfig().setVariables(composePlan.getVarMap());
 
     this.lazyLoad = null;
   }
@@ -99,7 +96,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     if(requiresLoad()) {
       load();
     }
-    return contextMap;
+    return containerConfig.getVariablesContextMap();
   }
 
   public boolean hasContext(GraphVar graphVar) {
@@ -159,7 +156,6 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   @Override
   public void lazyLoad(ContainerFile container) {
     this.lazyLoad = (ContainerFileImpl)container;
-    this.mapping = lazyLoad.getConfig().getGraphs();
   }
 
 
@@ -184,34 +180,37 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
       ArrayList<String> contexts = new ArrayList<>();
       log.info("Will wipe these graphs (if enabled) to remove GraphSet graphs from the Connector:");
-      for(String context : contextMap.values()) {
+      for(String context : containerConfig.getVariablesContextMap().values()) {
         log.info("- "+context);
         contexts.add(context);
       }
 
-      connector.cleanup(contexts.toArray(new String[0]));
+      connector.cleanup(contexts);
     }
   }
 
-  @Override
-  public String graphExists(GraphVar graphVar) {
-    if(requiresLoad()) {
-      load();
-    }
-    String context = contextMap().get(graphVar);
-    return connector.graphExists(context);
-  }
+//  @Override
+//  public String graphExists(GraphVar graphVar) {
+//    if(requiresLoad()) {
+//      load();
+//    }
+//    String context = contextMap().get(graphVar);
+//    return connector.graphExists(context);
+//  }
 
   public boolean requiresLoad() {
     return (lazyLoad != null);
   }
 
-  public void writeContextToFile(String[] contexts, OutputStream outputStream) {
+  public void writeContextToFile(List<String> contexts, OutputStream outputStream) {
     connector.writeContextsToFile(contexts, outputStream);
   }
-
-  @Override
-  public void pushUpdatesToCompose() {
-    ContainerGraphSetFactory.executeCompose(mapping, connector, contextMap, false);
+  public void writeContextToFile(List<String> contexts, OutputStream outputStream, Function filter) {
+    connector.writeContextsToFile(contexts, outputStream, filter);
   }
+
+//  @Override todo
+//  public void pushUpdatesToCompose() {
+//    ContainerGraphSetFactory.executeCompose(containerConfig.getGraphs(), connector, containerConfig.getVariablesContextMap(), false);
+//  }
 }

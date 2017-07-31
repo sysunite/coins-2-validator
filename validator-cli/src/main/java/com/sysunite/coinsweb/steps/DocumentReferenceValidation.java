@@ -198,15 +198,33 @@ class DocumentReferenceSerializer extends StdSerializer<HashMap<String, String>>
   @Override
   public void serialize(HashMap<String, String> map, JsonGenerator gen, SerializerProvider provider) throws IOException {
 
-    gen.writeRawValue("");
 
-    for(String key : map.keySet()) {
-      gen.writeFieldName("document");
-      gen.writeStartObject();
-      gen.writeStringField("uri", key);
-      gen.writeStringField("fileName", map.get(key));
-      gen.writeEndObject();
-    }
+
+//    if(gen instanceof YAMLGenerator) {
+
+//      YAMLGenerator ymlGen = (YAMLGenerator) gen;
+      gen.writeStartArray();
+      for (String key : map.keySet()) {
+        gen.writeStartObject();
+        gen.writeStringField("uri", key);
+        gen.writeStringField("fileName", map.get(key));
+        gen.writeEndObject();
+      }
+      gen.writeEndArray();
+
+
+//    } else {
+//
+//      gen.writeRawValue("");
+//
+//      for (String key : map.keySet()) {
+//        gen.writeFieldName("document");
+//        gen.writeStartObject();
+//        gen.writeStringField("uri", key);
+//        gen.writeStringField("fileName", map.get(key));
+//        gen.writeEndObject();
+//      }
+//    }
 
 
   }

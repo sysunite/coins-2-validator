@@ -1,7 +1,9 @@
 package com.sysunite.coinsweb.connector;
 
 import com.sysunite.coinsweb.graphset.QueryFactory;
+import com.sysunite.coinsweb.parser.config.pojo.Source;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.*;
@@ -20,9 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
+
+import static com.sysunite.coinsweb.rdfutil.Utils.withoutHash;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -103,7 +106,7 @@ public abstract class Rdf4jConnector implements Connector {
   @Override
   public void sparqlCopy(String fromContext, String toContext) {
     update("COPY <"+fromContext+"> TO <"+toContext+">");
-    storeGraphExists(toContext, fromContext);
+//    storeGraphExists(toContext, fromContext);
   }
   @Override
   public void sparqlAdd(String fromContext, String toContext) {
@@ -111,7 +114,25 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   @Override
-  public void cleanup(String[] contexts) {
+  public void replaceResource(String context, String resource, String replace) {
+
+    context = withoutHash(context);
+    resource = withoutHash(resource);
+    replace = withoutHash(replace);
+
+    update("WITH <"+context+"> "+
+    "DELETE { <"+resource+"> ?p ?o } "+
+    "INSERT { <"+replace+"> ?p ?o } "+
+    "WHERE { <"+resource+"> ?p ?o } ");
+
+    update("WITH <"+context+"> "+
+    "DELETE { ?s ?p <"+resource+"> } "+
+    "INSERT { ?s ?p <"+replace+"> } "+
+    "WHERE { ?s ?p <"+resource+"> } ");
+  }
+
+  @Override
+  public void cleanup(List<String> contexts) {
     if(!initialized) {
       init();
     }
@@ -132,7 +153,7 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   @Override
-  public void uploadFile(File file, String[] contexts) {
+  public void uploadFile(File file, List<String> contexts) {
     if(!initialized) {
       init();
     }
@@ -150,50 +171,201 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
 
-  public String graphExists(String context) {
+  public List<Object> listPhiGraphs() {
 
-
-    if(context == null || context.isEmpty()) {
-      return null;
-    }
+    ArrayList<Object> list = new ArrayList<>();
 
     String query =
 
-    "PREFIX val: <"+ QueryFactory.VALIDATOR_NS+"> " +
-    "SELECT ?originalContext ?creationDate " +
-    "FROM NAMED <"+context+"> " +
-    "WHERE { graph <"+context+"> { " +
-    "  ?originalContext val:uploaded ?creationDate . " +
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "SELECT ?context ?timestamp ?sourceId ?originalContext ?fileName ?hash " +
+//    "FROM NAMED <"+context+"> " +
+    "WHERE { graph ?context { " +
+    "?context val:uploadedDate  ?timestamp . " +
+    "?context val:sourceId      ?sourceId . " +
+    "?context val:sourceContext ?originalContext . " +
+    "?context val:sourceFile    ?fileName . " +
+    "?context val:sourceHash    ?hash . " +
     "}}";
 
-    String originalContext = null;
-    String creationDate = null;
+
     List<Object> result = query(query);
-    if (!result.isEmpty()) {
-      BindingSet row = (BindingSet) result.get(0);
-      originalContext = row.getBinding("originalContext").getValue().stringValue();
-      creationDate = row.getBinding("creationDate").getValue().stringValue();
+    for(Object rowObject :  result) {
+      BindingSet row = (BindingSet) rowObject;
+
+      String context         = row.getBinding("context").getValue().stringValue();
+      String sourceId        = row.getBinding("sourceId").getValue().stringValue();
+      String timestamp       = row.getBinding("timestamp").getValue().stringValue();
+      String originalContext = row.getBinding("originalContext").getValue().stringValue();
+      String fileName        = row.getBinding("fileName").getValue().stringValue();
+      String hash            = row.getBinding("hash").getValue().stringValue();
+
+      Source source = new Source();
+      source.setId(sourceId);
+      source.setGraphname(originalContext);
+      source.setHash(hash);
+      source.setPath(fileName);
+      list.add(source);
     }
-    return originalContext;
+
+    return list;
   }
 
-  // todo: add the full hash of the file
-  public void storeGraphExists(String context, String originalContext) {
+
+  public Map<String, Set<String>> listPhiSourceIdsPerHash() {
+
+    Map<String, Set<String>> list = new HashMap<>();
+
+    String query =
+
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "SELECT DISTINCT ?hash ?sourceId " +
+    "WHERE { graph ?context { " +
+    "?context val:sourceHash ?hash . " +
+    "?context val:sourceId   ?sourceId . " +
+    "}} ORDER BY ?hash";
+
+
+    List<Object> result = query(query);
+
+    String previousHash = "";
+    HashSet<String> previousSet = new HashSet<>();
+    for(Object rowObject :  result) {
+      BindingSet row = (BindingSet) rowObject;
+
+      String hash       = row.getBinding("hash").getValue().stringValue();
+      String sourceId   = row.getBinding("sourceId").getValue().stringValue();
+
+      if(!previousHash.equals(hash)) {
+        list.put(previousHash, previousSet);
+        previousSet = new HashSet<>();
+        previousHash =  hash;
+      }
+      previousSet.add(sourceId);
+    }
+    if(!previousSet.isEmpty()) {
+      list.put(previousHash, previousSet);
+    }
+
+    return list;
+  }
+
+
+  public Map<String, Set<String>> listSigmaGraphs() {
+
+    HashMap<String, Set<String>> list = new HashMap<>();
+
+    String query =
+
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "SELECT DISTINCT ?context ?inclusion " +
+    "WHERE { graph ?context { " +
+    "?context val:contains ?inclusion . " +
+    "}} ORDER BY ?context";
+
+    List<Object> result = query(query);
+
+    String previousContext = "";
+    HashSet<String> previousSet = new HashSet<>();
+    for(Object rowObject :  result) {
+      BindingSet row = (BindingSet) rowObject;
+
+      String context         = row.getBinding("context").getValue().stringValue();
+      String inclusion       = row.getBinding("inclusion").getValue().stringValue();
+
+      if(!previousContext.equals(context)) {
+        list.put(previousContext, previousSet);
+        previousSet = new HashSet<>();
+        previousContext =  context;
+      }
+      previousSet.add(inclusion);
+    }
+    if(!previousSet.isEmpty()) {
+      list.put(previousContext, previousSet);
+    }
+
+    return list;
+  }
+
+  public Map<String, Set<String>> listInferencesPerSigmaGraph() {
+
+    HashMap<String, Set<String>> list = new HashMap<>();
+
+    String query =
+
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "SELECT DISTINCT ?context ?inference " +
+    "WHERE { graph ?context { " +
+    "?context val:inference ?inference . " +
+    "}} ORDER BY ?context";
+
+    List<Object> result = query(query);
+
+    String previousContext = "";
+    HashSet<String> previousSet = new HashSet<>();
+    for(Object rowObject :  result) {
+      BindingSet row = (BindingSet) rowObject;
+
+      String context         = row.getBinding("context").getValue().stringValue();
+      String inference       = row.getBinding("inference").getValue().stringValue();
+
+      if(!previousContext.equals(context)) {
+        list.put(previousContext, previousSet);
+        previousSet = new HashSet<>();
+        previousContext =  context;
+      }
+      previousSet.add(inference);
+    }
+    if(!previousSet.isEmpty()) {
+      list.put(previousContext, previousSet);
+    }
+
+    return list;
+  }
+
+  public void storePhiGraphExists(Object sourceObject, String context, String fileName, String hash) {
+
+    Source source = (Source) sourceObject;
 
     String timestamp = new Timestamp(System.currentTimeMillis()).toString();
 
-    log.info("Store graphExists "+timestamp+" for "+context);
+    log.info("Store phi graph exists "+timestamp+" for "+context);
 
     String query =
 
     "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
     "INSERT DATA { GRAPH <"+context+"> { " +
-    "<"+originalContext+"> val:uploaded \""+timestamp+"\" . " +
-//    "<"+originalContext+"> val:fullHash \""+fullHash+"\" . " +
+    "<"+context+"> val:uploadedDate  \""+timestamp+"\" . " +
+    "<"+context+"> val:sourceId      \""+source.getId()+"\". " +
+    "<"+context+"> val:sourceContext <"+source.getGraphname()+"> . " +
+    "<"+context+"> val:sourceFile    \""+fileName+"\" . " +
+    "<"+context+"> val:sourceHash    \""+hash+"\" . " +
     "}}";
 
     update(query);
   }
+
+  public void storeSigmaGraphExists(String context, Set<String> inclusionSet) {
+
+    String timestamp = new Timestamp(System.currentTimeMillis()).toString();
+
+    log.info("Store sigma graph exists "+timestamp+" for "+context);
+
+    String query =
+
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "INSERT DATA { GRAPH <"+context+"> { ";
+    for(String inclusion : inclusionSet) {
+      query += "<" + context + "> val:contains  <" + inclusion + "> . ";
+    }
+    query +=
+    "}}";
+
+    log.info("Store sigma graph exists "+timestamp+" for "+context+":\n"+query);
+
+    update(query);
+  }
+
 
   @Override
   public void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts) {
@@ -206,7 +378,7 @@ public abstract class Rdf4jConnector implements Connector {
       if(!format.isPresent()) {
         throw new RuntimeException("Could not determine the type of file this is: " + fileName);
       }
-      con.add(inputStream, baseUri, format.get(), asResource(contexts.toArray(new String[0])));
+      con.add(inputStream, baseUri, format.get(), asResource(contexts));
 
 
     } catch (IOException e) {
@@ -221,7 +393,7 @@ public abstract class Rdf4jConnector implements Connector {
     }
 
     try (RepositoryConnection con = repository.getConnection()) {
-      return con.size(asResource(new String[]{context}));
+      return con.size(asResource(context));
     }
   }
 
@@ -245,22 +417,43 @@ public abstract class Rdf4jConnector implements Connector {
     return contexts;
   }
 
-  public static Resource[] asResource(String[] contexts) {
+  public static Resource asResource(String context) {
     ValueFactory factory = SimpleValueFactory.getInstance();
-    Resource[] contextsIRI = new Resource[contexts.length];
-    for(int i = 0; i < contexts.length; i++) {
-      contextsIRI[i] = factory.createIRI(contexts[i]);
+    return factory.createIRI(context);
+  }
+  public static Resource[] asResource(List<String> contexts) {
+    ValueFactory factory = SimpleValueFactory.getInstance();
+    Resource[] contextsIRI = new Resource[contexts.size()];
+    for(int i = 0; i < contexts.size(); i++) {
+      contextsIRI[i] = factory.createIRI(contexts.get(i));
     }
     return contextsIRI;
   }
 
 
-  public void writeContextsToFile(String[] contexts, OutputStream outputStream) {
+  @Override
+  public void writeContextsToFile(List<String> contexts, OutputStream outputStream) {
+    Function<Statement, Statement> filter = s->s;
+    writeContextsToFile(contexts, outputStream, filter);
+  }
+  @Override
+  public void writeContextsToFile(List<String> contexts, OutputStream outputStream, Function statementFilter) {
+
+    Function<Statement, Statement> filter = (Function<Statement, Statement>) statementFilter;
 
     RDFHandler writer = Rio.createWriter(RDFFormat.RDFXML, outputStream);
 
-    try (RepositoryConnection con = repository.getConnection()) {
-      con.export(writer, asResource(contexts));
+    try (RepositoryConnection con = repository.getConnection();
+         RepositoryResult<Statement> statements = con.getStatements(null, null, null, false, asResource(contexts))) {
+
+      writer.startRDF();
+      while (statements.hasNext()) {
+        Statement statement = filter.apply(statements.next());
+        if(statement != null) {
+          writer.handleStatement(statement);
+        }
+      }
+      writer.endRDF();
     }
   }
 }

@@ -77,10 +77,10 @@ public class ValidationExecutor {
       String context = graphSet.contextMap().get(graphVar);
       log.info("- " + graphVar + " > "+context);
 
-      String originalContext = graphSet.graphExists(graphVar);
-      if(originalContext == null) {
-        throw new RuntimeException("The graph "+graphVar+" ("+context+") is not available in the store");
-      }
+//      String originalContext = graphSet.graphExists(graphVar); todo
+//      if(originalContext == null) {
+//        throw new RuntimeException("The graph "+graphVar+" ("+context+") is not available in the store");
+//      }
 
       validationGraphs.put(graphVar.toString(), '<'+context+'>');
       List<String> list = getFinishedInferences(context);
@@ -250,7 +250,7 @@ public class ValidationExecutor {
     }
 
     // Push changes to any copy graphs
-    graphSet.pushUpdatesToCompose();
+//    graphSet.pushUpdatesToCompose();
 
     return bundleStats;
   }

@@ -9,6 +9,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import static com.sysunite.coinsweb.parser.Parser.*;
@@ -33,6 +34,8 @@ public class Source extends ConfigPart {
   private String uri;
   private String graphname;
   private ArrayList<GraphVarImpl> graphs;
+  private String id;
+  private String hash;
 
 
   public String getType() {
@@ -54,6 +57,19 @@ public class Source extends ConfigPart {
   public ArrayList<GraphVarImpl> getGraphs() {
     return graphs;
   }
+  public String getId() {
+    return this.id;
+  }
+  public String getHash() {
+    return this.hash;
+  }
+  public String getDefaultFileName() {
+    if(path != null) {
+      return new File(path).getName();
+    } else {
+      return "online.file";
+    }
+  }
 
   public void setType(String type) {
     validate(type, FILE, ONLINE, CONTAINER, STORE);
@@ -70,6 +86,12 @@ public class Source extends ConfigPart {
   }
   public void setGraphs(ArrayList<GraphVarImpl> graphs) {
     this.graphs = graphs;
+  }
+  public void setId(String id) {
+    this.id = id;
+  }
+  public void setHash(String hash) {
+    this.hash = hash;
   }
 
   @JsonIgnore

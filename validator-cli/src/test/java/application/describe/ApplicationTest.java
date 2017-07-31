@@ -1,5 +1,6 @@
-package com.sysunite.coinsweb.cli;
+package application.describe;
 
+import com.sysunite.coinsweb.cli.Application;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +15,15 @@ public class ApplicationTest {
   Logger log = LoggerFactory.getLogger(ApplicationTest.class);
 
   @Test
-  public void runConfigFull() {
-    File file = new File(getClass().getClassLoader().getResource("config/minimal-container.yml").getFile());
+  public void describeFile() {
+    File file = new File(getClass().getClassLoader().getResource("VC_CodelistV2.ccr").getFile());
     System.setProperty("user.dir", file.getParent());
-    String[] args = {"run", file.getPath(), "-l"};
+    String[] args = { "describe",
+      file.getPath(),
+      "--yml-to-console",
+      "-l"
+
+    };
     Application.main(args);
   }
 }

@@ -58,8 +58,9 @@ run:
 
   - type: ProfileValidation
     profile:
-      type: file
-      path: profiles/profile.lite-9.85-generated.xml
+      type: online
+#      path: profiles/profile.lite-9.85-generated.xml
+      uri: http://localhost:9876/profile.lite-9.85-generated.xml
     maxResults: 0
     reportInferenceResults: true
 

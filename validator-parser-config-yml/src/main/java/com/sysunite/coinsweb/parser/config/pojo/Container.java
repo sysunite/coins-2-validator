@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import static com.sysunite.coinsweb.parser.Parser.*;
 
@@ -32,12 +32,12 @@ public class Container extends ConfigPart {
 
   private String type;
   private Locator location;
-  private Mapping[] variables = new Mapping[0];
-  private Graph[] graphs = new Graph[0];
+  private List<Mapping> variables = new ArrayList<>();
+  private List<Graph> graphs = new ArrayList<>();
   @JsonInclude(Include.NON_EMPTY)
-  private Attachment[] attachments = new Attachment[0];
+  private List<Attachment> attachments = new ArrayList<>();
   @JsonInclude(Include.NON_EMPTY)
-  private ArrayList<ValidationStep> steps = new ArrayList();
+  private List<ValidationStep> steps = new ArrayList<>();
   private Boolean valid;
   @JsonIgnore
   private ContainerFile containerFile;
@@ -55,24 +55,32 @@ public class Container extends ConfigPart {
   public Locator getLocation() {
     return location;
   }
-  public Mapping[] getVariables() {
+  public List<Mapping> getVariables() {
     return variables;
   }
   @JsonIgnore
-  public HashMap<GraphVar, String> getVariablesMap() {
+  public HashMap<GraphVar, String> getVariablesContextMap() {
     HashMap<GraphVar, String> graphs = new HashMap();
     for(Mapping mapping : getVariables()) {
       graphs.put(mapping.getVariable(), mapping.getGraphname());
     }
     return graphs;
   }
-  public Graph[] getGraphs() {
+  @JsonIgnore
+  public HashMap<GraphVar, String> getVariablesFileNameMap() {
+    HashMap<GraphVar, String> graphs = new HashMap();
+    for(Mapping mapping : getVariables()) {
+      graphs.put(mapping.getVariable(), mapping.getFilename());
+    }
     return graphs;
   }
-  public Attachment[] getAttachments() {
+  public List<Graph> getGraphs() {
+    return graphs;
+  }
+  public List<Attachment> getAttachments() {
     return attachments;
   }
-  public ArrayList<ValidationStep> getSteps() {
+  public List<ValidationStep> getSteps() {
     return steps;
   }
   public Boolean getValid() {
@@ -100,26 +108,19 @@ public class Container extends ConfigPart {
     this.location = location;
     this.location.setParent(this.getParent());
   }
-  public void setVariables(Mapping[] variables) {
+  public void setVariables(List<Mapping> variables) {
     this.variables = variables;
     for(Mapping mapping : this.variables) {
       mapping.setParent(this.getParent());
     }
   }
-  public void updateVariables(Map<GraphVar, String> map) {
-    ArrayList<Mapping> list = new ArrayList<>();
-    for(GraphVar graphVar : map.keySet()) {
-      list.add(new Mapping((GraphVarImpl)graphVar, map.get(graphVar)));
-    }
-    setVariables(list.toArray(new Mapping[0]));
-  }
-  public void setGraphs(Graph[] graphs) {
+  public void setGraphs(List<Graph> graphs) {
     this.graphs = graphs;
     for(Graph graph : this.graphs) {
       graph.setParent(this.getParent());
     }
   }
-  public void setAttachments(Attachment[] attachments) {
+  public void setAttachments(List<Attachment> attachments) {
     this.attachments = attachments;
     for(Attachment attachment : this.attachments) {
       attachment.setParent(this.getParent());
@@ -158,14 +159,14 @@ public class Container extends ConfigPart {
     Container clone = new Container();
     clone.setType(this.type);
     clone.setLocation(this.location.clone());
-    Mapping[] variables = new Mapping[this.variables.length];
-    for(int i = 0; i < this.variables.length; i++) {
-      variables[i] = this.variables[i].clone();
+    List<Mapping> variables = new ArrayList<>();
+    for(Mapping variable : this.variables) {
+      variables.add(variable.clone());
     }
     clone.setVariables(variables);
-    Graph[] graphs = new Graph[this.graphs.length];
-    for(int i = 0; i < this.graphs.length; i++) {
-      graphs[i] = this.graphs[i].clone();
+    List<Graph> graphs = new ArrayList<>();
+    for(Graph graph : this.graphs) {
+      graphs.add(graph.clone());
     }
     clone.setGraphs(graphs);
     clone.setParent(this.getParent());

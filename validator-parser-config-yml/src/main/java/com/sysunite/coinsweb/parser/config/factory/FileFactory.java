@@ -2,7 +2,6 @@ package com.sysunite.coinsweb.parser.config.factory;
 
 
 import com.sysunite.coinsweb.filemanager.ContainerFile;
-import com.sysunite.coinsweb.filemanager.DeleteOnCloseFileInputStream;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.parser.config.pojo.Locator;
@@ -104,7 +103,7 @@ public class FileFactory {
     throw new RuntimeException("Locator of type "+locator.getType()+" could not be read as inputStream: "+triedReference);
   }
 
-  public static InputStream toInputStream(Source source, ContainerFile container) {
+  public static DigestInputStream toInputStream(Source source, ContainerFile container) {
     String triedReference = "error interpreting source";
     if (Source.FILE.equals(source.getType())) {
       try {
@@ -116,66 +115,29 @@ public class FileFactory {
           triedReference = source.getPath();
           file = new File(source.getPath());
         }
-        return new FileInputStream(file);
+        return new DigestInputStream(new BufferedInputStream(new FileInputStream(file)), MessageDigest.getInstance("md5"));
       } catch (Exception e) {
       }
     } else if (Source.ONLINE.equals(source.getType())) {
       try {
         URL url = new URL(source.getUri());
-        return url.openStream();
+        return new DigestInputStream(new BufferedInputStream(url.openStream()), MessageDigest.getInstance("md5"));
       } catch (Exception e) {
       }
     } else if (Source.CONTAINER.equals(source.getType())) {
 
       triedReference = "in container: "+Paths.get(source.getPath());
-      DeleteOnCloseFileInputStream stream = container.getFile(Paths.get(source.getPath()));
-      return stream;
+      return container.getFile(Paths.get(source.getPath()));
     }
     throw new RuntimeException("Source of type "+source.getType()+" could not be read as inputStream: "+triedReference);
   }
 
-  public static String getFileHash(Source source, ContainerFile container) {
-
-    if (Source.FILE.equals(source.getType())) {
-      try {
-        File file;
-        if (source.getParent() != null) {
-          file = source.getParent().resolve(source.getPath()).toFile();
-        } else {
-          file = new File(source.getPath());
-        }
-        return getFileHash(new FileInputStream(file));
-      } catch (IOException e) {
-      }
-    } else if (Source.ONLINE.equals(source.getType())) {
-      return getHash(source.getUri());
-    } else if (Source.CONTAINER.equals(source.getType())) {
-      return getFileHash(container.getFile(Paths.get(source.getPath())));
-    }
-
-    throw new RuntimeException("File from source of type "+source.getType()+" could not be loaded to calculate hash.");
-  }
 
 
-  public final static int NUM_HASH_CHARS = 8;
-  public static String getFileHash(FileInputStream inputStream) {
-    try {
-      MessageDigest md5 = MessageDigest.getInstance("md5");
-      DigestInputStream dis = new DigestInputStream(inputStream, md5);
-      byte buf[] = new byte[8 * 1024];
-      while (dis.read(buf, 0, buf.length) > 0);
-      dis.close();
-      return StringUtils.leftPad(new BigInteger(1, md5.digest()).toString(16), 32, '0').substring(0, NUM_HASH_CHARS);
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-      throw new RuntimeException("Failed calculating md5 hash", e);
-    } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
-      throw new RuntimeException("Failed calculating md5 hash", e);
-    } catch (IOException e) {
-      e.printStackTrace();
-      throw new RuntimeException("Failed calculating md5 hash", e);
-    }
+
+
+  public static String getFileHash(DigestInputStream dis) {
+    return StringUtils.leftPad(new BigInteger(1, dis.getMessageDigest().digest()).toString(16), 32, '0');
   }
   public static String getHash(String payload) {
     try {
@@ -184,7 +146,7 @@ public class FileFactory {
       byte buf[] = new byte[8 * 1024];
       while (dis.read(buf, 0, buf.length) > 0);
       dis.close();
-      return StringUtils.leftPad(new BigInteger(1, md5.digest()).toString(16), 32, '0').substring(0, NUM_HASH_CHARS);
+      return StringUtils.leftPad(new BigInteger(1, md5.digest()).toString(16), 32, '0');
     } catch (FileNotFoundException e) {
       e.printStackTrace();
       throw new RuntimeException("Failed calculating md5 hash", e);

@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.util.StdConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Set;
+
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 
 /**
@@ -19,9 +21,11 @@ public class Mapping extends ConfigPart {
 
   private static final Logger log = LoggerFactory.getLogger(Mapping.class);
 
+  private GraphVarImpl variable;
   private String graphname;
   private String filename;
-  private GraphVarImpl variable;
+  @JsonIgnore
+  private Set<String> inclusionSet;
 
   public Mapping() {
   }
@@ -30,38 +34,46 @@ public class Mapping extends ConfigPart {
     this.variable = graphVar;
     this.graphname = graphName;
   }
-  public Mapping(GraphVarImpl graphVar, String graphName, String fileName) {
+  public Mapping(GraphVarImpl graphVar, String graphName, String fileName, Set<String> inclusionSet) {
     this.variable = graphVar;
     this.graphname = graphName;
     this.filename = fileName;
+    this.inclusionSet = inclusionSet;
   }
 
+  public GraphVarImpl getVariable() {
+    return variable;
+  }
   public String getGraphname() {
     return graphname;
   }
   public String getFilename() {
     return filename;
   }
-  public GraphVarImpl getVariable() {
-    return variable;
+  public Set<String> getInclusionSet() {
+    return inclusionSet;
   }
 
+  public void setVariable(GraphVarImpl variable) {
+    this.variable = variable;
+  }
   public void setGraphname(String graphname) {
     this.graphname = graphname;
   }
   public void setFilename(String filename) {
     this.filename = filename;
   }
-  public void setVariable(GraphVarImpl variable) {
-    this.variable = variable;
+  public void setInclusionSet(Set<String> inclusionSet) {
+    this.inclusionSet = inclusionSet;
   }
 
   @JsonIgnore
   public Mapping clone() {
     Mapping clone = new Mapping();
+    clone.setVariable(this.variable);
     clone.setGraphname(this.graphname);
     clone.setFilename(this.filename);
-    clone.setVariable(this.variable);
+    clone.setInclusionSet(this.inclusionSet); // todo
     clone.setParent(this.getParent());
     return clone;
   }

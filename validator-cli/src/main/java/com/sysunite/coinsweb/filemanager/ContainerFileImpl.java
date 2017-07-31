@@ -7,13 +7,11 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.DigestInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -101,32 +99,34 @@ public class ContainerFileImpl extends File implements ContainerFile {
     return orphanFiles.keySet();
   }
 
-  public DeleteOnCloseFileInputStream getContentFile(String filename) {
+  public DigestInputStream getContentFile(String filename) {
     return getFile(contentFiles.get(filename));
   }
-  public DeleteOnCloseFileInputStream getInvalidContentFile(String filename) {
+  public DigestInputStream getInvalidContentFile(String filename) {
     return getFile(invalidContentFiles.get(filename));
   }
-  public DeleteOnCloseFileInputStream getRepositoryFile(String filename) {
+  public DigestInputStream getRepositoryFile(String filename) {
     return getFile(repositoryFiles.get(filename));
   }
-  public DeleteOnCloseFileInputStream getInvalidRepositoryFile(String filename) {
+  public DigestInputStream getInvalidRepositoryFile(String filename) {
     return getFile(invalidRepositoryFiles.get(filename));
   }
-  public DeleteOnCloseFileInputStream getWoaFile(String filename) {
+  public DigestInputStream getWoaFile(String filename) {
     return getFile(woaFiles.get(filename));
   }
-  public DeleteOnCloseFileInputStream getAttachmentFile(String filename) {
+  public DigestInputStream getAttachmentFile(String filename) {
     return getFile(attachmentFiles.get(filename));
   }
-  public DeleteOnCloseFileInputStream getOrphanFile(String filename) {
+  public DigestInputStream getOrphanFile(String filename) {
     return getFile(orphanFiles.get(filename));
   }
 
   HashMap<String, ArrayList<String>> contentFileNamespaces = new HashMap();
   public ArrayList<String> getContentFileNamespaces(String filename) {
     if(!contentFileNamespaces.containsKey(filename)) {
-      contentFileNamespaces.put(filename, DescribeFactoryImpl.namespacesForFile(getContentFile(filename), filename));
+      DigestInputStream inputStream = getContentFile(filename);
+      inputStream.on(false);
+      contentFileNamespaces.put(filename, DescribeFactoryImpl.namespacesForFile(inputStream, filename));
     }
     return contentFileNamespaces.get(filename);
   }
@@ -163,7 +163,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
 
 
 
-  public DeleteOnCloseFileInputStream getFile(Path zipPath) {
+  public DigestInputStream getFile(Path zipPath) {
 
     byte[] buffer = new byte[1024];
 
@@ -195,7 +195,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
           zis.closeEntry();
           zis.close();
 
-          return new DeleteOnCloseFileInputStream(file);
+          return DeleteOnCloseFileInputStream.getBufferedMd5(file);
         }
 
         ze = zis.getNextEntry();

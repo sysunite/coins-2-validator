@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.ArrayList;
 
 
 /**
@@ -89,7 +90,9 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
           File rdfFile = File.createTempFile(RandomStringUtils.random(8, true, true), ".rdf");
           OutputStream outputStream = new FileOutputStream(rdfFile);
           String context = graphSet.contextMap().get(graphVar);
-          graphSet.writeContextToFile(new String[]{context}, outputStream);
+          ArrayList<String> contexts = new ArrayList<>();
+          contexts.add(context);
+          graphSet.writeContextToFile(contexts, outputStream);
           outputStream.close();
           log.info("Compare "+context+" to "+main);
           for(Graph graph : ((ContainerFileImpl)container).getConfig().getGraphs()) {

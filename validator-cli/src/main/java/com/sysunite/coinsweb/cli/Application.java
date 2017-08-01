@@ -94,7 +94,7 @@ public class Application {
       try {
 
         if(options.hasContainerFile() > 0) {
-          String yml = Describe.run(options.absolutePaths(), containers);
+          String yml = Describe.run(containers, options.absolutePaths());
           if (options.ymlToConsole()) {
             System.out.print(yml);
           }
@@ -148,7 +148,7 @@ public class Application {
         } else {
           file = CliOptions.resolvePath("config-generated.yml").toFile();
           try {
-            FileUtils.writeStringToFile(file, Describe.run(options.absolutePaths(), containers), "UTF-8");
+            FileUtils.writeStringToFile(file, Describe.run(containers, options.absolutePaths()), "UTF-8");
           } catch (IOException e) {
             throw new RuntimeException(e);
           }

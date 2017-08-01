@@ -28,7 +28,7 @@ public class ConfigFactory {
 
 
 
-  public static String getDefaultConfigString(ConfigFile configFile) {
+  public static String toYml(Object configFile) {
 
     ObjectMapper mapper = new ObjectMapper(
     new YAMLFactory()
@@ -51,10 +51,10 @@ public class ConfigFactory {
     return getDefaultConfig(containersList, localizeTo);
   }
   public static ConfigFile getDefaultConfig(List<File> containersList, Path localizeTo) {
-    ConfigFile configFile = new ConfigFile();
+    ConfigFile configFile = new ConfigFile(localizeTo);
 
     configFile.setEnvironment(getDefaultEnvironment());
-    configFile.setRun(getDefaultRun(containersList, localizeTo));
+    configFile.setRun(getDefaultRun(containersList));
 
     return configFile;
   }
@@ -77,6 +77,14 @@ public class ConfigFactory {
       mappings.add(mapping);
     }
     return mappings;
+  }
+
+  public static Container[] getDefaultContainers(List<File> containersList) {
+    ArrayList<Container> containers = new ArrayList();
+    for(File containerFile : containersList) {
+      containers.add(getDefaultContainer(containerFile));
+    }
+    return containers.toArray(new Container[0]);
   }
 
   public static ValidationStep[] getDefaultSteps() {
@@ -115,15 +123,14 @@ public class ConfigFactory {
     return environment;
   }
 
-  public static Report[] getDefaultReports(Path localizeTo) {
+  public static Report[] getDefaultReports() {
 
     ArrayList<Report> reports = new ArrayList();
 
-    Path reportLocation = localizeTo.resolve("report.html");
 
     Locator reportLocator = new Locator();
     reportLocator.setType("file");
-    reportLocator.setPath(reportLocation.toString());
+    reportLocator.setPath("report.html");
 
     Report report = new Report();
     report.setType(Report.HTML);
@@ -134,7 +141,7 @@ public class ConfigFactory {
   }
 
 
-  public static Container getDefaultContainer(File containerFile, Path localizeTo) {
+  public static Container getDefaultContainer(File containerFile) {
 
     Locator locator = new Locator();
     locator.setType("file");
@@ -202,19 +209,16 @@ public class ConfigFactory {
     return container;
   }
 
-  public static Run getDefaultRun(List<File> containersList, Path localizeTo) {
+  public static Run getDefaultRun(List<File> containersList) {
 
 
-    ArrayList<Container> containers = new ArrayList();
-    for(File containerFile : containersList) {
-      containers.add(getDefaultContainer(containerFile, localizeTo));
-    }
+
 
     Run run = new Run();
 
-    run.setContainers(containers.toArray(new Container[0]));
+    run.setContainers(getDefaultContainers(containersList));
     run.setSteps(getDefaultSteps());
-    run.setReports(getDefaultReports(localizeTo));
+    run.setReports(getDefaultReports());
 
     return run;
   }

@@ -45,7 +45,11 @@ public class Source extends ConfigPart {
     if(CONTAINER.equals(getType())) {
       return FilenameUtils.separatorsToUnix(path);
     } else {
-      return FilenameUtils.separatorsToSystem(path);
+      String cleanPath = FilenameUtils.separatorsToSystem(path);
+      if(parent != null) {
+        return parent.relativize(cleanPath).toString();
+      }
+      return cleanPath;
     }
   }
   public String getUri() {

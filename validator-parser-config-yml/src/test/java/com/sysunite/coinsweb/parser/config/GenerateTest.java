@@ -35,7 +35,7 @@ public class GenerateTest {
     containers.add(new File(getClass().getClassLoader().getResource("some.ccr").getFile()));
 
     ConfigFile configFile = ConfigFactory.getDefaultConfig(containers);
-    String yml = ConfigFactory.getDefaultConfigString(configFile);
+    String yml = ConfigFactory.toYml(configFile);
     System.out.println(yml);
 
   }

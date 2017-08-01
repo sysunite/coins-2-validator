@@ -35,6 +35,9 @@ public class Locator extends ConfigPart {
     return type;
   }
   public String getPath() {
+    if(parent != null) {
+      return parent.relativize(path).toString();
+    }
     return path;
   }
   public String getUri() {
@@ -45,11 +48,9 @@ public class Locator extends ConfigPart {
     validate(type, FILE, ONLINE);
     this.type = type;
   }
-
   public void setPath(String path) {
     this.path = FilenameUtils.separatorsToSystem(path);
   }
-
   public void setUri(String uri) {
     this.uri = uri;
   }

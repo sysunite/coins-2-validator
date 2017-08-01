@@ -32,6 +32,10 @@ public class ConfigFile {
   @JsonIgnore
   private Path localizeTo;
 
+  public ConfigFile(Path localizeTo) {
+    this.localizeTo = localizeTo;
+  }
+
   public static ConfigFile parse(File file) {
     return parse(file, Paths.get(file.getParent()));
   }
@@ -87,6 +91,13 @@ public class ConfigFile {
       return Paths.get(path);
     } else {
       return this.localizeTo.resolve(Paths.get(path));
+    }
+  }
+  public Path relativize(String path) {
+    if(this.localizeTo == null) {
+      return Paths.get(path);
+    } else {
+      return this.localizeTo.relativize(Paths.get(path));
     }
   }
 }

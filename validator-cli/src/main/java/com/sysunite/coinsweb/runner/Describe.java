@@ -17,7 +17,7 @@ public class Describe {
 
   private static final Logger log = LoggerFactory.getLogger(Describe.class);
 
-  public static String run(boolean useAbsolutePaths, List<File> containers) {
+  public static String run(List<File> containers, boolean useAbsolutePaths) {
 
     if(containers.isEmpty()) {
       throw new RuntimeException("No container file found");
@@ -29,7 +29,7 @@ public class Describe {
     }
 
     ConfigFile configFile = ConfigFactory.getDefaultConfig(containers, localizeTo);
-    String yml = ConfigFactory.getDefaultConfigString(configFile);
+    String yml = ConfigFactory.toYml(configFile.getRun().getContainers());
     return yml;
   }
 }

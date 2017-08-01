@@ -19,7 +19,8 @@ public class CliOptions {
 
   private static final Logger log = LoggerFactory.getLogger(CliOptions.class);
 
-  public static final String DESCRIBE_MODE = "describe";
+  public static final String DESCRIBE_FILE_MODE = "describe";
+  public static final String DESCRIBE_STORE_MODE = "describe-store";
   public static final String RUN_MODE = "run";
 
   public static boolean QUIET = false;
@@ -121,13 +122,16 @@ public class CliOptions {
     if(cmd.getArgs().length < 1) {
       return false;
     }
-    if(DESCRIBE_MODE.equals(cmd.getArgs()[0]) || RUN_MODE.equals(cmd.getArgs()[0])) {
+    if(DESCRIBE_FILE_MODE.equals(cmd.getArgs()[0]) || DESCRIBE_STORE_MODE.equals(cmd.getArgs()[0]) || RUN_MODE.equals(cmd.getArgs()[0])) {
       return true;
     }
     return false;
   }
-  public boolean describeMode() {
-    return hasMode() && DESCRIBE_MODE.equals(cmd.getArgs()[0].trim());
+  public boolean describeFileMode() {
+    return hasMode() && DESCRIBE_FILE_MODE.equals(cmd.getArgs()[0].trim());
+  }
+  public boolean describeStoreMode() {
+    return hasMode() && DESCRIBE_STORE_MODE.equals(cmd.getArgs()[0].trim());
   }
   public boolean runMode() {
     return hasMode() && RUN_MODE.equals(cmd.getArgs()[0].trim());

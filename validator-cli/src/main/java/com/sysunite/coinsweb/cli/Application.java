@@ -89,7 +89,7 @@ public class Application {
     }
     log.info("Gathered "+containers.size()+" container files");
 
-    if(options.describeMode()) {
+    if(options.describeFileMode()) {
       log.info("\uD83C\uDFC4\uD83C\uDFFB Running in describe mode");
       try {
 

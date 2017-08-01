@@ -209,8 +209,8 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     connector.writeContextsToFile(contexts, outputStream, filter);
   }
 
-//  @Override todo
-//  public void pushUpdatesToCompose() {
-//    ContainerGraphSetFactory.executeCompose(containerConfig.getGraphs(), connector, containerConfig.getVariablesContextMap(), false);
-//  }
+  @Override
+  public void pushUpdatesToCompose() {
+    ContainerGraphSetFactory.executeCompose(composePlan, connector, false);
+  }
 }

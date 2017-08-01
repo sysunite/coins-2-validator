@@ -108,7 +108,7 @@ public class ContainerGraphSetFactory {
     return composePlan;
   }
 
-  private static void executeCompose(ComposePlan composePlan, Connector connector, boolean allowCopy) {
+  public static void executeCompose(ComposePlan composePlan, Connector connector, boolean allowCopy) {
     log.info(composePlan.toString());
     for (ComposePlan.Move move : composePlan.get()) {
       log.info("execute compose");

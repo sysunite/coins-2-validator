@@ -250,7 +250,7 @@ public class ValidationExecutor {
     }
 
     // Push changes to any copy graphs
-//    graphSet.pushUpdatesToCompose();
+    graphSet.pushUpdatesToCompose();
 
     return bundleStats;
   }

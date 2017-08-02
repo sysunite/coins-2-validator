@@ -42,6 +42,9 @@ public class Source extends ConfigPart {
     return type;
   }
   public String getPath() {
+    if(path == null) {
+      return null;
+    }
     if(CONTAINER.equals(getType())) {
       return FilenameUtils.separatorsToUnix(path);
     } else {

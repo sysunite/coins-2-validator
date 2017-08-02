@@ -32,6 +32,8 @@ public class ConfigFile {
   @JsonIgnore
   private Path localizeTo;
 
+  public ConfigFile() {
+  }
   public ConfigFile(Path localizeTo) {
     this.localizeTo = localizeTo;
   }
@@ -97,7 +99,11 @@ public class ConfigFile {
     if(this.localizeTo == null) {
       return Paths.get(path);
     } else {
-      return this.localizeTo.relativize(Paths.get(path));
+      try {
+        return this.localizeTo.relativize(Paths.get(path));
+      } catch(IllegalArgumentException e) {
+        return Paths.get(path);
+      }
     }
   }
 }

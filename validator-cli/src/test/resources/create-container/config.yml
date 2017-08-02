@@ -1,0 +1,58 @@
+environment:
+  store:
+    type: graphdb
+    config:
+      endpoint: http://localhost:7200
+  loadingStrategy: permanent
+
+run:
+  containers:
+
+  - type: virtual
+
+
+    variables:
+    - graphname: http://full/union
+      variable: FULL_UNION_GRAPH
+    - graphname: http://instances/union
+      variable: INSTANCE_UNION_GRAPH
+    - graphname: http://library/union
+      variable: SCHEMA_UNION_GRAPH
+
+    graphs:
+    - source:
+        type: file
+        path: content.rdf
+        graphname: '*'
+      main: true
+      as:
+      - INSTANCE_UNION_GRAPH
+    - source:
+        type: file
+        path: otl-2.1.ttl
+        graphname: '*'
+      as:
+      - SCHEMA_UNION_GRAPH
+    attachments:
+    - location:
+        type: file
+        path: bijsluiter.pdf
+      as: aspirine.pdf
+
+
+  steps:
+  - type: ContainerFileWriter
+    location:
+      type: file
+      path: container-superdesuper.ccr
+    variables:
+    - graphname: http://full/union
+      variable: FULL_UNION_GRAPH
+    - variable: INSTANCE_UNION_GRAPH
+      graphname: http://instances/union
+      filename: content.rdf
+    - graphname: http://library/union
+      variable: SCHEMA_UNION_GRAPH
+
+
+  reports: []

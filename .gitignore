@@ -8,3 +8,8 @@ graphdb-free-8.1.1-dist.zip
 validator*.log
 graphdb-free-8.2.0-dist.zip
 services/virtuoso/lib
+validator-cli/src/test/resources/starterkit
+validator-cli/src/test/resources/otl-1.7.1b-ref-opt
+validator-cli/src/test/resources/otl-1.7.1b-ref
+validator-cli/src/test/resources/otl-1.7.1b
+validator-cli/src/test/resources/file-structure

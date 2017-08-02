@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -182,6 +184,29 @@ public class CliOptions {
     return containerPaths.toArray(new Path[0]);
   }
 
+  public int hasUri() {
+    return getUris().length;
+  }
+  public String getUri(int i) {
+    String[] uris = getUris();
+    if(i >= uris.length) {
+      return null;
+    }
+    return uris[i];
+  }
+  public String[] getUris() {
+    ArrayList<String> uris = new ArrayList();
+    for(int i = 1; i < cmd.getArgs().length; i++) {
+      try {
+        String argument = cmd.getArgs()[i];
+        if(isUri(argument)) {
+          uris.add(argument);
+        }
+      } catch (Exception e) {}
+    }
+    return uris.toArray(new String[0]);
+  }
+
 
 
   public static Path resolvePath(String path) {
@@ -221,6 +246,18 @@ public class CliOptions {
   }
 
 
+
+  public static boolean isUri(String uri) {
+    if(!uri.toString().startsWith("http")) {
+      return false;
+    }
+    try {
+      URI parsed = new URI(uri);
+    } catch (URISyntaxException e) {
+      return false;
+    }
+    return true;
+  }
 
   public static boolean isContainerFile(Path path) {
     return path.toString().toLowerCase().endsWith(".ccr") || path.toString().toLowerCase().endsWith(".zip");

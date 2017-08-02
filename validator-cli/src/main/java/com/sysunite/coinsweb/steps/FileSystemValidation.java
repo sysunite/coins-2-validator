@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 
@@ -193,8 +194,8 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
       }
 
       if (graphSet.hasContext(getLookIn())) {
-        List<String>  imports = graphSet.getImports(getLookIn());
-        for (String namespace : imports) {
+        Map<String, String> imports = graphSet.getImports(getLookIn());
+        for (String namespace : imports.keySet()) {
           log.info("Found import in content rdf-file: "+namespace);
 
           boolean found = Utils.containsNamespace(namespace, availableGraphs);

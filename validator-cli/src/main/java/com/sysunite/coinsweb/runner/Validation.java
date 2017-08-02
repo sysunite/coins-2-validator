@@ -2,8 +2,6 @@ package com.sysunite.coinsweb.runner;
 
 import com.sysunite.coinsweb.cli.CliOptions;
 import com.sysunite.coinsweb.connector.Connector;
-import com.sysunite.coinsweb.connector.ConnectorFactory;
-import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
@@ -30,17 +28,9 @@ public class Validation {
   private static final Logger log = LoggerFactory.getLogger(Validation.class);
 
 
-  public static boolean run(ConfigFile configFile) {
+  public static boolean run(ConfigFile configFile, Connector connector) {
 
     boolean successful = true;
-
-    log.info("Construct the connector");
-    ConnectorFactory factory = new ConnectorFactoryImpl();
-    Connector connector = factory.build(configFile.getEnvironment());
-
-    if(!connector.testConnection()) {
-      throw new RuntimeException("Failed to connect to the store");
-    }
 
 
     log.info("Entered first phase of run, \uD83D\uDD0E iterate over containers");

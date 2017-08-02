@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.connector.ConnectorFactory;
 import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
@@ -94,7 +96,7 @@ public class Application {
       try {
 
         if(options.hasContainerFile() > 0) {
-          String yml = Describe.run(containers, options.absolutePaths());
+          String yml = Describe.run(containers, false, options.absolutePaths());
           if (options.ymlToConsole()) {
             System.out.print(yml);
           }
@@ -138,6 +140,29 @@ public class Application {
       }
     }
 
+    if(options.describeStoreMode()) {
+      log.info("\uD83C\uDFC4 Running in describe-store mode");
+      if(options.hasConfigFile()) {
+
+        if(options.hasUri() > 0) {
+
+          File file = options.getConfigFile().toFile();
+          ConfigFile configFile = getConfigFile(file);
+          Connector connector = getConnector(configFile);
+          String response = Describe.run(connector, options.getUri(0)); // todo: more than one
+          System.out.print(response);
+
+        } else {
+
+          File file = options.getConfigFile().toFile();
+          ConfigFile configFile = getConfigFile(file);
+          Connector connector = getConnector(configFile);
+          String response = Describe.run(connector);
+          System.out.print(response);
+        }
+      }
+    }
+
     if(options.runMode()) {
       log.info("\uD83C\uDFC4 Running in run mode");
       try {
@@ -148,36 +173,22 @@ public class Application {
         } else {
           file = CliOptions.resolvePath("config-generated.yml").toFile();
           try {
-            FileUtils.writeStringToFile(file, Describe.run(containers, options.absolutePaths()), "UTF-8");
+            FileUtils.writeStringToFile(file, Describe.run(containers, true, options.absolutePaths()), "UTF-8");
           } catch (IOException e) {
             throw new RuntimeException(e);
           }
         }
 
         // Get config
-        ConfigFile configFile = null;
-
-        try {
-          if (file != null) {
-            log.info("Try to read config.yml from file");
-            configFile = ConfigFile.parse(file);
-            log.info("Done reading config.yml from file");
-          } else {
-            log.info("Try to read config.yml from pipe");
-            configFile = ConfigFile.parse(System.in);
-            log.info("Done reading config.yml from pipe");
-          }
-        } catch(RuntimeException e) {
-          log.error("Unable to read config.yml: "+e.getLocalizedMessage());
-          CliOptions.printOutput("Stopped with error");
-          System.exit(1);
-        }
+        ConfigFile configFile = getConfigFile(file);
 
         if(options.hasConfigFile() && options.hasContainerFile() > 0) {
           ConfigFactory.overrideContainers(configFile, options.hasContainerFile(), options.getContainerFiles());
         }
 
-        boolean successful = Validation.run(configFile);
+        Connector connector = getConnector(configFile);
+
+        boolean successful = Validation.run(configFile, connector);
 
         if(successful) {
 
@@ -197,6 +208,39 @@ public class Application {
         System.exit(1);
       }
     }
+  }
+
+  private static ConfigFile getConfigFile(File file) {
+
+    ConfigFile configFile = null;
+
+    try {
+      if (file != null) {
+        log.info("Try to read config.yml from file");
+        configFile = ConfigFile.parse(file);
+        log.info("Done reading config.yml from file");
+      } else {
+        log.info("Try to read config.yml from pipe");
+        configFile = ConfigFile.parse(System.in);
+        log.info("Done reading config.yml from pipe");
+      }
+    } catch(RuntimeException e) {
+      log.error("Unable to read config.yml: "+e.getLocalizedMessage());
+      CliOptions.printOutput("Stopped with error");
+      System.exit(1);
+    }
+    return configFile;
+  }
+
+  private static Connector getConnector(ConfigFile configFile) {
+    log.info("Construct the connector");
+    ConnectorFactory factory = new ConnectorFactoryImpl();
+    Connector connector = factory.build(configFile.getEnvironment());
+
+    if(!connector.testConnection()) {
+      throw new RuntimeException("Failed to connect to the store");
+    }
+    return connector;
   }
 
 

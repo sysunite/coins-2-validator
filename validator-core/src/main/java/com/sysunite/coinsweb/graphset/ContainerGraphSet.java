@@ -2,10 +2,8 @@ package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 
-import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * A ContainerGraphSet is a collection of graphs (contexts) that is contained
@@ -19,7 +17,7 @@ public interface ContainerGraphSet {
   List<Object> select(String query);
   void update(String query);
 
-  List<String> getImports(GraphVar graphVar);
+  Map<String, String> getImports(GraphVar graphVar);
   boolean hasContext(GraphVar graphVar);
 
   void lazyLoad(ContainerFile container);
@@ -37,8 +35,8 @@ public interface ContainerGraphSet {
   void setMain(Object graphVar);
 //  String graphExists(GraphVar graphVar);
 
-  void writeContextToFile(List<String> contexts, OutputStream outputStream);
-  void writeContextToFile(List<String> contexts, OutputStream outputStream, Function filter);
+//  void writeContextToFile(List<String> contexts, OutputStream outputStream);
+//  void writeContextToFile(List<String> contexts, OutputStream outputStream, Function filter);
 
-//  void pushUpdatesToCompose(); todo
+  void pushUpdatesToCompose();
 }

@@ -1,5 +1,6 @@
 package application.describe;
 
+import application.SimpleHttpServer;
 import com.sysunite.coinsweb.cli.Application;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -19,13 +20,18 @@ public class ApplicationTest {
 
   File config = new File(getClass().getClassLoader().getResource("general-9.85.yml").getFile());
 
+  static {
+    File profile = new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/profiles/profile.lite-9.85-generated.xml");
+    SimpleHttpServer.serveFile(profile, "application/xml", 9876);
+  }
+
 
   @Test
   public void describeFile() {
     System.setProperty("user.dir", container1.getParent());
     String[] args = { "describe",
-    container1.getPath(),
-    container2.getPath(),
+      container1.getPath(),
+      container2.getPath(),
       "--yml-to-console",
       "-l",
       "-a"
@@ -38,7 +44,20 @@ public class ApplicationTest {
   public void describeStore() {
     System.setProperty("user.dir", config.getParent());
     String[] args = { "describe-store",
-    config.getPath(),
+      config.getPath(),
+      "--yml-to-console",
+      "-l"
+
+    };
+    Application.main(args);
+  }
+
+  @Test
+  public void describeStoreWithGraph() {
+    System.setProperty("user.dir", config.getParent());
+    String[] args = { "describe-store",
+      config.getPath(),
+      "http://www.coinsweb.nl/uploadedFile-CwPzE6iB",
       "--yml-to-console",
       "-l"
 

@@ -2,25 +2,26 @@ package com.sysunite.coinsweb.connector;
 
 import com.sysunite.coinsweb.graphset.QueryFactory;
 import com.sysunite.coinsweb.parser.config.pojo.Source;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RDFHandler;
 import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.rdfxml.util.RDFXMLPrettyWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.function.Function;
@@ -60,7 +61,7 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   @Override
-  public List<Object> query(String queryString) {
+  public List<Object> select(String queryString) {
     if(!initialized) {
       init();
     }
@@ -189,7 +190,7 @@ public abstract class Rdf4jConnector implements Connector {
     "}}";
 
 
-    List<Object> result = query(query);
+    List<Object> result = select(query);
     for(Object rowObject :  result) {
       BindingSet row = (BindingSet) rowObject;
 
@@ -226,7 +227,7 @@ public abstract class Rdf4jConnector implements Connector {
     "}} ORDER BY ?hash";
 
 
-    List<Object> result = query(query);
+    List<Object> result = select(query);
 
     String previousHash = "";
     HashSet<String> previousSet = new HashSet<>();
@@ -263,18 +264,22 @@ public abstract class Rdf4jConnector implements Connector {
     "?context val:contains ?inclusion . " +
     "}} ORDER BY ?context";
 
-    List<Object> result = query(query);
+    List<Object> result = select(query);
 
     String previousContext = "";
     HashSet<String> previousSet = new HashSet<>();
-    for(Object rowObject :  result) {
+    for(Object rowObject : result) {
       BindingSet row = (BindingSet) rowObject;
 
       String context         = row.getBinding("context").getValue().stringValue();
       String inclusion       = row.getBinding("inclusion").getValue().stringValue();
 
       if(!previousContext.equals(context)) {
-        list.put(previousContext, previousSet);
+
+        // Skip start condition
+        if(!previousContext.isEmpty()) {
+          list.put(previousContext, previousSet);
+        }
         previousSet = new HashSet<>();
         previousContext =  context;
       }
@@ -299,7 +304,7 @@ public abstract class Rdf4jConnector implements Connector {
     "?context val:inference ?inference . " +
     "}} ORDER BY ?context";
 
-    List<Object> result = query(query);
+    List<Object> result = select(query);
 
     String previousContext = "";
     HashSet<String> previousSet = new HashSet<>();
@@ -432,16 +437,22 @@ public abstract class Rdf4jConnector implements Connector {
 
 
   @Override
-  public void writeContextsToFile(List<String> contexts, OutputStream outputStream) {
+  public void writeContextsToFile(List<String> contexts, OutputStream outputStream, Map<String, String> prefixMap, String mainContext) {
     Function<Statement, Statement> filter = s->s;
-    writeContextsToFile(contexts, outputStream, filter);
+    writeContextsToFile(contexts, outputStream, prefixMap, mainContext, filter);
   }
   @Override
-  public void writeContextsToFile(List<String> contexts, OutputStream outputStream, Function statementFilter) {
+  public void writeContextsToFile(List<String> contexts, OutputStream outputStream, Map<String, String> prefixMap, String mainContext, Function statementFilter) {
 
     Function<Statement, Statement> filter = (Function<Statement, Statement>) statementFilter;
 
-    RDFHandler writer = Rio.createWriter(RDFFormat.RDFXML, outputStream);
+    RDFXMLPrettyWriter writer = new RDFXMLPrettyWriter(outputStream);
+
+    writer.handleNamespace("", mainContext);
+    for(String prefix : prefixMap.keySet()) {
+      writer.handleNamespace(prefix, prefixMap.get(prefix));
+    }
+
 
     try (RepositoryConnection con = repository.getConnection();
          RepositoryResult<Statement> statements = con.getStatements(null, null, null, false, asResource(contexts))) {
@@ -455,5 +466,94 @@ public abstract class Rdf4jConnector implements Connector {
       }
       writer.endRDF();
     }
+  }
+
+  // Writes the file to the outputStream and returns a Map of imports
+  @Override
+  public Map<String, String> exportPhiGraph(String context, OutputStream outputStream) {
+
+    String sourceContext;
+    Resource contextResource = asResource(context);
+    try (RepositoryConnection con = repository.getConnection();
+         RepositoryResult<Statement> statements = con.getStatements(contextResource, (IRI)asResource(QueryFactory.VALIDATOR_NS+"sourceContext"), null, contextResource)) {
+      if(!statements.hasNext()) {
+        throw new RuntimeException("Source context could not be read from the connector");
+      }
+      sourceContext = statements.next().getObject().stringValue();
+    }
+
+    Map<String, String> importsMap = getImports(context);
+    List<String> uploadedFileContexts = new ArrayList<>();
+    uploadedFileContexts.addAll(importsMap.keySet());
+    final Map<String, String> contextMap = new HashMap<>();
+    contextMap.put(context, sourceContext);
+
+    Map<String, String> prefixMap = new HashMap<>();
+    for(int i = 1; i <= uploadedFileContexts.size(); i++) {
+      String uploadedFileContext = uploadedFileContexts.get(i-1);
+      String originalContext = importsMap.get(uploadedFileContext);
+      prefixMap.put("lib"+i, originalContext);
+      contextMap.put(uploadedFileContext, originalContext);
+    }
+    prefixMap.put("cbim", "http://www.coinsweb.nl/cbim-2.0.rdf#");
+    prefixMap.put(RDFS.PREFIX, RDFS.NAMESPACE);
+    prefixMap.put(XMLSchema.PREFIX, XMLSchema.NAMESPACE);
+    prefixMap.put(OWL.PREFIX, OWL.NAMESPACE);
+
+    // Now add the main context itself
+    Function<Statement, Statement> filter = statement -> {
+      if(statement.getPredicate().getNamespace().equals(QueryFactory.VALIDATOR_NS)) {
+        return null;
+      }
+
+      for(String uploadedFileContext : contextMap.keySet()) {
+        String originalContext = contextMap.get(uploadedFileContext);
+        if (statement.getSubject().equals(asResource(uploadedFileContext))) {
+          ValueFactory factory = SimpleValueFactory.getInstance();
+          statement = factory.createStatement(asResource(originalContext), statement.getPredicate(), statement.getObject());
+        }
+        if (statement.getObject().equals(asResource(uploadedFileContext))) {
+          ValueFactory factory = SimpleValueFactory.getInstance();
+          statement = factory.createStatement(statement.getSubject(), statement.getPredicate(), asResource(originalContext));
+        }
+      }
+      return statement;
+    };
+
+    ArrayList<String> contexts = new ArrayList<>();
+    contexts.add(context);
+
+    writeContextsToFile(contexts, outputStream, prefixMap, sourceContext, filter);
+    return importsMap;
+  }
+
+  public Map<String, String> getImports(String context) {
+
+    log.info("Look for imports in context "+context);
+
+    String query =
+
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
+    "SELECT ?library ?original " +
+    "WHERE { " +
+    "  graph <"+context+"> { " +
+    "    ?s owl:imports ?library . " +
+    "  } " +
+    "  graph ?library { " +
+    "    ?library val:sourceContext ?original . " +
+    "  } " +
+    "}";
+
+    Map<String, String> namespaces = new HashMap<>();
+    List<Object> result = select(query);
+    for (Object bindingSet : result) {
+
+      String namespace = ((BindingSet)bindingSet).getBinding("library").getValue().stringValue();
+      String original = ((BindingSet)bindingSet).getBinding("original").getValue().stringValue();
+      log.info("Found import: " + namespace + "("+original+")");
+      namespaces.put(namespace, original);
+    }
+    return namespaces;
   }
 }

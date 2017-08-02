@@ -43,7 +43,7 @@ public class ConfigFactory {
     } catch (JsonProcessingException e) {
       log.error(e.getLocalizedMessage(), e);
     }
-    throw new RuntimeException("Was not able to generate config.yml");
+    throw new RuntimeException("Was not able to map object to yml");
   }
 
   public static ConfigFile getDefaultConfig(ArrayList<File> containersList) {

@@ -92,7 +92,7 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
           String context = graphSet.contextMap().get(graphVar);
           ArrayList<String> contexts = new ArrayList<>();
           contexts.add(context);
-          graphSet.writeContextToFile(contexts, outputStream);
+//          graphSet.writeContextToFile(contexts, outputStream);
           outputStream.close();
           log.info("Compare "+context+" to "+main);
           for(Graph graph : ((ContainerFileImpl)container).getConfig().getGraphs()) {

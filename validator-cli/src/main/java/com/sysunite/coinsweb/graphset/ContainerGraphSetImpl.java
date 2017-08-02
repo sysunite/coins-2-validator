@@ -7,16 +7,13 @@ import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.parser.config.pojo.GraphVarImpl;
-import org.eclipse.rdf4j.query.BindingSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -87,7 +84,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
       load();
     }
 
-    List<Object> result = connector.query(query);
+    List<Object> result = connector.select(query);
     return result;
   }
 
@@ -114,33 +111,12 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     return map;
   }
 
-  public List<String> getImports(GraphVar graphVar) {
+  public Map<String, String> getImports(GraphVar graphVar) {
     if(requiresLoad()) {
       load();
     }
-
     String context = contextMap().get(graphVar);
-
-    log.info("Look for imports in context "+context);
-
-    String query =
-
-      "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
-      "SELECT ?library " +
-      "FROM NAMED <"+context+"> " +
-      "WHERE { graph ?g { " +
-      "  ?s owl:imports ?library . " +
-      "}}";
-
-    List<String> namespaces = new ArrayList<>();
-    List<Object> result = select(query);
-    for (Object bindingSet : result) {
-
-      String namespace = ((BindingSet)bindingSet).getBinding("library").getValue().stringValue();
-      log.info("Found import: "+namespace);
-      namespaces.add(namespace);
-    }
-    return namespaces;
+    return connector.getImports(context);
   }
 
 
@@ -202,12 +178,12 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     return (lazyLoad != null);
   }
 
-  public void writeContextToFile(List<String> contexts, OutputStream outputStream) {
-    connector.writeContextsToFile(contexts, outputStream);
-  }
-  public void writeContextToFile(List<String> contexts, OutputStream outputStream, Function filter) {
-    connector.writeContextsToFile(contexts, outputStream, filter);
-  }
+//  public void writeContextToFile(List<String> contexts, OutputStream outputStream) {
+//    connector.writeContextsToFile(contexts, outputStream);
+//  }
+//  public void writeContextToFile(List<String> contexts, OutputStream outputStream, Function filter) {
+//    connector.writeContextsToFile(contexts, outputStream, filter);
+//  }
 
   @Override
   public void pushUpdatesToCompose() {

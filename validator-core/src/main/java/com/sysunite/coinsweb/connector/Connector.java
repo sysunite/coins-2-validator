@@ -22,7 +22,7 @@ public interface Connector {
   void cleanup(List<String> contexts);
   void close();
 
-  List<Object> query(String queryString);
+  List<Object> select(String queryString);
   void update(String queryString);
   void sparqlCopy(String fromContext, String toContext);
   void sparqlAdd(String fromContext, String toContext);
@@ -35,6 +35,8 @@ public interface Connector {
   void storePhiGraphExists(Object source, String context, String fileName, String hash);
   void storeSigmaGraphExists(String context, Set<String> inclusionSet);
 
+  Map<String, String> exportPhiGraph(String contexts, OutputStream outputStream);
+
   long quadCount(String context);
   List<String> getContexts();
 
@@ -45,6 +47,8 @@ public interface Connector {
   Map<String, Set<String>> listSigmaGraphs();
   Map<String, Set<String>> listInferencesPerSigmaGraph();
 
-  void writeContextsToFile(List<String> contexts, OutputStream outputStream);
-  void writeContextsToFile(List<String> contexts, OutputStream outputStream, Function filter);
+  void writeContextsToFile(List<String> contexts, OutputStream outputStream, Map<String, String> prefixMap, String mainContext);
+  void writeContextsToFile(List<String> contexts, OutputStream outputStream, Map<String, String> prefixMap, String mainContext, Function filter);
+
+  Map<String, String> getImports(String context);
 }

@@ -78,17 +78,22 @@ public class ContainerGraphSetFactory {
 
     // Update import statements
     for(Graph graph : loadList) {
-      String resource = graph.getSource().getGraphname();
-      String sourceId = graph.getSource().getId();
-      if(sourceId == null) {
-        throw new RuntimeException("raar");
-      }
-      if(resource != null && sourceId != null) {
-        String replace = mapPhiContext(sourceId);
-        for(Graph graph2 : loadList) {
-          String context = mapPhiContext(graph2.getSource().getId());
-          log.info("Replace resource " + resource + " with " + replace + " in " +context);
-          connector.replaceResource(context, resource, replace);
+      if(Source.ONLINE.equals(graph.getSource().getType()) ||
+      Source.CONTAINER.equals(graph.getSource().getType()) ||
+      Source.FILE.equals(graph.getSource().getType())) {
+
+        String resource = graph.getSource().getGraphname();
+        String sourceId = graph.getSource().getId();
+        if (sourceId == null) {
+          throw new RuntimeException("The graph source should have an id by now, apparently it was not uploaded properly");
+        }
+        if (resource != null && sourceId != null) {
+          String replace = mapPhiContext(sourceId);
+          for (Graph graph2 : loadList) {
+            String context = mapPhiContext(graph2.getSource().getId());
+            log.info("Replace resource " + resource + " with " + replace + " in " + context);
+            connector.replaceResource(context, resource, replace);
+          }
         }
       }
     }
@@ -160,7 +165,7 @@ public class ContainerGraphSetFactory {
     return mapPhiContext(sourceId);
   }
   public static String mapPhiContext(String sourceId) {
-    return "http://validator/uploadedFile#" + sourceId;
+    return QueryFactory.VALIDATOR_HOST + "uploadedFile-" + sourceId;
   }
   public static String mapSigmaContext(String confContext) {
     String rand = RandomStringUtils.random(8, true, true);

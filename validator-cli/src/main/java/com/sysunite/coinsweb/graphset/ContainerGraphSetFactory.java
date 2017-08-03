@@ -401,6 +401,7 @@ public class ContainerGraphSetFactory {
     }
     while(!todoGraphs.isEmpty()) {
 
+      boolean foundOne = false;
       for(Graph graph : todoGraphs) {
         if(mappedGraphs.keySet().containsAll(graph.getSource().getGraphs())) {
 
@@ -452,11 +453,18 @@ public class ContainerGraphSetFactory {
             }
           }
 
+          foundOne = true;
           todoGraphs.remove(graph);
           break;
         }
       }
+      if(!foundOne) {
+        break;
+      }
 
+    }
+    if(!todoGraphs.isEmpty()) {
+      throw new RuntimeException("Was not able to map all graphs in sigma compose plan");
     }
 
     return composePlan;

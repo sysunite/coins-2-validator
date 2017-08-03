@@ -468,7 +468,7 @@ public abstract class Rdf4jConnector implements Connector {
     }
   }
 
-  // Writes the file to the outputStream and returns a Map of imports
+  // Writes the file to the outputStream and returns a Map of imports: fileUpload context -> original context
   @Override
   public Map<String, String> exportPhiGraph(String context, OutputStream outputStream) {
 

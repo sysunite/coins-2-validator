@@ -64,4 +64,18 @@ public class ApplicationTest {
     };
     Application.main(args);
   }
+
+  @Test
+  public void createContainerFromGraph() {
+    System.setProperty("user.dir", config.getParent());
+    String[] args = { "create",
+      config.getPath(),
+      "http://www.coinsweb.nl/uploadedFile-CwPzE6iB",
+      "to.ccr",
+//      "--yml-to-console",
+      "-l"
+
+    };
+    Application.main(args);
+  }
 }

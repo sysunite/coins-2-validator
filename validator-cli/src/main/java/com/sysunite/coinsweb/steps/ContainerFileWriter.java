@@ -3,17 +3,12 @@ package com.sysunite.coinsweb.steps;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
-import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
-import com.sysunite.coinsweb.graphset.GraphVar;
-import com.sysunite.coinsweb.parser.config.factory.FileFactory;
-import com.sysunite.coinsweb.parser.config.pojo.*;
-import org.apache.commons.lang3.RandomStringUtils;
+import com.sysunite.coinsweb.parser.config.pojo.ConfigPart;
+import com.sysunite.coinsweb.parser.config.pojo.GraphVarImpl;
+import com.sysunite.coinsweb.parser.config.pojo.Locator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.*;
-import java.util.ArrayList;
 
 
 /**
@@ -84,51 +79,51 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
       }
       GraphVarImpl main = (GraphVarImpl) graphSet.getMain();
 
-      try {
-        log.info("Dump graphSet contexts to temp files:");
-        for(GraphVar graphVar : graphSet.contextMap().keySet()) {
-          File rdfFile = File.createTempFile(RandomStringUtils.random(8, true, true), ".rdf");
-          OutputStream outputStream = new FileOutputStream(rdfFile);
-          String context = graphSet.contextMap().get(graphVar);
-          ArrayList<String> contexts = new ArrayList<>();
-          contexts.add(context);
+//      try {
+//        log.info("Dump graphSet contexts to temp files:");
+//        for(GraphVar graphVar : graphSet.contextMap().keySet()) {
+//          File rdfFile = File.createTempFile(RandomStringUtils.random(8, true, true), ".rdf");
+//          OutputStream outputStream = new FileOutputStream(rdfFile);
+//          String context = graphSet.contextMap().get(graphVar);
+//          ArrayList<String> contexts = new ArrayList<>();
+//          contexts.add(context);
 //          graphSet.writeContextToFile(contexts, outputStream);
-          outputStream.close();
-          log.info("Compare "+context+" to "+main);
-          for(Graph graph : ((ContainerFileImpl)container).getConfig().getGraphs()) {
-            if(graph.getAs().contains(graphVar)) {
-              if(graph.getMain() != null && graph.getMain()) {
-                log.info("- "+graphVar+" to "+rdfFile.getName()+" (is main)");
-                ((ContainerFileImpl)container).addContentFile(rdfFile, graph.getSource().getGraphname());
-              } else {
-                log.info("- "+graphVar+" to "+rdfFile.getName());
-                ((ContainerFileImpl)container).addLibraryFile(rdfFile, graph.getSource().getGraphname());
-              }
-            }
-          }
+//          outputStream.close();
+//          log.info("Compare "+context+" to "+main);
+//          for(Graph graph : ((ContainerFileImpl)container).getConfig().getGraphs()) {
+//            if(graph.getAs().contains(graphVar)) {
+//              if(graph.getMain() != null && graph.getMain()) {
+//                log.info("- "+graphVar+" to "+rdfFile.getName()+" (is main)");
+//                ((ContainerFileImpl)container).addContentFile(rdfFile, graph.getSource().getGraphname());
+//              } else {
+//                log.info("- "+graphVar+" to "+rdfFile.getName());
+//                ((ContainerFileImpl)container).addLibraryFile(rdfFile, graph.getSource().getGraphname());
+//              }
+//            }
+//          }
+//
+//        }
+//
+//        log.info("Register the configured files as attachments:");
+//        for(Attachment attachment : ((ContainerFileImpl)container).getConfig().getAttachments()) {
+//          ((ContainerFileImpl)container).addAttachmentFile(FileFactory.toFile(attachment.getLocation()));
+//        }
+//      } catch (FileNotFoundException e) {
+//        e.printStackTrace();
+//      } catch (IOException e) {
+//        e.printStackTrace();
+//      }
 
-        }
 
-        log.info("Register the configured files as attachments:");
-        for(Attachment attachment : ((ContainerFileImpl)container).getConfig().getAttachments()) {
-          ((ContainerFileImpl)container).addAttachmentFile(FileFactory.toFile(attachment.getLocation()));
-        }
-      } catch (FileNotFoundException e) {
-        e.printStackTrace();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-
-
-      File ccrFile;
-      if (location.getParent() != null) {
-        ccrFile = location.getParent().resolve(location.getPath()).toFile();
-      } else {
-        ccrFile = new File(location.getPath());
-      }
-
-      log.info("Save the container file to: "+ccrFile.getPath());
-      ((ContainerFileImpl)container).writeZip(ccrFile.toPath());
+//      File ccrFile;
+//      if (location.getParent() != null) {
+//        ccrFile = location.getParent().resolve(location.getPath()).toFile();
+//      } else {
+//        ccrFile = new File(location.getPath());
+//      }
+//
+//      log.info("Save the container file to: "+ccrFile.getPath());
+//      ((ContainerFileImpl)container).writeZip(ccrFile.toPath());
 
 
 

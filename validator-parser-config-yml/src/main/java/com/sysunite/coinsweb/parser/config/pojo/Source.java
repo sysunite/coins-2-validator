@@ -28,6 +28,9 @@ public class Source extends ConfigPart {
   public static final String CONTAINER = "container";
   public static final String STORE = "store";
 
+  @JsonIgnore
+  private static int fileNameCount = 0;
+
 
   private String type;
   private String path;
@@ -74,7 +77,7 @@ public class Source extends ConfigPart {
     if(path != null) {
       return new File(path).getName();
     } else {
-      return "online.file";
+      return "file."+(fileNameCount++)+".rdf";
     }
   }
 

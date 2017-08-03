@@ -1,21 +1,24 @@
 package com.sysunite.coinsweb.filemanager;
 
+import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
+import com.sysunite.coinsweb.parser.config.pojo.Source;
+import com.sysunite.coinsweb.rdfutil.Utils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.DigestInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -329,24 +332,20 @@ public class ContainerFileImpl extends File implements ContainerFile {
     scanned = true;
   }
 
-
-  private HashMap<String, File> pendingContentFile = new HashMap();
-  public void addContentFile(File file, String namespace) {
-    pendingContentFile.put(namespace, file);
-  }
-
-  private HashMap<String, File> pendingLibraryFiles = new HashMap();
-  public void addLibraryFile(File file, String namespace) {
-    pendingLibraryFiles.put(namespace, file);
+  private String pendingContentContext;
+  public void setPendingContentContext(String pendingContentContext) {
+    this.pendingContentContext = pendingContentContext;
   }
 
   private List<File> pendingAttachmentFiles = new ArrayList();
-  public void addAttachmentFile(File file) {
+  public void addPendingAttachmentFile(File file) {
     pendingAttachmentFiles.add(file);
   }
 
-  public void writeZip(Path containerFile) {
+  public ContainerFileImpl writeZip(Path containerFile, Connector connector) {
     log.info("Will create container file at "+containerFile.toString());
+
+    List<Object> sources = connector.listPhiGraphs();
 
     byte[] buffer = new byte[1024];
 
@@ -355,33 +354,56 @@ public class ContainerFileImpl extends File implements ContainerFile {
       // Get the zip file content
       ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(containerFile.toFile()));
 
-
-      for(String context : pendingContentFile.keySet()) {
+      Map<String, String> imports;
+      {
         String zipPath = "bim/content.rdf";
-        log.info("Adding to zip "+zipPath);
+        log.info("Adding to zip " + zipPath);
         ZipEntry ze = new ZipEntry(zipPath);
         zout.putNextEntry(ze);
-        DeleteOnCloseFileInputStream inputStream = new DeleteOnCloseFileInputStream(pendingContentFile.get(context));
-        int bytesRead;
-        while ((bytesRead = inputStream.read(buffer)) != -1)
-          zout.write(buffer, 0, bytesRead);
+        imports = connector.exportPhiGraph(pendingContentContext, zout);
         zout.closeEntry();
-        inputStream.close();
       }
 
-      int count = 1;
-      for(String context : pendingLibraryFiles.keySet()) {
-        String zipPath = "bim/repository/library_"+(count++)+".rdf";
-        log.info("Adding to zip "+zipPath);
-        ZipEntry ze = new ZipEntry(zipPath);
-        zout.putNextEntry(ze);
-        DeleteOnCloseFileInputStream inputStream = new DeleteOnCloseFileInputStream(pendingLibraryFiles.get(context));
-        int bytesRead;
-        while ((bytesRead = inputStream.read(buffer)) != -1)
-          zout.write(buffer, 0, bytesRead);
-        zout.closeEntry();
-        inputStream.close();
+      ArrayList<String> todoUploadContexts = new ArrayList<>();
+      todoUploadContexts.addAll(imports.keySet());
+      for(int i = 0; i < todoUploadContexts.size(); i++) {
+        String context = todoUploadContexts.get(i);
+        String original = imports.get(context);
+
+        // Find fileName
+        for(Object sourceObject : sources) {
+          Source source = (Source) sourceObject;
+          if(Utils.equalNamespace(source.getGraphname(),original)) {
+            String fileName = source.getDefaultFileName();
+
+            // Execute download and zip
+            {
+              String zipPath = "bim/repository/"+fileName;
+              log.info("Adding to zip " + zipPath);
+              ZipEntry ze = new ZipEntry(zipPath);
+              zout.putNextEntry(ze);
+              Map<String, String> libraryImports = connector.exportPhiGraph(context, zout);
+              zout.closeEntry();
+
+              for(String libraryImport : libraryImports.keySet()) {
+                if(!Utils.containsNamespace(libraryImport, todoUploadContexts)) {
+                  todoUploadContexts.add(libraryImport);
+                  imports.put(libraryImport, libraryImports.get(libraryImport));
+                }
+              }
+            }
+
+            break;
+          }
+        }
+
       }
+
+      // Adding rdf files finished
+      pendingContentContext = null;
+
+
+
 
       for(File attachmentFile : pendingAttachmentFiles) {
         String zipPath = "doc/"+attachmentFile.getName();
@@ -396,11 +418,17 @@ public class ContainerFileImpl extends File implements ContainerFile {
         inputStream.close();
       }
 
+      // Adding attachments finished
+      pendingAttachmentFiles = new ArrayList();
+
+
       zout.close();
 
     } catch(IOException e) {
       log.error(e.getMessage(), e);
     }
+
+    return new ContainerFileImpl(containerFile.toString());
   }
 
   public Container getConfig() {

@@ -163,6 +163,28 @@ public class Application {
       }
     }
 
+    if(options.createMode()) {
+      log.info("\uD83C\uDFC4 Running in create mode");
+      if(options.hasConfigFile()) {
+
+        if(options.hasUri() > 0) {
+
+          if(options.hasContainerFile() != 1) {
+            throw new RuntimeException("Please specify precisely one container file as cli argument");
+          }
+
+          File file = options.getConfigFile().toFile();
+          ConfigFile configFile = getConfigFile(file);
+          Path containerFilePath = options.getContainerFile(0);
+          Connector connector = getConnector(configFile);
+          Describe.run(connector, containerFilePath, options.getUri(0));
+
+        } else {
+          throw new RuntimeException("Please specify the main graph (phi namespace) as cli argument");
+        }
+      }
+    }
+
     if(options.runMode()) {
       log.info("\uD83C\uDFC4 Running in run mode");
       try {

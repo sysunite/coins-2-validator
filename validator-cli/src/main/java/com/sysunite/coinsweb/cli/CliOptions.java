@@ -24,6 +24,7 @@ public class CliOptions {
   public static final String DESCRIBE_FILE_MODE = "describe";
   public static final String DESCRIBE_STORE_MODE = "describe-store";
   public static final String RUN_MODE = "run";
+  public static final String CREATE_MODE = "create";
 
   public static boolean QUIET = false;
 
@@ -124,7 +125,10 @@ public class CliOptions {
     if(cmd.getArgs().length < 1) {
       return false;
     }
-    if(DESCRIBE_FILE_MODE.equals(cmd.getArgs()[0]) || DESCRIBE_STORE_MODE.equals(cmd.getArgs()[0]) || RUN_MODE.equals(cmd.getArgs()[0])) {
+    if(DESCRIBE_FILE_MODE.equals(cmd.getArgs()[0]) ||
+      DESCRIBE_STORE_MODE.equals(cmd.getArgs()[0]) ||
+      RUN_MODE.equals(cmd.getArgs()[0]) ||
+      CREATE_MODE.equals(cmd.getArgs()[0])) {
       return true;
     }
     return false;
@@ -138,6 +142,10 @@ public class CliOptions {
   public boolean runMode() {
     return hasMode() && RUN_MODE.equals(cmd.getArgs()[0].trim());
   }
+  public boolean createMode() {
+    return hasMode() && CREATE_MODE.equals(cmd.getArgs()[0].trim());
+  }
+
 
   public boolean hasProfileFile() {
     if(cmd.getArgs().length < 2) {

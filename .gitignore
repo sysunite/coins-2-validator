@@ -13,3 +13,9 @@ validator-cli/src/test/resources/otl-1.7.1b-ref-opt
 validator-cli/src/test/resources/otl-1.7.1b-ref
 validator-cli/src/test/resources/otl-1.7.1b
 validator-cli/src/test/resources/file-structure
+.idea
+*.iml
+validator-cli/target
+validator-core/target
+validator-parser-config-yml/target
+validator-parser-profile-xml/target

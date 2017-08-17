@@ -380,6 +380,12 @@ public class ContainerFileImpl extends File implements ContainerFile {
             {
               String zipPath = "bim/repository/"+fileName;
               log.info("Adding to zip " + zipPath);
+              log.info("Checking for existence");
+              if (!new File(zipPath).exists()){
+                log.warn("Could not find file " + zipPath);
+                continue;
+              }
+
               ZipEntry ze = new ZipEntry(zipPath);
               zout.putNextEntry(ze);
               Map<String, String> libraryImports = connector.exportPhiGraph(context, zout);
@@ -408,6 +414,12 @@ public class ContainerFileImpl extends File implements ContainerFile {
       for(File attachmentFile : pendingAttachmentFiles) {
         String zipPath = "doc/"+attachmentFile.getName();
         log.info("Adding to zip "+zipPath);
+        log.info("Checking for existence");
+        if (!new File(zipPath).exists()){
+          log.warn("Could not find file " + zipPath);
+          continue;
+        }
+
         ZipEntry ze = new ZipEntry(zipPath);
         zout.putNextEntry(ze);
         FileInputStream inputStream = new FileInputStream(attachmentFile);

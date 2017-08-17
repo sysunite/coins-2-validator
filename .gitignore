@@ -19,3 +19,4 @@ validator-cli/target
 validator-core/target
 validator-parser-config-yml/target
 validator-parser-profile-xml/target
+dependency-reduced-pom.xml

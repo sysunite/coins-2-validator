@@ -63,6 +63,10 @@ public class GraphDB extends Rdf4jConnector {
 
   }
 
+  public void setRepositoryId(String repositoryId) {
+    this.repositoryId = repositoryId;
+  }
+
   public void init() {
 
     if(initialized) {
@@ -76,10 +80,12 @@ public class GraphDB extends Rdf4jConnector {
 
     try {
 
-      if(repoPerRun) {
-        repositoryId = "validator-generated-" + RandomStringUtils.random(8, true, true);
-      } else {
-        repositoryId = "validator-generated";
+      if(repositoryId == null){
+        if(repoPerRun) {
+          repositoryId = "validator-generated-" + RandomStringUtils.random(8, true, true);
+        } else {
+          repositoryId = "validator-generated";
+        }
       }
       if(manager.hasRepositoryConfig(repositoryId)) {
         log.info("Found existing repository");

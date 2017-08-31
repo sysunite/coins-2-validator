@@ -79,7 +79,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
   public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content) {
     ArrayList<Graph> graphs = new ArrayList();
     for(String contentFile : containerFile.getContentFiles()) {
-      
+
       log.info("Look for graphs in content file "+contentFile);
       try {
         for (String namespace : containerFile.getContentFileNamespaces(contentFile)) {

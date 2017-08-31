@@ -1,9 +1,12 @@
 environment:
 
   store:
-    type: graphdb
+    type: virtuoso
     config:
-      endpoint: http://localhost:7200
+      endpoint: localhost:1111
+#      endpoint: themountain:1122
+      user: dba
+      password: 3h34ln3
   cleanUp: false
   createRepo: true
   destroyRepo: false
@@ -22,7 +25,6 @@ run:
       variable: FULL_UNION_GRAPH
     - graphname: http://instances/union
       variable: INSTANCE_UNION_GRAPH
-      filename: special.rdf
     - graphname: http://library/union
       variable: SCHEMA_UNION_GRAPH
 
@@ -63,8 +65,8 @@ run:
     profile:
       type: online
 #      path: profiles/profile.lite-9.85-virtuoso.xml
-      uri: http://localhost:9876/profile.lite-9.85-virtuoso.xml
-    maxResults: 0
+      uri: http://localhost:9877/profile.lite-9.85-virtuoso.xml
+    maxResults: 100
     reportInferenceResults: false
 
   reports:
@@ -76,7 +78,7 @@ run:
     location:
       type: file
       path: report.xml
-  - type: html
-    location:
-      type: file
-      path: report.html
+#  - type: html
+#    location:
+#      type: file
+#      path: report.html

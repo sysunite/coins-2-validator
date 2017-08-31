@@ -16,7 +16,7 @@ public class Otl171bRefTest {
   Logger log = LoggerFactory.getLogger(Otl171bRefTest.class);
 
   static {
-    File profile = new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/profiles/profile.lite-9.85-generated.xml");
+    File profile = new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/profiles/profile.lite-9.85-virtuoso.xml");
     SimpleHttpServer.serveFile(profile, "application/xml", 9877);
   }
   File file = new File(getClass().getClassLoader().getResource("general-9.85-virtuoso.yml").getFile());

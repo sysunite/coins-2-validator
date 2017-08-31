@@ -65,8 +65,8 @@ run:
   - type: ProfileValidation
     profile:
       type: online
-#      path: profiles/profile.lite-9.85-generated.xml
-      uri: http://localhost:9877/profile.lite-9.85-generated.xml
+#      path: profiles/profile.lite-9.85-virtuoso.xml
+      uri: http://localhost:9877/profile.lite-9.85-virtuoso.xml
     maxResults: 100
     reportInferenceResults: false
 

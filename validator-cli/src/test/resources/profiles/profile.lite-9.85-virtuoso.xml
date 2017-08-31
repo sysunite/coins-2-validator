@@ -25,7 +25,8 @@
                WHERE {Graph ${SCHEMA_UNION_GRAPH} {
                   ?a ?b ?c 
               filter (STRSTARTS(STR(?b),"http://www.w3.org/2002/07/owl#")). 
-              filter (?b not in (owl:equivalentClass,owl:allValuesFrom,owl:oneOf,owl:cardinality,owl:disjointWith,owl:distinctMembers,owl:hasValue,owl:imports,owl:intersectionOf,owl:inverseOf,owl:maxCardinality,owl:maxQualifiedCardinality,owl:members,owl:minCardinality,owl:minQualifiedCardinality,owl:onClass,owl:onProperty,owl:qualifiedCardinality,owl:unionOf,owl:annotatedProperty,owl:annotatedSource,owl:annotatedTarget,owl:backwardCompatibleWith,owl:deprecated,owl:incompatibleWith,owl:priorVersion,owl:versionInfo,owl:versionIRI))}}
+              values ?list {owl:equivalentClass owl:allValuesFrom owl:oneOf owl:cardinality owl:disjointWith owl:distinctMembers owl:hasValue owl:imports owl:intersectionOf owl:inverseOf owl:maxCardinality owl:maxQualifiedCardinality owl:members owl:minCardinality owl:minQualifiedCardinality owl:onClass owl:onProperty owl:qualifiedCardinality owl:unionOf owl:annotatedProperty owl:annotatedSource owl:annotatedTarget owl:backwardCompatibleWith owl:deprecated owl:incompatibleWith owl:priorVersion owl:versionInfo owl:versionIRI}
+              filter (?b not in (?list))}}
             ]]>
           </sparql>
         </query>
@@ -44,8 +45,10 @@
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
               select distinct ?a ?b ?c 
                WHERE {Graph ${SCHEMA_UNION_GRAPH}{ 
-               ?a ?b ?c   filter (STRSTARTS(STR(?c),"http://www.w3.org/2002/07/owl#")).
-              filter (?c not in (owl:AllDisjointClasses,owl:Annotation,owl:AnnotationProperty,owl:Class,owl:DatatypeProperty,owl:FunctionalProperty,owl:NamedIndividual,owl:ObjectProperty,owl:Ontology,owl:Restriction,owl:TransitiveProperty,owl:Thing,owl:topDataProperty,owl:topObjectProperty)) }}
+               ?a ?b ?c  .
+                filter (STRSTARTS(STR(?c),"http://www.w3.org/2002/07/owl#")).
+               values ?list {owl:AllDisjointClasses owl:Annotation owl:AnnotationProperty owl:Class owl:DatatypeProperty owl:FunctionalProperty owl:NamedIndividual owl:ObjectProperty owl:Ontology owl:Restriction owl:TransitiveProperty owl:Thing owl:topDataProperty owl:topObjectProperty}
+              filter (?c not in (?list)) }}
             ]]>
           </sparql>
         </query>

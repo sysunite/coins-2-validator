@@ -7,6 +7,7 @@ services:
     - "7200:7200"
     volumes:
     - ./data:/opt/graphdb-free-8.2.0/data
+    mem_limit: 8g
     environment:
 #    - GDB_JAVA_OPTS=d      #- Sets additional Java options (-D or -X)
     - GDB_MIN_MEM=2g        #- Sets the Java minimum heap size (-Xms option).

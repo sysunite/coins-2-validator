@@ -2,6 +2,7 @@ package com.sysunite.coinsweb.connector;
 
 import com.sysunite.coinsweb.connector.graphdb.GraphDB;
 import com.sysunite.coinsweb.connector.inmem.InMemRdf4j;
+import com.sysunite.coinsweb.connector.virtuoso.Virtuoso;
 import com.sysunite.coinsweb.parser.config.pojo.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ public class ConnectorFactoryImpl implements ConnectorFactory {
     register = new HashMap();
     register.put(GraphDB.REFERENCE, GraphDB.class);
     register.put(InMemRdf4j.REFERENCE, InMemRdf4j.class);
+    register.put(Virtuoso.REFERENCE, Virtuoso.class);
   }
 
   public boolean exists(String key) {

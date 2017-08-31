@@ -56,6 +56,19 @@
     <td>There should be no files in the root folder or in a non-supported folder</td>
   </tr>
   <tr>
+    <td></td>
+    <th>imports</th>
+    <td>Import statements in the rdf-file from the bim-folder (listing all):<br/>
+      <#if step.imports?has_content>
+      <ul>
+        <#list 0..step.imports?size-1 as i>
+        <li>${step.imports[i]}</li>
+        </#list>
+      </ul>
+      </#if>
+    </td>
+  </tr>
+  <tr>
     <td>${printBoolean(step.allImportsImportable, 'skipped','&#x2705;','&#x26D4;')}</td>
     <th>allImportsImportable</th>
     <td>All import statements in the rdf-file from the bim-folder should be resolvable with files from the bim/repository folder (listing unresolvable imports):<br/>

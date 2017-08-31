@@ -49,6 +49,11 @@ public class GraphDB extends Rdf4jConnector {
     url = config.getStore().getConfig().get("endpoint");
 
 
+    if(config.getStore().getConfig().containsKey("repositoryId")) {
+      repositoryId = config.getStore().getConfig().get("repositoryId");
+    }
+
+
     cleanUp = config.getCleanUp();
     createRepo = config.getCreateRepo();
     wipeOnClose = config.getDestroyRepo();

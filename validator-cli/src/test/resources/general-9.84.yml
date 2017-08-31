@@ -40,9 +40,12 @@ run:
       - SCHEMA_UNION_GRAPH
     - source:
         type: store
-        graphs:
-        - SCHEMA_UNION_GRAPH
-        - INSTANCE_UNION_GRAPH
+        graph: INSTANCE_UNION_GRAPH
+      as:
+      - FULL_UNION_GRAPH
+    - source:
+        type: store
+        graph: SCHEMA_UNION_GRAPH
       as:
       - FULL_UNION_GRAPH
 

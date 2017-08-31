@@ -4,6 +4,7 @@ import com.sysunite.coinsweb.filemanager.ContainerFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A ContainerGraphSet is a collection of graphs (contexts) that is contained
@@ -20,7 +21,7 @@ public interface ContainerGraphSet {
   Map<String, String> getImports(GraphVar graphVar);
   boolean hasContext(GraphVar graphVar);
 
-  void lazyLoad(ContainerFile container);
+  void lazyLoad(ContainerFile container, Map<String, Set<GraphVar>> inferencePreference);
   void setConfigFile(Object configFile);
   Map<GraphVar, String> contextMap();
   Map<GraphVar, Long> quadCount();
@@ -39,4 +40,6 @@ public interface ContainerGraphSet {
 //  void writeContextToFile(List<String> contexts, OutputStream outputStream, Function filter);
 
   void pushUpdatesToCompose();
+
+  String getCompositionFingerPrint(Set<GraphVar> graphVars);
 }

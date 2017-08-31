@@ -1,6 +1,7 @@
 package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.parser.config.pojo.GraphVarImpl;
+import com.sysunite.coinsweb.parser.profile.factory.ProfileFactory;
 import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
@@ -17,8 +18,6 @@ import java.io.Writer;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -51,22 +50,20 @@ public class QueryFactory {
 
   public static Set<GraphVar> usedVars(ProfileFile profileFile) {
     HashSet<GraphVar> result = new HashSet();
-    for(Bundle bundle : profileFile.getBundles()) {
-      result.addAll(usedVars(bundle));
+    for(String graphVar : ProfileFactory.usedVars(profileFile)) {
+      result.add(new GraphVarImpl(graphVar));
     }
     return result;
   }
+
   public static Set<GraphVar> usedVars(Bundle bundle) {
     HashSet<GraphVar> result = new HashSet();
-    Pattern pattern = Pattern.compile("(?<=\\$\\{)([^\\}]+)(?=\\})");
-    for(Query query : bundle.getQueries()) {
-      Matcher matcher = pattern.matcher(query.getQuery());
-      while(matcher.find()) {
-        result.add(new GraphVarImpl(matcher.group()));
-      }
+    for(String graphVar : ProfileFactory.usedVars(bundle)) {
+      result.add(new GraphVarImpl(graphVar));
     }
     return result;
   }
+
 
 
 

@@ -24,8 +24,12 @@ public class Mapping extends ConfigPart {
   private GraphVarImpl variable;
   private String graphname;
   private String filename;
-  @JsonIgnore
+  private String hash;
+//  @JsonIgnore
   private Set<String> inclusionSet;
+  private Set<String> bundleFingerPrints;
+  @JsonIgnore
+  private boolean initialized = false;
 
   public Mapping() {
   }
@@ -34,11 +38,13 @@ public class Mapping extends ConfigPart {
     this.variable = graphVar;
     this.graphname = graphName;
   }
-  public Mapping(GraphVarImpl graphVar, String graphName, String fileName, Set<String> inclusionSet) {
+  public Mapping(GraphVarImpl graphVar, String graphName, String fileName, String hash, Set<String> inclusionSet, Set<String> bundleFingerPrints) {
     this.variable = graphVar;
     this.graphname = graphName;
     this.filename = fileName;
+    this.hash = hash;
     this.inclusionSet = inclusionSet;
+    this.bundleFingerPrints = bundleFingerPrints;
   }
 
   public GraphVarImpl getVariable() {
@@ -50,8 +56,17 @@ public class Mapping extends ConfigPart {
   public String getFilename() {
     return filename;
   }
+  public String getHash() {
+    return hash;
+  }
   public Set<String> getInclusionSet() {
     return inclusionSet;
+  }
+  public Set<String> getBundleFingerPrints() {
+    return bundleFingerPrints;
+  }
+  public boolean getInitialized() {
+    return initialized;
   }
 
   public void setVariable(GraphVarImpl variable) {
@@ -63,8 +78,17 @@ public class Mapping extends ConfigPart {
   public void setFilename(String filename) {
     this.filename = filename;
   }
+  public void setHash(String hash) {
+    this.hash = hash;
+  }
   public void setInclusionSet(Set<String> inclusionSet) {
     this.inclusionSet = inclusionSet;
+  }
+  public void setBundleFingerPrints(Set<String> bundleFingerPrints) {
+    this.bundleFingerPrints = bundleFingerPrints;
+  }
+  public void setInitialized() {
+    this.initialized = true;
   }
 
   @JsonIgnore
@@ -73,8 +97,13 @@ public class Mapping extends ConfigPart {
     clone.setVariable(this.variable);
     clone.setGraphname(this.graphname);
     clone.setFilename(this.filename);
-    clone.setInclusionSet(this.inclusionSet); // todo
+    clone.setHash(this.hash);
+    clone.setInclusionSet(this.getInclusionSet());
+    clone.setBundleFingerPrints(this.getBundleFingerPrints());
     clone.setParent(this.getParent());
+    if(this.getInitialized()) {
+      clone.setInitialized();
+    }
     return clone;
   }
 }

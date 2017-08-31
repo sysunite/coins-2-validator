@@ -28,6 +28,7 @@ package com.sysunite.coinsweb.steps.profile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphVar;
 import com.sysunite.coinsweb.graphset.QueryFactory;
+import com.sysunite.coinsweb.parser.profile.factory.ProfileFactory;
 import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
@@ -35,7 +36,6 @@ import com.sysunite.coinsweb.rdfutil.Utils;
 import com.sysunite.coinsweb.report.ReportFactory;
 import com.sysunite.coinsweb.steps.ProfileValidation;
 import freemarker.template.Template;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.slf4j.Logger;
@@ -137,7 +137,7 @@ public class ValidationExecutor {
     InferenceBundleStatistics bundleStats = new InferenceBundleStatistics(bundle);
 
 
-    String inferenceCode = profile.getName()+"/"+profile.getVersion()+"/"+bundle.getReference();
+    String inferenceCode = ProfileFactory.inferenceCode(profile, bundle);
 
     log.info("Will check all for these graphs if some inference was executed before");
     for(GraphVar graphVar : QueryFactory.usedVars(bundle)) {
@@ -148,7 +148,7 @@ public class ValidationExecutor {
       }
       log.info("- "+graphVar+" > "+context+" has >>"+String.join("<<, >>", list)+"<<");
       for(String existingInferenceCode : list) {
-        if(inferenceCodeWithoutRef(existingInferenceCode).equals(inferenceCodeWithoutRef(inferenceCode))) {
+        if(ProfileFactory.inferenceCodeWithoutRef(existingInferenceCode).equals(ProfileFactory.inferenceCodeWithoutRef(inferenceCode))) {
           log.info("\u2728 Inference >>" + inferenceCode + "<< was executed before");
           bundleStats.setSkipped(true);
           return bundleStats;
@@ -239,14 +239,18 @@ public class ValidationExecutor {
       run++;
     } while(quadsAddedThisRunSum > 0);
 
-    // Store that this  inference bundle was executed
+    // Store that this inference bundle was executed
     if(Bundle.INFERENCE.equals(bundle.getType())) {
       Map<GraphVar, Long> bundleTotal = quadsAddedPerGraph(beforeBundle, previous);
-      for(GraphVar graphVar : bundleTotal.keySet()) {
-        if(bundleTotal.get(graphVar) > 0l) {
-          storeFinishedInferences(graphVar, inferenceCode);
-        }
+
+      Long total = 1l; // todo set back to 0l
+      for(GraphVar graphVar : QueryFactory.usedVars(bundle)) {
+        total += bundleTotal.get(graphVar);
       }
+      if(total > 0l) {
+        storeFinishedInferences(QueryFactory.usedVars(bundle), inferenceCode);
+      }
+
     }
 
     // Push changes to any copy graphs
@@ -336,34 +340,47 @@ public class ValidationExecutor {
     String query =
 
     "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
-    "SELECT ?inferenceCode " +
+    "SELECT ?inferenceCode ?fingerPrint " +
     "FROM NAMED <"+context+"> " +
     "WHERE { graph ?g { " +
     "  <"+context+"> val:bundle ?inferenceCode . " +
+    "  <"+context+"> val:compositionFingerPrint ?fingerPrint . " +
     "}}";
 
     List<String> inferenceCodes = new ArrayList<>();
     List<Object> result = graphSet.select(query);
     for(Object bindingSet : result) {
       String inferenceCode = ((BindingSet)bindingSet).getBinding("inferenceCode").getValue().stringValue();
-      inferenceCodes.add(inferenceCode);
+      String fingerPrint = ((BindingSet)bindingSet).getBinding("fingerPrint").getValue().stringValue();
+      inferenceCodes.add(fingerPrint + "|" + inferenceCode);
       log.info("The inference >>"+inferenceCode+"<< was previously executed for "+context);
     }
     return inferenceCodes;
   }
 
-  public void storeFinishedInferences(GraphVar graphVar, String inferenceCode) {
+  /**
+   *
+   * @param graphVars
+   * @param inferenceCode
+   */
+  public void storeFinishedInferences(Set<GraphVar> graphVars, String inferenceCode) {
 
-    String context = graphSet.contextMap().get(graphVar);
+    String compositionFingerPrint = graphSet.getCompositionFingerPrint(graphVars);
 
-    log.info("Store inferenceCode >>"+inferenceCode+"<< for "+context);
+    for(GraphVar graphVar : graphVars) {
+      String context = graphSet.contextMap().get(graphVar);
+      log.info("Store inferenceCode >>" + inferenceCode + "<< for " + context);
 
-    String query =
+      String query =
 
-    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
-    "INSERT DATA { GRAPH <"+context+"> { <"+context+"> val:bundle \""+inferenceCode+"\" . }}";
+      "PREFIX val: <" + QueryFactory.VALIDATOR_NS + "> " +
+      "INSERT DATA { " +
+      "  GRAPH <" + context + "> { " +
+      "    <" + context + "> val:bundle \"" + inferenceCode + "\" . " +
+      "    <" + context + "> val:compositionFingerPrint \"" + compositionFingerPrint + "\" . }}";
 
-    graphSet.update(query);
+      graphSet.update(query);
+    }
   }
 
 
@@ -407,12 +424,5 @@ public class ValidationExecutor {
       count += Math.abs(results.get(graphVar)); // negative values also count as change
     }
     return count;
-  }
-
-  public static String inferenceCodeWithoutRef(String inferenceCode) {
-    if(inferenceCode == null || inferenceCode.isEmpty() || StringUtils.countMatches(inferenceCode, "/") != 2) {
-      throw new RuntimeException("InferenceCode >>"+inferenceCode+"<< is not valid");
-    }
-    return inferenceCode.substring(0, inferenceCode.lastIndexOf("/"));
   }
 }

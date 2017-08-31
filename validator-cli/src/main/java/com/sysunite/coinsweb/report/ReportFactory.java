@@ -178,7 +178,7 @@ public class ReportFactory {
     return input;
   }
 
-  public static String buildXml(ReportFile reportFile) {
+  public static String buildXml(Object reportFile) {
     XmlMapper objectMapper = new XmlMapper();
     objectMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -192,7 +192,7 @@ public class ReportFactory {
     throw new RuntimeException("Failed to produce xml");
   }
 
-  public static String buildJson(ReportFile reportFile) {
+  public static String buildJson(Object reportFile) {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 

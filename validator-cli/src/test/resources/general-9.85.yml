@@ -41,9 +41,12 @@ run:
       - SCHEMA_UNION_GRAPH
     - source:
         type: store
-        graphs:
-        - SCHEMA_UNION_GRAPH
-        - INSTANCE_UNION_GRAPH
+        graph: INSTANCE_UNION_GRAPH
+      as:
+      - FULL_UNION_GRAPH
+    - source:
+        type: store
+        graph: SCHEMA_UNION_GRAPH
       as:
       - FULL_UNION_GRAPH
 
@@ -62,13 +65,13 @@ run:
 #      path: profiles/profile.lite-9.85-generated.xml
       uri: http://localhost:9876/profile.lite-9.85-generated.xml
     maxResults: 0
-    reportInferenceResults: true
+    reportInferenceResults: false
 
   reports:
-  - type: json
-    location:
-      type: file
-      path: report.json
+#  - type: json
+#    location:
+#      type: file
+#      path: report.json
   - type: xml
     location:
       type: file

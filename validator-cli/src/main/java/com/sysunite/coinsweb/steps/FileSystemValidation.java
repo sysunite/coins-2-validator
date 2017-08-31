@@ -138,6 +138,15 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
   }
 
   @JsonInclude(Include.NON_EMPTY)
+  private List<String> imports = new ArrayList();
+  public List<String> getImports() {
+    return imports;
+  }
+  public void setImports(List<String> imports) {
+    this.imports = imports;
+  }
+
+  @JsonInclude(Include.NON_EMPTY)
   private List<String> unmatchedImports = new ArrayList();
   public List<String> getUnmatchedImports() {
     return unmatchedImports;
@@ -195,13 +204,17 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
 
       if (graphSet.hasContext(getLookIn())) {
         Map<String, String> imports = graphSet.getImports(getLookIn());
-        for (String namespace : imports.keySet()) {
-          log.info("Found import in content rdf-file: "+namespace);
+        for (String storeContext : imports.keySet()) {
 
-          boolean found = Utils.containsNamespace(namespace, availableGraphs);
+          String originalNamespace = imports.get(storeContext);
+
+          log.info("Found import in content rdf-file: "+originalNamespace);
+
+          boolean found = Utils.containsNamespace(originalNamespace, availableGraphs);
+          this.imports.add(originalNamespace);
           if (!found) {
-            log.info("Namespace to import " + namespace + " was not found in " + String.join(", ", availableGraphs));
-            unmatchedImports.add(namespace);
+            log.info("Namespace to import " + originalNamespace + " was not found in " + String.join(", ", availableGraphs));
+            unmatchedImports.add(originalNamespace);
           }
           allImportsImportable &= found;
         }
@@ -212,7 +225,7 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
       failed = false;
 
     } catch (RuntimeException e) {
-      log.warn("Executing failed validationStep of type '"+getType()+"': "+e.getMessage());
+      log.warn("Executing failed validationStep of type '"+getType()+"': "+e.getMessage(), e);
       failed = true;
     }
 

@@ -6,6 +6,7 @@ import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.ContainerGraphSetFactory;
+import com.sysunite.coinsweb.graphset.GraphVar;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
@@ -13,12 +14,15 @@ import com.sysunite.coinsweb.parser.config.pojo.Locator;
 import com.sysunite.coinsweb.parser.config.pojo.Report;
 import com.sysunite.coinsweb.report.ReportFactory;
 import com.sysunite.coinsweb.report.ReportFile;
+import com.sysunite.coinsweb.steps.ProfileValidation;
 import com.sysunite.coinsweb.steps.ValidationStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -53,8 +57,18 @@ public class Validation {
       containerConfig.setContainer(containerFile);
 
 
+      // Get inference preferences
+      Map<String, Set<GraphVar>> inferencePreference = new HashMap<>();
+      for (ValidationStep stepTemplate : configFile.getRun().getSteps()) {
+
+        if(stepTemplate instanceof ProfileValidation) {
+          ProfileValidation profileValidation = (ProfileValidation) stepTemplate;
+          inferencePreference = ContainerGraphSetFactory.inferencePreference(profileValidation.loadProfileFile());
+        }
+      }
+
       // Init graphSet
-      ContainerGraphSet graphSet = ContainerGraphSetFactory.lazyLoad(containerFile, containerConfig, connector);
+      ContainerGraphSet graphSet = ContainerGraphSetFactory.lazyLoad(containerFile, containerConfig, connector, inferencePreference);
 
 
       // Execute the steps

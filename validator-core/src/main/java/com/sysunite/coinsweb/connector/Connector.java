@@ -44,8 +44,13 @@ public interface Connector {
 
   List<Object> listPhiGraphs();
   Map<String, Set<String>> listPhiSourceIdsPerHash();
-  Map<String, Set<String>> listSigmaGraphs();
-  Map<String, Set<String>> listInferencesPerSigmaGraph();
+  Set<String> listSigmaGraphs();
+  Map<Set<String>, Set<String>> listSigmaGraphsWithIncludes();
+  Map<String, Set<String>> listInferenceCodePerSigmaGraph();
+  Set<String> findSigmaGraphsByInferenceCode(String inferenceCode);
+  List<Object> listMappings();
+
+  List<String> findPhiGraphWithImports(String hash, Map<String, String> originalContextsWithHash);
 
   void writeContextsToFile(List<String> contexts, OutputStream outputStream, Map<String, String> prefixMap, String mainContext);
   void writeContextsToFile(List<String> contexts, OutputStream outputStream, Map<String, String> prefixMap, String mainContext, Function filter);

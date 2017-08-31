@@ -75,7 +75,7 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
   public void setMaxInferenceRuns(int maxInferenceRuns) {
     this.maxInferenceRuns = maxInferenceRuns;
   }
-  public void setReportInferenceResults(boolean reportInferenceResults) {
+  public void setReportInferenceResults(Boolean reportInferenceResults) {
     this.reportInferenceResults = reportInferenceResults;
   }
 
@@ -103,6 +103,9 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
   }
   public void setValid(boolean valid) {
     this.valid = valid;
+  }
+  public void setProfileFile(ProfileFile profileFile) {
+    this.profileFile = profileFile;
   }
 
   @JacksonXmlProperty(localName = "name")
@@ -132,14 +135,25 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
   public void checkConfig() {
   }
 
+  @JsonIgnore
+  private ProfileFile profileFile;
+  public ProfileFile loadProfileFile() {
+    if(profileFile == null) {
+
+      // Load the profile file
+      InputStream inputStream = FileFactory.toInputStream(profile);
+      profileFile = ProfileFile.parse(inputStream);
+    }
+
+    return profileFile;
+  }
+
   @Override
   public void execute(ContainerFile container, ContainerGraphSet graphSet) {
 
     try {
 
-      // Load the profile file
-      InputStream inputStream = FileFactory.toInputStream(profile);
-      ProfileFile profileFile = ProfileFile.parse(inputStream);
+      loadProfileFile();
 
       // Check if the vars used in the profile are available
       Set<GraphVar> usedVars = QueryFactory.usedVars(profileFile);
@@ -184,6 +198,7 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     clone.setMaxResults(this.getMaxResults());
     clone.setMaxInferenceRuns(this.getMaxInferenceRuns());
     clone.setReportInferenceResults(this.getReportInferenceResults());
+    clone.setProfileFile(this.profileFile);
     clone.setParent(this.getParent());
 
     // Results

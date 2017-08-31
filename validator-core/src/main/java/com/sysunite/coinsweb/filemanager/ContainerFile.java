@@ -27,6 +27,8 @@ public interface ContainerFile {
   DigestInputStream getAttachmentFile(String filename);
   DigestInputStream getOrphanFile(String filename);
 
+  ArrayList<String> getFileImports(Path zipPath);
+
   ArrayList<String> getContentFileNamespaces(String filename);
   ArrayList<String> getRepositoryFileNamespaces(String filename);
 

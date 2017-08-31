@@ -28,8 +28,8 @@ public class Utils {
     "brf",
     "nq",
     "jsonld",
-    "rj",
-    "xhtml", "html"
+    "rj"
+//    "xhtml", "html"
   );
 
   static List<String> rdf4jContentTypes = Arrays.asList(
@@ -42,8 +42,8 @@ public class Utils {
     "application/x-binary-rdf",
     "application/n-quads", "text/x-nquads", "text/nquads",
     "application/ld+json",
-    "application/rdf+json",
-    "application/xhtml+xml", "application/html", "text/html"
+    "application/rdf+json"
+//    "application/xhtml+xml", "application/html", "text/html"
   );
 
   public static boolean isRdfFile(File file) {

@@ -47,17 +47,19 @@ public class Describe {
 
   public static String run(Connector connector) {
 
-    Map<String, Set<String>> map = connector.listSigmaGraphs();
+    Map<Set<String>, Set<String>> map = connector.listSigmaGraphsWithIncludes();
     String sigmaYml = ConfigFactory.toYml(map);
 
     String imports = "";
-    for(String context : map.keySet()) {
-      for(String inclusion : map.get(context)) {
-        if(inclusion.startsWith(QueryFactory.VALIDATOR_HOST)) {
-          imports += inclusion + " owl:imports\n";
-          Map<String, String> importsMap = connector.getImports(inclusion);
-          for(String importContext : importsMap.keySet()) {
-            imports += "- "+importContext + "("+importsMap.get(importContext)+")\n";
+    for(Set<String> contexts : map.keySet()) {
+      for(String context : contexts) {
+        for(String inclusion : map.get(context)) {
+          if(inclusion.startsWith(QueryFactory.VALIDATOR_HOST)) {
+            imports += inclusion + " owl:imports\n";
+            Map<String, String> importsMap = connector.getImports(inclusion);
+            for(String importContext : importsMap.keySet()) {
+              imports += "- "+importContext + " ("+importsMap.get(importContext)+")\n";
+            }
           }
         }
       }

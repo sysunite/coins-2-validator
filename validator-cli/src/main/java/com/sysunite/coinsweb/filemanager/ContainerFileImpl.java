@@ -124,12 +124,16 @@ public class ContainerFileImpl extends File implements ContainerFile {
     return getFile(orphanFiles.get(filename));
   }
 
+
+  HashMap<String, ArrayList<String>> fileImports = new HashMap();
+  public ArrayList<String> getFileImports(Path zipPath) {
+    return fileImports.get(zipPath.getFileName().toString());
+  }
+
   HashMap<String, ArrayList<String>> contentFileNamespaces = new HashMap();
   public ArrayList<String> getContentFileNamespaces(String filename) {
     if(!contentFileNamespaces.containsKey(filename)) {
-      DigestInputStream inputStream = getContentFile(filename);
-      inputStream.on(false);
-      contentFileNamespaces.put(filename, DescribeFactoryImpl.namespacesForFile(inputStream, filename));
+      DescribeFactoryImpl.namespacesForFile(getContentFile(filename), filename, contentFileNamespaces, fileImports);
     }
     return contentFileNamespaces.get(filename);
   }
@@ -137,7 +141,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
   HashMap<String, ArrayList<String>> repositoryFileNamespaces = new HashMap();
   public ArrayList<String> getRepositoryFileNamespaces(String filename) {
     if(!repositoryFileNamespaces.containsKey(filename)) {
-      repositoryFileNamespaces.put(filename, DescribeFactoryImpl.namespacesForFile(getRepositoryFile(filename), filename));
+      DescribeFactoryImpl.namespacesForFile(getRepositoryFile(filename), filename, repositoryFileNamespaces, fileImports);
     }
     return repositoryFileNamespaces.get(filename);
   }
@@ -407,9 +411,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
 
       // Adding rdf files finished
       pendingContentContext = null;
-
-
-
 
       for(File attachmentFile : pendingAttachmentFiles) {
         String zipPath = "doc/"+attachmentFile.getName();

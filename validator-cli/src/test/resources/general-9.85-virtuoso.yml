@@ -1,11 +1,14 @@
 environment:
 
   store:
-    type: graphdb
+    type: virtuoso
     config:
-      endpoint: http://themountain:7200
+      endpoint: localhost:1111
+#      endpoint: themountain:1122
+      user: dba
+      password: 3h34ln3
   cleanUp: false
-  createRepo: false
+  createRepo: true
   destroyRepo: false
   loadingStrategy: permanent-sorted-hashes-in-graphname
 
@@ -22,6 +25,7 @@ run:
       variable: FULL_UNION_GRAPH
     - graphname: http://instances/union
       variable: INSTANCE_UNION_GRAPH
+      filename: special.rdf
     - graphname: http://library/union
       variable: SCHEMA_UNION_GRAPH
 
@@ -48,26 +52,29 @@ run:
         graph: SCHEMA_UNION_GRAPH
       as:
       - FULL_UNION_GRAPH
-      
-  steps: []
 
-#  - type: FileSystemValidation
-#    lookIn: INSTANCE_UNION_GRAPH
-#
-#  - type: DocumentReferenceValidation
-#    lookIn: INSTANCE_UNION_GRAPH
-#
-#  - type: ProfileValidation
-#    profile:
-#      type: file
-#      path: profiles/profile.lite-9.81-generated.xml
-#    maxResults: 50
+      
+  steps:
+
+  - type: FileSystemValidation
+    lookIn: INSTANCE_UNION_GRAPH
+
+  - type: DocumentReferenceValidation
+    lookIn: INSTANCE_UNION_GRAPH
+
+  - type: ProfileValidation
+    profile:
+      type: online
+#      path: profiles/profile.lite-9.85-generated.xml
+      uri: http://localhost:9877/profile.lite-9.85-generated.xml
+    maxResults: 100
+    reportInferenceResults: false
 
   reports:
-  - type: json
-    location:
-      type: file
-      path: report.json
+#  - type: json
+#    location:
+#      type: file
+#      path: report.json
   - type: xml
     location:
       type: file

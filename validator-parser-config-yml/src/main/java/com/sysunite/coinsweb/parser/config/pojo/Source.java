@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import static com.sysunite.coinsweb.parser.Parser.*;
 
@@ -36,8 +35,8 @@ public class Source extends ConfigPart {
   private String path;
   private String uri;
   private String graphname;
-  private ArrayList<GraphVarImpl> graphs;
-  private String id;
+  private String storeContext;
+  private GraphVarImpl graph;
   private String hash;
 
 
@@ -64,11 +63,11 @@ public class Source extends ConfigPart {
   public String getGraphname() {
     return graphname;
   }
-  public ArrayList<GraphVarImpl> getGraphs() {
-    return graphs;
+  public String getStoreContext() {
+    return storeContext;
   }
-  public String getId() {
-    return this.id;
+  public GraphVarImpl getGraph() {
+    return graph;
   }
   public String getHash() {
     return this.hash;
@@ -94,11 +93,11 @@ public class Source extends ConfigPart {
   public void setGraphname(String graphname) {
     this.graphname = graphname;
   }
-  public void setGraphs(ArrayList<GraphVarImpl> graphs) {
-    this.graphs = graphs;
+  public void setStoreContext(String storeContext) {
+    this.storeContext = storeContext;
   }
-  public void setId(String id) {
-    this.id = id;
+  public void setGraph(GraphVarImpl graph) {
+    this.graph = graph;
   }
   public void setHash(String hash) {
     this.hash = hash;
@@ -149,11 +148,8 @@ public class Source extends ConfigPart {
     clone.setPath(this.path);
     clone.setUri(this.uri);
     clone.setGraphname(this.graphname);
-    if(this.getGraphs() != null) {
-      ArrayList<GraphVarImpl> graphs = new ArrayList();
-      graphs.addAll(this.getGraphs());
-      clone.setGraphs(graphs);
-    }
+    clone.setStoreContext(this.storeContext);
+    clone.setGraph(this.getGraph());
     clone.setParent(this.getParent());
     return clone;
   }
@@ -178,7 +174,7 @@ class SourceSanitizer extends StdConverter<Source, Source> {
       isNotNull(obj.getGraphname());
 
       isNull(obj.getUri());
-      isNull(obj.getGraphs());
+      isNull(obj.getGraph());
 
       if(obj.getPath().contains("*")) {
         throw new RuntimeException("Wildcards in path are only allowed for sources of type 'container'");
@@ -189,14 +185,14 @@ class SourceSanitizer extends StdConverter<Source, Source> {
       isNotNull(obj.getGraphname());
 
       isNull(obj.getPath());
-      isNull(obj.getGraphs());
+      isNull(obj.getGraph());
     }
     if(Source.CONTAINER.equals(obj.getType())) {
       isNotNull(obj.getPath());
       isNotNull(obj.getGraphname());
 
       isNull(obj.getUri());
-      isNull(obj.getGraphs());
+      isNull(obj.getGraph());
 
       if(obj.getPath().contains("*")) {
         if(!obj.anyContentFile() && !obj.anyLibraryFile()) {
@@ -205,7 +201,7 @@ class SourceSanitizer extends StdConverter<Source, Source> {
       }
     }
     if(Source.STORE.equals(obj.getType())) {
-      isNotEmpty(obj.getGraphs());
+      isNotNull(obj.getGraph());
 
       isNull(obj.getPath());
       isNull(obj.getUri());

@@ -7,13 +7,14 @@ import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.parser.config.pojo.GraphVarImpl;
+import com.sysunite.coinsweb.parser.config.pojo.Mapping;
+import com.sysunite.coinsweb.report.ReportFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static com.sysunite.coinsweb.graphset.ContainerGraphSetFactory.fingerPrint;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -24,6 +25,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
 
   private ContainerFileImpl lazyLoad = null;
+  private Map<String, Set<GraphVar>> inferencePreference;
 
   private boolean disabled;
   private Connector connector;
@@ -62,17 +64,26 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
     // Essential step to get rid of the wildcards in the configFile
     log.info("Will now expand any wildcard usage in the config.yml section of this file");
-    DescribeFactoryImpl.expandGraphConfig(lazyLoad.getConfig());
+    DescribeFactoryImpl.expandGraphConfig(lazyLoad.getConfig(), lazyLoad);
 
     if(disabled) {
       return;
     }
 
     log.info("Load stuff to connector");
-    composePlan = ContainerGraphSetFactory.load(connector, lazyLoad);
-    lazyLoad.getConfig().setVariables(composePlan.getVarMap());
+    composePlan = ContainerGraphSetFactory.load(connector, lazyLoad, inferencePreference);
+
+    log.info("Tried compose plan: " + ReportFactory.buildJson(composePlan));
+    List<Mapping> updatedVarMap = composePlan.getVarMap();
+    lazyLoad.getConfig().setVariables(updatedVarMap);
 
     this.lazyLoad = null;
+
+    if(composePlan.isFailed()) {
+      disabled = true;
+      throw new RuntimeException("Something went wrong in loading the GraphSet");
+    }
+
   }
 
   /**
@@ -130,8 +141,9 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   }
 
   @Override
-  public void lazyLoad(ContainerFile container) {
+  public void lazyLoad(ContainerFile container, Map<String, Set<GraphVar>> inferencePreference) {
     this.lazyLoad = (ContainerFileImpl)container;
+    this.inferencePreference = inferencePreference;
   }
 
 
@@ -188,5 +200,47 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   @Override
   public void pushUpdatesToCompose() {
     ContainerGraphSetFactory.executeCompose(composePlan, connector, false);
+  }
+
+  private static Set<String> relatedGraphs(String context, List<Mapping> mappings) {
+
+    HashSet<String> contexts = new HashSet<>();
+    contexts.add(context);
+    for(Mapping mapping : mappings) {
+      if(context.equals(mapping.getGraphname())) {
+        for(String included : mapping.getInclusionSet()) {
+          contexts.addAll(relatedGraphs(included, mappings));
+        }
+      }
+    }
+    return contexts;
+  }
+
+  @Override
+  public String getCompositionFingerPrint(Set<GraphVar> graphVars) {
+
+    Map<String, Set<String>> hashToContext = connector.listPhiSourceIdsPerHash();
+    Map<String, String> contextToHash = new HashMap<>();
+    for(String hash : hashToContext.keySet()) {
+      Set<String> contexts = hashToContext.get(hash);
+      for(String context : contexts) {
+        contextToHash.put(context, hash);
+      }
+    }
+
+    HashSet<String> contexts = new HashSet<>();
+    for(GraphVar graphVar : graphVars) {
+      String context = contextMap().get(graphVar);
+      contexts.addAll(relatedGraphs(context, composePlan.getVarMap()));
+    }
+
+    Set<String> hashes = new HashSet<>();
+    for(String context : contexts) {
+      if(contextToHash.containsKey(context)) {
+        hashes.add(contextToHash.get(context));
+      }
+    }
+
+    return fingerPrint(hashes, "-");
   }
 }

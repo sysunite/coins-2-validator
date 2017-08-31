@@ -1,6 +1,7 @@
 package com.sysunite.coinsweb.connector;
 
 import com.sysunite.coinsweb.graphset.QueryFactory;
+import com.sysunite.coinsweb.parser.config.pojo.Mapping;
 import com.sysunite.coinsweb.parser.config.pojo.Source;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
@@ -16,16 +17,19 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.rdfxml.util.RDFXMLPrettyWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.function.Function;
 
+import static com.sysunite.coinsweb.graphset.ContainerGraphSetFactory.fingerPrint;
 import static com.sysunite.coinsweb.rdfutil.Utils.withoutHash;
 
 /**
@@ -93,7 +97,6 @@ public abstract class Rdf4jConnector implements Connector {
       Update updateQuery = con.prepareUpdate(QueryLanguage.SPARQL, queryString);
       updateQuery.setIncludeInferred(false);
 
-
       try {
         updateQuery.execute();
       } catch (Exception e) {
@@ -121,15 +124,35 @@ public abstract class Rdf4jConnector implements Connector {
     resource = withoutHash(resource);
     replace = withoutHash(replace);
 
-    update("WITH <"+context+"> "+
+    String subjectQuery =
+    "WITH <"+context+"> "+
     "DELETE { <"+resource+"> ?p ?o } "+
     "INSERT { <"+replace+"> ?p ?o } "+
-    "WHERE { <"+resource+"> ?p ?o } ");
+    "WHERE { <"+resource+"> ?p ?o  } ";
+    update(subjectQuery);
 
-    update("WITH <"+context+"> "+
+    String objectQuery =
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "WITH <"+context+"> "+
     "DELETE { ?s ?p <"+resource+"> } "+
     "INSERT { ?s ?p <"+replace+"> } "+
-    "WHERE { ?s ?p <"+resource+"> } ");
+    "WHERE { ?s ?p <"+resource+">   . FILTER (?p != val:sourceContext) } ";
+    update(objectQuery);
+
+     subjectQuery =
+    "WITH <"+context+"> "+
+    "DELETE { <"+resource+"#> ?p ?o } "+
+    "INSERT { <"+replace+"> ?p ?o } "+
+    "WHERE {  <"+resource+"#> ?p ?o  } ";
+    update(subjectQuery);
+
+     objectQuery =
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "WITH <"+context+"> "+
+    "DELETE { ?s ?p <"+resource+"#> } "+
+    "INSERT { ?s ?p <"+replace+"> } "+
+    "WHERE { ?s ?p <"+resource+"#>  . FILTER (?p != val:sourceContext) } ";
+    update(objectQuery);
   }
 
   @Override
@@ -160,11 +183,31 @@ public abstract class Rdf4jConnector implements Connector {
     }
 
     try (RepositoryConnection con = repository.getConnection()) {
-      Optional<RDFFormat> format = Rio.getParserFormatForFileName(file.toString());
-      if(!format.isPresent()) {
+      RDFFormat format = Rdf4jUtil.interpretFormat(file.toString());
+      if(format == null) {
         throw new RuntimeException("Could not determine the type of file this is: " + file.getName());
       }
-      con.add(file, null, format.get(), asResource(contexts));
+      con.add(file, null, format, asResource(contexts));
+
+    } catch (IOException e) {
+      log.error(e.getMessage(), e);
+    }
+  }
+
+
+  @Override
+  public void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts) {
+    if(!initialized) {
+      init();
+    }
+
+    try (RepositoryConnection con = repository.getConnection()) {
+      RDFFormat format = Rdf4jUtil.interpretFormat(fileName);
+      if(format == null) {
+        throw new RuntimeException("Could not determine the type of file this is: " + fileName);
+      }
+      con.add(inputStream, baseUri, format, asResource(contexts));
+
 
     } catch (IOException e) {
       log.error(e.getMessage(), e);
@@ -183,7 +226,6 @@ public abstract class Rdf4jConnector implements Connector {
 //    "FROM NAMED <"+context+"> " +
     "WHERE { graph ?context { " +
     "?context val:uploadedDate  ?timestamp . " +
-    "?context val:sourceId      ?sourceId . " +
     "?context val:sourceContext ?originalContext . " +
     "?context val:sourceFile    ?fileName . " +
     "?context val:sourceHash    ?hash . " +
@@ -195,15 +237,14 @@ public abstract class Rdf4jConnector implements Connector {
       BindingSet row = (BindingSet) rowObject;
 
       String context         = row.getBinding("context").getValue().stringValue();
-      String sourceId        = row.getBinding("sourceId").getValue().stringValue();
       String timestamp       = row.getBinding("timestamp").getValue().stringValue();
       String originalContext = row.getBinding("originalContext").getValue().stringValue();
       String fileName        = row.getBinding("fileName").getValue().stringValue();
       String hash            = row.getBinding("hash").getValue().stringValue();
 
       Source source = new Source();
-      source.setId(sourceId);
       source.setGraphname(originalContext);
+      source.setStoreContext(context);
       source.setHash(hash);
       source.setPath(fileName);
       list.add(source);
@@ -220,39 +261,68 @@ public abstract class Rdf4jConnector implements Connector {
     String query =
 
     "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
-    "SELECT DISTINCT ?hash ?sourceId " +
+    "SELECT DISTINCT ?hash ?context " +
     "WHERE { graph ?context { " +
     "?context val:sourceHash ?hash . " +
-    "?context val:sourceId   ?sourceId . " +
     "}} ORDER BY ?hash";
 
 
     List<Object> result = select(query);
 
     String previousHash = "";
-    HashSet<String> previousSet = new HashSet<>();
+    HashSet<String> previousSet = null;
     for(Object rowObject :  result) {
       BindingSet row = (BindingSet) rowObject;
 
       String hash       = row.getBinding("hash").getValue().stringValue();
-      String sourceId   = row.getBinding("sourceId").getValue().stringValue();
+      String context    = row.getBinding("context").getValue().stringValue();
 
       if(!previousHash.equals(hash)) {
-        list.put(previousHash, previousSet);
+        if(previousSet != null) {
+          list.put(previousHash, previousSet);
+        }
         previousSet = new HashSet<>();
         previousHash =  hash;
       }
-      previousSet.add(sourceId);
+      previousSet.add(context);
     }
-    if(!previousSet.isEmpty()) {
+    if(previousSet != null) {
       list.put(previousHash, previousSet);
     }
 
     return list;
   }
 
+  /**
+   * List all sigma graphs
+   * @return
+   */
+  public Set<String> listSigmaGraphs() {
+    Set<String> set = new HashSet<>();
 
-  public Map<String, Set<String>> listSigmaGraphs() {
+    String query =
+
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "SELECT DISTINCT ?context ?inclusion " +
+    "WHERE { graph ?context { " +
+    "?context val:contains ?inclusion . " +
+    "}} ORDER BY ?context";
+
+    List<Object> result = select(query);
+
+
+    for(Object rowObject : result) {
+      BindingSet row = (BindingSet) rowObject;
+      String context = row.getBinding("context").getValue().stringValue();
+
+      if(!set.contains(context)) {
+        set.add(context);
+      }
+    }
+
+    return set;
+  }
+  public Map<Set<String>, Set<String>> listSigmaGraphsWithIncludes() {
 
     HashMap<String, Set<String>> list = new HashMap<>();
 
@@ -289,20 +359,86 @@ public abstract class Rdf4jConnector implements Connector {
       list.put(previousContext, previousSet);
     }
 
-    return list;
+
+    HashMap<String, Set<String>> fingerPrintedContextList = new HashMap<>();
+    HashMap<String, Set<String>> fingerPrintedInclusionsList = new HashMap<>();
+    for(String context : list.keySet()) {
+
+      Set<String> inclusions = list.get(context);
+      String fingerPrint = fingerPrint(inclusions, "-");
+
+      if(!fingerPrintedInclusionsList.containsKey(fingerPrint)) {
+        fingerPrintedInclusionsList.put(fingerPrint, inclusions);
+      }
+
+      if(!fingerPrintedContextList.containsKey(fingerPrint)) {
+        fingerPrintedContextList.put(fingerPrint, new HashSet<>());
+      }
+      Set<String> contexts = fingerPrintedContextList.get(fingerPrint);
+      contexts.add(context);
+
+    }
+
+    HashMap<Set<String>, Set<String>> compressedList = new HashMap<>();
+    for(String fingerPrint : fingerPrintedContextList.keySet()) {
+      Set<String> contexts = fingerPrintedContextList.get(fingerPrint);
+      Set<String> inclusions = fingerPrintedInclusionsList.get(fingerPrint);
+      compressedList.put(contexts, inclusions);
+    }
+
+    return compressedList;
   }
 
-  public Map<String, Set<String>> listInferencesPerSigmaGraph() {
+  // The inferenceCode should have the "|" separator and have this format:
+  // COINS 2.0 Lite_0.9.85/0.9.85/coins container inference|1c73af7f95863c2f088053b1a1f5cc2d-57d50697b28694734038a545031e56eb-58fe7035dbea97e9d62619bf24a7fe73
+
+  public Set<String> findSigmaGraphsByInferenceCode(String inferenceCodeWithHashes) {
+    if(inferenceCodeWithHashes.length()-1 != inferenceCodeWithHashes.replace("|","").length()) {
+      throw new RuntimeException("The inferenceCode does not have the right amount of | separators");
+    }
+    if(inferenceCodeWithHashes.length()-2 != inferenceCodeWithHashes.replace("/","").length()) {
+      throw new RuntimeException("The inferenceCode does not have the right amount of / separators");
+    }
+    String fingerPrint = inferenceCodeWithHashes.substring(0, inferenceCodeWithHashes.indexOf("|"));
+    String inferenceCode = inferenceCodeWithHashes.substring(inferenceCodeWithHashes.indexOf("|")+1);
+
+    Set<String> set = new HashSet<>();
+
+    String query =
+
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "SELECT DISTINCT ?context  " +
+    "WHERE { graph ?context { " +
+    "  ?context val:bundle \""+inferenceCode+"\" . " +
+    "  ?context val:compositionFingerPrint \""+fingerPrint+"\" . " +
+    "}} ORDER BY ?context";
+
+
+    List<Object> result = select(query);
+
+    for(Object rowObject :  result) {
+      BindingSet row = (BindingSet) rowObject;
+
+      String context = row.getBinding("context").getValue().stringValue();
+      set.add(context);
+    }
+
+    return set;
+  }
+
+  public Map<String, Set<String>> listInferenceCodePerSigmaGraph() {
 
     HashMap<String, Set<String>> list = new HashMap<>();
 
     String query =
 
     "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
-    "SELECT DISTINCT ?context ?inference " +
+    "SELECT DISTINCT ?context ?inferenceCode ?fingerPrint " +
     "WHERE { graph ?context { " +
-    "?context val:inference ?inference . " +
+    "  ?context val:bundle ?inferenceCode . " +
+    "  ?context val:compositionFingerPrint ?fingerPrint . " +
     "}} ORDER BY ?context";
+
 
     List<Object> result = select(query);
 
@@ -312,20 +448,100 @@ public abstract class Rdf4jConnector implements Connector {
       BindingSet row = (BindingSet) rowObject;
 
       String context         = row.getBinding("context").getValue().stringValue();
-      String inference       = row.getBinding("inference").getValue().stringValue();
+      String inference       = row.getBinding("inferenceCode").getValue().stringValue();
+      String fingerPrint     = row.getBinding("fingerPrint").getValue().stringValue();
 
       if(!previousContext.equals(context)) {
-        list.put(previousContext, previousSet);
+
+        // Skip start condition
+        if(!previousContext.isEmpty()) {
+          list.put(previousContext, previousSet);
+        }
         previousSet = new HashSet<>();
         previousContext =  context;
       }
-      previousSet.add(inference);
+      previousSet.add(fingerPrint + "|" + inference);
     }
     if(!previousSet.isEmpty()) {
       list.put(previousContext, previousSet);
     }
 
     return list;
+  }
+
+  // If value is null in originalContextsWithHash, treat this key as the import context
+  public List<String> findPhiGraphWithImports(String hash, Map<String, String> originalContextsWithHash) {
+
+
+    ArrayList<String> keySet = new ArrayList<>();
+    keySet.addAll(originalContextsWithHash.keySet());
+
+    String query =
+
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
+    "SELECT ?context " +
+    "WHERE { " +
+    "  graph ?context { ";
+    for(int i = 0; i < originalContextsWithHash.size(); i++ ) {
+      if(originalContextsWithHash.get(keySet.get(i)) == null) {
+        query += " ?context owl:imports <"+keySet.get(i)+"> . ";
+      } else {
+        query += " ?context owl:imports ?library_" + i + " . ";
+      }
+    }
+    query +=
+    "    ?context val:sourceHash    \""+hash+"\" . " +
+    "  } ";
+
+    for(int i = 0; i < originalContextsWithHash.size(); i++ ) {
+      if (originalContextsWithHash.get(keySet.get(i)) != null) {
+        query +=
+        "  graph ?library_" + i + " { " +
+        "    ?library val:sourceContext ?original . " +
+        "    ?library val:sourceHash    \"" + originalContextsWithHash.get(keySet.get(i)) + "\" . " +
+        "    FILTER(?original = <" + keySet.get(i) + "> || ?original = <" + keySet.get(i) + "#>) . " +
+        "  } ";
+      }
+    }
+    query +=
+    "}";
+
+    ArrayList<String> contexts = new ArrayList<>();
+    List<Object> result = select(query);
+    for (Object bindingSet : result) {
+
+      String namespace = ((BindingSet)bindingSet).getBinding("context").getValue().stringValue();
+      contexts.add(namespace);
+    }
+    return contexts;
+  }
+
+  public List<Object> listMappings() {
+    HashMap<String, Mapping> resultMap = new HashMap<>();
+
+    Map<Set<String>, Set<String>> sigmaGraphs = listSigmaGraphsWithIncludes();
+    for(Set<String> sigmaUris : sigmaGraphs.keySet()) {
+      for(String sigmaUri : sigmaUris) {
+        Mapping mapping = new Mapping(null, sigmaUri);
+        mapping.setInitialized();
+        mapping.setInclusionSet(sigmaGraphs.get(sigmaUri));
+
+
+        resultMap.put(sigmaUri, mapping);
+      }
+    }
+
+
+    Map<String, Set<String>> inferenceMap = listInferenceCodePerSigmaGraph();
+    for(String sigmaUri : inferenceMap.keySet()) {
+      Mapping mapping = resultMap.get(sigmaUri);
+      mapping.setBundleFingerPrints(inferenceMap.get(sigmaUri));
+    }
+
+    ArrayList<Object> result = new ArrayList<>();
+    result.addAll(resultMap.values());
+    return result;
   }
 
   public void storePhiGraphExists(Object sourceObject, String context, String fileName, String hash) {
@@ -341,7 +557,6 @@ public abstract class Rdf4jConnector implements Connector {
     "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
     "INSERT DATA { GRAPH <"+context+"> { " +
     "<"+context+"> val:uploadedDate  \""+timestamp+"\" . " +
-    "<"+context+"> val:sourceId      \""+source.getId()+"\". " +
     "<"+context+"> val:sourceContext <"+source.getGraphname()+"> . " +
     "<"+context+"> val:sourceFile    \""+fileName+"\" . " +
     "<"+context+"> val:sourceHash    \""+hash+"\" . " +
@@ -366,29 +581,7 @@ public abstract class Rdf4jConnector implements Connector {
     query +=
     "}}";
 
-    log.info("Store sigma graph exists "+timestamp+" for "+context+":\n"+query);
-
     update(query);
-  }
-
-
-  @Override
-  public void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts) {
-    if(!initialized) {
-      init();
-    }
-
-    try (RepositoryConnection con = repository.getConnection()) {
-      Optional<RDFFormat> format = Rio.getParserFormatForFileName(fileName);
-      if(!format.isPresent()) {
-        throw new RuntimeException("Could not determine the type of file this is: " + fileName);
-      }
-      con.add(inputStream, baseUri, format.get(), asResource(contexts));
-
-
-    } catch (IOException e) {
-      log.error(e.getMessage(), e);
-    }
   }
 
   @Override
@@ -527,6 +720,7 @@ public abstract class Rdf4jConnector implements Connector {
     return importsMap;
   }
 
+  // Get the contexts that are imported in this context, the value is the original uri
   public Map<String, String> getImports(String context) {
 
     log.info("Look for imports in context "+context);
@@ -551,7 +745,7 @@ public abstract class Rdf4jConnector implements Connector {
 
       String namespace = ((BindingSet)bindingSet).getBinding("library").getValue().stringValue();
       String original = ((BindingSet)bindingSet).getBinding("original").getValue().stringValue();
-      log.info("Found import: " + namespace + "("+original+")");
+      log.info("Found import: " + namespace + " ("+original+")");
       namespaces.put(namespace, original);
     }
     return namespaces;

@@ -1,15 +1,15 @@
 package com.sysunite.coinsweb.filemanager;
 
 import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.connector.NullModel;
+import com.sysunite.coinsweb.connector.Rdf4jUtil;
 import com.sysunite.coinsweb.graphset.ContainerGraphSetFactory;
 import com.sysunite.coinsweb.graphset.QueryFactory;
 import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
 import com.sysunite.coinsweb.parser.config.factory.DescribeFactory;
 import com.sysunite.coinsweb.parser.config.pojo.*;
-import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
@@ -18,11 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.security.DigestInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
 
 /**
@@ -51,6 +49,16 @@ public class DescribeFactoryImpl implements DescribeFactory {
       container.setVariables(ConfigFactory.getDefaultMapping(expandedGraphs));
     }
   }
+  public static void expandGraphConfig(Container container, ContainerFileImpl containerFile) {
+
+    log.info("Expand graph settings for container of type "+container.getType());
+    ArrayList<Graph> expandedGraphs = ContainerGraphSetFactory.loadList(container.getGraphs(), containerFile);
+    container.setGraphs(expandedGraphs);
+
+    if(container.getVariables().isEmpty()) {
+      container.setVariables(ConfigFactory.getDefaultMapping(expandedGraphs));
+    }
+  }
 
   public ArrayList<Graph> graphsInContainerGraphSet(Connector connector) {
     ArrayList<Graph> graphs = new ArrayList();
@@ -71,12 +79,10 @@ public class DescribeFactoryImpl implements DescribeFactory {
   public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content) {
     ArrayList<Graph> graphs = new ArrayList();
     for(String contentFile : containerFile.getContentFiles()) {
-
-      DigestInputStream inputStream = containerFile.getContentFile(contentFile);
-      inputStream.on(false);
+      
       log.info("Look for graphs in content file "+contentFile);
       try {
-        for (String namespace : namespacesForFile(inputStream, contentFile)) {
+        for (String namespace : containerFile.getContentFileNamespaces(contentFile)) {
 
           Source source = new Source();
           source.setType("container");
@@ -98,11 +104,9 @@ public class DescribeFactoryImpl implements DescribeFactory {
     ArrayList<Graph> graphs = new ArrayList();
     for(String repositoryFile : containerFile.getRepositoryFiles()) {
 
-      DigestInputStream inputStream = containerFile.getRepositoryFile(repositoryFile);
-      inputStream.on(false);
       log.info("Look for graphs in content file "+repositoryFile);
       try {
-        for (String namespace : namespacesForFile(inputStream, repositoryFile)) {
+        for (String namespace : containerFile.getRepositoryFileNamespaces(repositoryFile)) {
 
           Source source = new Source();
           source.setType("container");
@@ -122,22 +126,32 @@ public class DescribeFactoryImpl implements DescribeFactory {
   }
 
 
-  public static ArrayList<String> namespacesForFile(File file) throws FileNotFoundException {
-    return namespacesForFile(new FileInputStream(file), file.getName());
+  public static void namespacesForFile(InputStream inputStream, String fileName, HashMap<String, ArrayList<String>> namespacesMap, HashMap<String, ArrayList<String>> importsMap) {
+
+    ArrayList<String> namespaces = new ArrayList<>();
+    ArrayList<String> imports = new ArrayList<>();
+
+    namespacesForFile(inputStream, fileName, namespaces, imports);
+
+    namespacesMap.put(fileName, namespaces);
+    importsMap.put(fileName, imports);
   }
-  public static ArrayList<String> namespacesForFile(InputStream inputStream, String fileName) {
+  public static void namespacesForFile(InputStream inputStream, String fileName, ArrayList<String> namespaces, ArrayList<String> imports) {
 
     String backupNamespace = QueryFactory.VALIDATOR_HOST + fileName;
 
-    ArrayList<String> namespaces = new ArrayList();
+    ArrayList<String> result = new ArrayList();
 
-    log.info("Determine file type for file: "+fileName);
-    Optional<RDFFormat> format = Rio.getParserFormatForFileName(fileName);
-    if(!format.isPresent()) {
+
+    RDFFormat format = Rdf4jUtil.interpretFormat(fileName);
+    if(format == null) {
       throw new RuntimeException("Not able to determine format of file: " + fileName);
     }
-    Model model = new LinkedHashModel();
-    RDFParser rdfParser = Rio.createParser(format.get());
+    log.info("Found file type "+format.getName()+" for file: "+fileName);
+    log.info("Parse the file to determine contexts");
+
+    NullModel model = new NullModel();
+    RDFParser rdfParser = Rio.createParser(format);
     rdfParser.setRDFHandler(new StatementCollector(model));
 
     try {
@@ -150,24 +164,26 @@ public class DescribeFactoryImpl implements DescribeFactory {
     for(Resource context : model.contexts()) {
       if(context != null) {
         log.info("Found context in file: "+context.toString());
-        namespaces.add(context.toString());
+        result.add(context.toString());
       }
     }
 
     // If no contexts, use the empty namespace
-    if(namespaces.size() < 1) {
+    if(result.size() < 1) {
       Optional<Namespace> namespace = model.getNamespace("");
       if (namespace.isPresent()) {
         log.info("No context found to represent this file, falling back to empty prefix namespace: "+namespace.get().getName());
-        namespaces.add(namespace.get().getName());
+        result.add(namespace.get().getName());
       }
     }
 
     // If still no namespace
-    if(namespaces.size() < 1) {
+    if(result.size() < 1) {
       log.warn("No context found to represent this file, falling back to " + backupNamespace);
-      namespaces.add(backupNamespace);
+      result.add(backupNamespace);
     }
-    return namespaces;
+
+    namespaces.addAll(result);
+    imports.addAll(model.getImports());
   }
 }

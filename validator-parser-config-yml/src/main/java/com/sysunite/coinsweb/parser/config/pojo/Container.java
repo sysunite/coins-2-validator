@@ -49,6 +49,11 @@ public class Container extends ConfigPart {
     this.code = RandomStringUtils.random(8, true, true);
   }
 
+
+  private String mapSigmaContext(String confContext) {
+    return confContext + "-" + code;
+  }
+
   public String getType() {
     return type;
   }
@@ -56,6 +61,12 @@ public class Container extends ConfigPart {
     return location;
   }
   public List<Mapping> getVariables() {
+    for(Mapping mapping : variables) {
+      if(!mapping.getInitialized()) {
+        mapping.setGraphname(mapSigmaContext(mapping.getGraphname()));
+      }
+      mapping.setInitialized();
+    }
     return variables;
   }
   @JsonIgnore

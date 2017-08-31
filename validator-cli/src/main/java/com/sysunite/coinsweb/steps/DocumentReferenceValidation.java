@@ -115,6 +115,7 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
         "}}";
 
         int logCount = 0;
+        final int MAX_REPORT_COUNT = 50;
         final int MAX_LOG_COUNT = 10;
         List<Object> result = graphSet.select(query);
         for (Object bindingSet : result) {
@@ -135,7 +136,8 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
             }
           }
           if(found) {
-            internalDocumentReferences.put(document, value);
+            if(logCount < MAX_REPORT_COUNT)
+              internalDocumentReferences.put(document, value);
           } else {
             unmatchedInternalDocumentReferences.put(document, value);
           }

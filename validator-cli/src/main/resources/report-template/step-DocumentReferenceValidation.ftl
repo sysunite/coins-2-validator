@@ -7,7 +7,7 @@
   <tr>
     <td></td>
     <th>internalDocumentReferences</th>
-    <td>Available internalDocumentReferences:<br/>
+    <td>Available internalDocumentReferences (max 50):<br/>
     <#if step.internalDocumentReferences?has_content>
       <ul>
         <#list step.internalDocumentReferences?keys as doc>

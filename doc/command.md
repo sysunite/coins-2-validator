@@ -20,6 +20,7 @@ argument | description
 --- | ---
 -h | print help message
 -l | write a log file
+-q | do not ouput anything to the console
 [config.yml](https://github.com/sysunite/coins-2-validator/blob/develop/doc/config-yml.md) | the configuration of the validation run
 *container.ccr ...* | zero or more containers that override the path in the config.yml
 
@@ -37,6 +38,7 @@ argument | description
 -h | print help message
 -l | write a log file
 --yml-to-console | print the generated config
+-q | do not ouput anything to the console (apart from optional yml)
 *container.ccr* | the container file being described
 
 If the command was able to generate a configuration fragment the **exit code** is ```0```. In all other cases the **exit code** is ```1```. Add the ```-l``` argument and read the log for more information.

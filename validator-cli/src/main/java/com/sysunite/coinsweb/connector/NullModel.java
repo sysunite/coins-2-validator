@@ -21,7 +21,7 @@ public class NullModel extends AbstractModel {
 
 
   Set<Namespace> namespaces = new LinkedHashSet<>();
-  Set<Resource> contexts = new LinkedHashSet<>();
+  Set<Resource> contexts = new LinkedHashSet<>();  //todo this does not work as
   ArrayList<String> imports = new ArrayList<>();
 
   public NullModel() {

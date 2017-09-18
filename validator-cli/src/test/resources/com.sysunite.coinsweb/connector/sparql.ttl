@@ -1,0 +1,21 @@
+<http://ldf.fi/ww1lod/void/Dataset>
+        <http://rdfs.org/ns/void#exampleResource>
+                <http://ldf.fi/ww1lod/a74d369d> .
+
+<http://www.cidoc-crm.org/cidoc-crm/E21_Person>
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "人物"@cn , "Pessoa"@pt , "Πρόσωπο"@el , "Личность"@ru , "Personne"@fr , "Person"@en , "Person"@de .
+
+<http://ldf.fi/ww1lod/a74d369d>
+        a                           <http://www.cidoc-crm.org/cidoc-crm/E21_Person> ;
+        <http://schema.org/gender>  <http://www.yso.fi/onto/koko/P34565> ;
+        <http://www.cidoc-crm.org/cidoc-crm/P107i_is_current_or_former_member_of>
+                <http://ldf.fi/ww1lod/423bee05> ;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://dbpedia.org/resource/James_Bryce,_1st_Viscount_Bryce> ;
+        <http://www.w3.org/2004/02/skos/core#altLabel>
+                "Lord Bryce" , "VISCOUNT BRYCE"@en , "Viscount Bryce" ;
+        <http://www.w3.org/2004/02/skos/core#prefLabel>
+                "Viscount James Bryce" ;
+        <http://www.w3.org/2004/02/skos/core#related>
+                <http://ldf.fi/ww1lod/39a84084> , <http://ldf.fi/ww1lod/a36ca5a3> , <http://ldf.fi/ww1lod/780a1e58> .

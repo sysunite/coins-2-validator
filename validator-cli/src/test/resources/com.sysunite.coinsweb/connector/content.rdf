@@ -1,0 +1,31 @@
+<rdf:RDF
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:coins2="http://www.coinsweb.nl/cbim-2.0.rdf#"
+  xmlns:owl="http://www.w3.org/2002/07/owl#"
+  xml:base="http://www.rws.nl/coins2/voorbeelden/Netwerkruimte.nl-base#">
+  <owl:Ontology rdf:about="">
+    <owl:imports rdf:resource="http://www.coinsweb.nl/cbim-2.0.rdf#"/>
+    <coins2:containerId rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >166e32b5-fbff-4277-93a7-622848901713</coins2:containerId>
+    <owl:imports rdf:resource="http://www.coinsweb.nl/coins2/referencemodel/BranchVersioning#"/>
+    <owl:imports rdf:resource="http://www.coinsweb.nl/units-2.0.rdf#"/>
+    <coins2:creator rdf:resource="http://sandbox.coinsweb.nl/defaultUser"/>
+    <owl:imports rdf:resource="http://otl.rws.nl/"/>
+    <owl:imports rdf:resource="http://otl.rws.nl/coins2/rws-referentiekader.rdf#"/>
+    <owl:imports rdf:resource="http://www.coinsweb.nl/COINSWOA.rdf#"/>
+    <rdf:type rdf:resource="http://www.coinsweb.nl/cbim-2.0.rdf#CoinsContainerObject"/>
+  </owl:Ontology>
+  <coins2:CoinsContainerObject rdf:about="#59204770-7a82-4673-a8ba-5802301a5c57">
+    <coins2:userID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >ID0001</coins2:userID>
+    <coins2:description rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Het wegennetwerk</coins2:description>
+    <coins2:name rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Wegennetwerk</coins2:name>
+    <rdf:type rdf:resource="http://otl.rws.nl/otl#OB00021"/>
+    <coins2:creationDate rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime"
+    >2017-03-09T11:01:12.227Z</coins2:creationDate>
+    <coins2:creator rdf:resource="http://sandbox.coinsweb.nl/defaultUser"/>
+    <rdf:type rdf:resource="http://www.coinsweb.nl/cbim-2.0.rdf#Object"/>
+  </coins2:CoinsContainerObject>
+</rdf:RDF>

@@ -1,0 +1,10 @@
+version: '2'
+services:
+  graphdb:
+    image: "sysunite/stardog:5.0.3"
+    ports:
+    - "7200:7200"
+    mem_limit: 8g
+    environment:
+    - STARDOG_HOME=/opt/stardog
+    

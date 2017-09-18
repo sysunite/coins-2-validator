@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
-import static com.sysunite.coinsweb.parser.Parser.validate;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -18,12 +17,7 @@ public class Environment extends ConfigPart {
 
   private static final Logger log = LoggerFactory.getLogger(Environment.class);
 
-  public static final String PERMANENT = "permanent";
-  public static final String HASH_IN_GRAPHNAME = "permanent-sorted-hashes-in-graphname";
-  public static final String REPO_PER_RUN = "repo-per-run";
-
   private Store store;
-  private String loadingStrategy;
   private String tempPath;
 
   private boolean cleanUp = false;
@@ -33,9 +27,6 @@ public class Environment extends ConfigPart {
 
   public Store getStore() {
     return store;
-  }
-  public String getLoadingStrategy() {
-    return loadingStrategy;
   }
   public String getTempPath() {
     return tempPath;
@@ -56,11 +47,6 @@ public class Environment extends ConfigPart {
   public void setStore(Store store) {
     this.store = store;
     this.store.setParent(this.getParent());
-  }
-  public void setLoadingStrategy(String loadingStrategy) {
-
-    validate(loadingStrategy, PERMANENT, HASH_IN_GRAPHNAME, REPO_PER_RUN);
-    this.loadingStrategy = loadingStrategy;
   }
   public void setTempPath(String tempPath) {
     this.tempPath = tempPath;
@@ -94,7 +80,6 @@ class EnvironmentSanitizer extends StdConverter<Environment, Environment> {
   @Override
   public Environment convert(Environment obj) {
     isNotNull(obj.getStore());
-    isNotNull(obj.getLoadingStrategy());
 
     return obj;
   }

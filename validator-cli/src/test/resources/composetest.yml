@@ -7,7 +7,6 @@ environment:
   cleanUp: false
   createRepo: false
   destroyRepo: false
-  loadingStrategy: permanent-sorted-hashes-in-graphname
 
 run:
   containers:

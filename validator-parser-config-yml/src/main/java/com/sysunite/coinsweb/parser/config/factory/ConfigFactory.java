@@ -118,7 +118,6 @@ public class ConfigFactory {
 
     Environment environment = new Environment();
     environment.setStore(store);
-    environment.setLoadingStrategy(Environment.HASH_IN_GRAPHNAME);
 
     return environment;
   }

@@ -36,7 +36,7 @@ public class GraphDB extends Rdf4jConnector {
   RepositoryManager manager;
   String repositoryId;
 
-  boolean repoPerRun = false;
+
   boolean createRepo;
 
 
@@ -57,14 +57,6 @@ public class GraphDB extends Rdf4jConnector {
     cleanUp = config.getCleanUp();
     createRepo = config.getCreateRepo();
     wipeOnClose = config.getDestroyRepo();
-
-
-    if(Environment.REPO_PER_RUN.equals(config.getLoadingStrategy())) {
-      repoPerRun = true;
-    }
-
-
-
 
   }
 

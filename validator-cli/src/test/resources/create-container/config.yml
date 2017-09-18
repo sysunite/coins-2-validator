@@ -3,7 +3,6 @@ environment:
     type: graphdb
     config:
       endpoint: http://localhost:7200
-  loadingStrategy: permanent
 
 run:
   containers:

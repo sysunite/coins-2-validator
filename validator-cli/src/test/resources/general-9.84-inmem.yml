@@ -2,10 +2,10 @@ environment:
 
   store:
     type: rdf4j-sail-memory
+    useDisk: false
   cleanUp: false
   createRepo: true
   destroyRepo: false
-  loadingStrategy: permanent-sorted-hashes-in-graphname
 
 run:
   containers:

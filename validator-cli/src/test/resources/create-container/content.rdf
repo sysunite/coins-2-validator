@@ -1,12 +1,8 @@
 <rdf:RDF
-    xmlns="http://www.rws.nl/coins2/voorbeelden/Netwerkruimte.nl#"
-    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    xmlns:coins2="http://www.coinsweb.nl/cbim-2.0.rdf#"
-    xmlns:owl="http://www.w3.org/2002/07/owl#"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-    xmlns:j.0="http://otl.rws.nl/otl#"
-    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-  xml:base="http://www.rws.nl/coins2/voorbeelden/Netwerkruimte.nl#">
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:coins2="http://www.coinsweb.nl/cbim-2.0.rdf#"
+  xmlns:owl="http://www.w3.org/2002/07/owl#"
+  xml:base="http://www.rws.nl/coins2/voorbeelden/base#">
   <owl:Ontology rdf:about="">
     <owl:imports rdf:resource="http://www.coinsweb.nl/cbim-2.0.rdf#"/>
     <coins2:containerId rdf:datatype="http://www.w3.org/2001/XMLSchema#string"

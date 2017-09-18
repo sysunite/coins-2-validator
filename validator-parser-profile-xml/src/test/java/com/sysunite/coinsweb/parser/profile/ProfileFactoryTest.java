@@ -22,7 +22,7 @@ public class ProfileFactoryTest {
 
 
 
-    InputStream file = getClass().getClassLoader().getResource("profile.lite-9.85-virtuoso.xml").openStream();
+    InputStream file = getClass().getClassLoader().getResource("profile.lite-9.85-generated.xml").openStream();
     ProfileFile profileFile = ProfileFile.parse(file);
 
     Map<String, Set<String>> map = ProfileFactory.inferencesOverVars(profileFile);

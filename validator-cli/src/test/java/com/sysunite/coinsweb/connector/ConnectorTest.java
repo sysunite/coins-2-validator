@@ -3,7 +3,7 @@ package com.sysunite.coinsweb.connector;
 import application.SimpleHttpServer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.sysunite.coinsweb.connector.virtuoso.Virtuoso;
+import com.sysunite.coinsweb.connector.graphdb.GraphDB;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.StepDeserializer;
 import com.sysunite.coinsweb.parser.config.pojo.Store;
@@ -25,7 +25,7 @@ public class ConnectorTest {
   Logger log = LoggerFactory.getLogger(ConnectorTest.class);
 
   static {
-    File profile = new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/profiles/profile.lite-9.85-virtuoso.xml");
+    File profile = new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/profiles/profile.lite-9.85-generated.xml");
     SimpleHttpServer.serveFile(profile, "application/xml", 9877);
   }
 
@@ -40,7 +40,7 @@ public class ConnectorTest {
       File configYml = new File(getClass().getClassLoader().getResource("general-9.85-virtuoso.yml").getFile());
       ConfigFile configFile = mapper.readValue(configYml, ConfigFile.class);
 
-      Virtuoso connector = new Virtuoso(configFile.getEnvironment());
+      Connector connector = new GraphDB(configFile.getEnvironment());
       assert(connector.testConnection());
 
 
@@ -65,10 +65,10 @@ public class ConnectorTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     try {
 
-      File configYml = new File(getClass().getClassLoader().getResource("general-9.85-virtuoso.yml").getFile());
+      File configYml = new File(getClass().getClassLoader().getResource("general-9.85-graphdb.yml").getFile());
       ConfigFile configFile = mapper.readValue(configYml, ConfigFile.class);
 
-      Virtuoso connector = new Virtuoso(configFile.getEnvironment());
+      Connector connector = new GraphDB(configFile.getEnvironment());
       log.info(""+connector.testConnection());
 
 

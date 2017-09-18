@@ -17,7 +17,7 @@ public class Coins11Test {
 
 
 
-  File file = new File(getClass().getClassLoader().getResource("coins-1.1/coins11-9.85-virtuoso.yml").getFile());
+  File file = new File(getClass().getClassLoader().getResource("coins-1.1/coins11-9.85-generated.yml").getFile());
 
 
 //  File file = new File(getClass().getClassLoader().getResource("general-9.83.yml").getFile());

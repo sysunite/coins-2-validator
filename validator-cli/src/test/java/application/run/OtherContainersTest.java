@@ -19,7 +19,7 @@ public class OtherContainersTest {
   File config = new File(getClass().getClassLoader().getResource("general-9.85-stardog.yml").getFile());
 
   static {
-    File profile = new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/profiles/profile.lite-9.85-virtuoso.xml");
+    File profile = new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/profiles/profile.lite-9.85-generated.xml");
     SimpleHttpServer.serveFile(profile, "application/xml", 9877);
   }
 

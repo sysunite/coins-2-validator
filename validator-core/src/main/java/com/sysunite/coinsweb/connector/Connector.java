@@ -1,5 +1,7 @@
 package com.sysunite.coinsweb.connector;
 
+import com.sysunite.coinsweb.graphset.GraphVar;
+
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,7 +25,9 @@ public interface Connector {
   void close();
 
   List<Object> select(String queryString);
+  List<Object> select(String queryString, long limit);
   void update(String queryString);
+//  void booleanQuery(String queryString);
   void sparqlCopy(String fromContext, String toContext);
   void sparqlAdd(String fromContext, String toContext);
   void replaceResource(String context, String resource, String replace);
@@ -34,6 +38,7 @@ public interface Connector {
 
   void storePhiGraphExists(Object source, String context, String fileName, String hash);
   void storeSigmaGraphExists(String context, Set<String> inclusionSet);
+  void storeFinishedInferences(String compositionFingerPrint, Set<GraphVar> graphVars, Map<GraphVar, String> contextMap, String inferenceCode);
 
   Map<String, String> exportPhiGraph(String contexts, OutputStream outputStream);
 
@@ -43,11 +48,12 @@ public interface Connector {
 //  String graphExists(String context);
 
   List<Object> listPhiGraphs();
-  Map<String, Set<String>> listPhiSourceIdsPerHash();
+  Map<String, Set<String>> listPhiContextsPerHash();
+  Map<String, String> listFileNamePerPhiContext();
   Set<String> listSigmaGraphs();
   Map<Set<String>, Set<String>> listSigmaGraphsWithIncludes();
   Map<String, Set<String>> listInferenceCodePerSigmaGraph();
-  Set<String> findSigmaGraphsByInferenceCode(String inferenceCode);
+  Map<String, String> listSigmaGraphsByInferenceCode();
   List<Object> listMappings();
 
   List<String> findPhiGraphWithImports(String hash, Map<String, String> originalContextsWithHash);

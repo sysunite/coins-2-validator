@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.sysunite.coinsweb.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,7 @@ public class ConfigFile {
 
   private Environment environment;
   private Run run;
+  private String version;
 
   @JsonIgnore
   private Path localizeTo;
@@ -73,6 +75,9 @@ public class ConfigFile {
   public Environment getEnvironment() {
     return environment;
   }
+  public String getVersion() {
+    return version;
+  }
 
   public void setRun(Run run) {
     this.run = run;
@@ -82,6 +87,10 @@ public class ConfigFile {
   public void setEnvironment(Environment environment) {
     this.environment = environment;
     this.environment.setParent(this);
+  }
+
+  public void setVersion(String version) {
+    this.version = version;
   }
 
 
@@ -117,6 +126,12 @@ class ConfigFileSanitizer extends StdConverter<ConfigFile, ConfigFile> {
 
     isNotNull(obj.getEnvironment());
     isNotNull(obj.getRun());
+
+    isNotNull(obj.getVersion());
+    if(!Version.VERSION.equals(obj.getVersion())) {
+      throw new RuntimeException("The config yml is not suitable for this version of the coins-validator");
+    }
+
 
     return obj;
   }

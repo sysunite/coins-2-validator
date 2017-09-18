@@ -1,9 +1,0 @@
-version: '2'
-services:
-  oracledb:
-    image: "sath89/oracle-12c"
-    ports:
-     - "8080:8080"
-     - "1521:1521"
-    volumes:
-     - /Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/services/oracle/oracledb:/u01/app/oracle

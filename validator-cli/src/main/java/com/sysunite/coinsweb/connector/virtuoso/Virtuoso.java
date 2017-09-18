@@ -1,18 +1,20 @@
 package com.sysunite.coinsweb.connector.virtuoso;
 
 import com.sysunite.coinsweb.connector.Rdf4jConnector;
-import com.sysunite.coinsweb.connector.graphdb.GraphDB;
 import com.sysunite.coinsweb.parser.config.pojo.Environment;
+import org.openrdf.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import virtuoso.rdf4j.driver.VirtuosoRepository;
+
+import java.util.List;
 
 /**
  * @author bastbijl, Sysunite 2017
  */
 public class Virtuoso extends Rdf4jConnector {
 
-  private static final Logger log = LoggerFactory.getLogger(GraphDB.class);
+  private static final Logger log = LoggerFactory.getLogger(Virtuoso.class);
 
   public static final String REFERENCE = "virtuoso";
 
@@ -72,26 +74,37 @@ public class Virtuoso extends Rdf4jConnector {
     log.info("Going to connect to " + url);
     String fullUrl = "jdbc:virtuoso://" + url;
     repository = new VirtuosoRepository(fullUrl, user, password);
-    repository.initialize();
-    ((VirtuosoRepository)repository).setUseDefGraphForQueries(false); // todo
+    try {
+      repository.initialize();
+    } catch (RepositoryException e) {
+      log.error(e.getMessage(), e);
+    }
     initialized = true;
   }
 
   @Override
+  public List<Object> select(String queryString) {
+    return super.select(
+    "DEFINE sql:log-enable 2 " +    // Autocommit mode, do not write transactions to log
+    queryString);
+  }
+
+  @Override
   public void update(String queryString) {
-    super.update("DEFINE sql:log-enable 2 " + queryString);
+    super.update("" +
+    "DEFINE sql:log-enable 2 " +    // Autocommit mode, do not write transactions to log
+    queryString);
   }
 
   @Override
   public void sparqlCopy(String fromContext, String toContext) {
-    update(
+    super.update(
     "DEFINE sql:log-enable 2 " +    // Autocommit mode, do not write transactions to log
     "COPY <"+fromContext+"> TO <"+toContext+">");
-//    storeGraphExists(toContext, fromContext);
   }
   @Override
   public void sparqlAdd(String fromContext, String toContext) {
-    update(
+    super.update(
     "DEFINE sql:log-enable 2 " +    // Autocommit mode, do not write transactions to log
     "ADD <"+fromContext+"> TO <"+toContext+">");
   }
@@ -103,7 +116,11 @@ public class Virtuoso extends Rdf4jConnector {
     if(!initialized) {
       return;
     }
-    repository.shutDown();
+    try {
+      repository.shutDown();
+    } catch (RepositoryException e) {
+      log.error(e.getMessage(), e);
+    }
     if(wipeOnClose) {
       // todo
     }

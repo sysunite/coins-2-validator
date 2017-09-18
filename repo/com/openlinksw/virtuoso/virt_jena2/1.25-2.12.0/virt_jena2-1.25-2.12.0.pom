@@ -3,6 +3,6 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.openlinksw.virtuoso</groupId>
-  <artifactId>virt-jena2</artifactId>
-  <version>1.10-2.10.1</version>
+  <artifactId>virt_jena2</artifactId>
+  <version>1.25-2.12.0</version>
 </project>

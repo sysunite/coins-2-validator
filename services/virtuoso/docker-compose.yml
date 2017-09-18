@@ -8,8 +8,10 @@ services:
      - "1111:1111"
      - "8890:8890"
     mem_limit: 8g
+#    volumes:
+#      - ./data/virtuoso:/data
     environment:
-     - DBA_PASSWORD=3h34ln3
+     - DBA_PASSWORD=dba
      - SPARQL_UPDATE=true
 #     - DEFAULT_GRAPH=http://virt-docker/default
      - VIRT_Parameters_NumberOfBuffers=680000

@@ -65,9 +65,7 @@ public class ReportFactory {
       template.process(reportItems, writer);
       return writer.toString();
 
-    } catch (TemplateException e) {
-      log.error(e.getMessage(), e);
-    } catch (IOException e) {
+    } catch (Exception e) {
       log.error(e.getMessage(), e);
     }
     throw new RuntimeException("Was not able to build the report from template.");

@@ -15,22 +15,13 @@ import java.util.ArrayList;
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class Otl171bTest {
+public class Otl171bTest extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(Otl171bTest.class);
 
-
-//  File file = new File(getClass().getClassLoader().getResource("otl-1.7.1b/custom-otl-9.81.yml").getFile());
-//  String userDir = file.getParent();
-
-//  File file = new File(getClass().getClassLoader().getResource("otl-1.7.1b/custom-otl-9.83.yml").getFile());
-//  String userDir = file.getParent();
-
-  File file = new File(getClass().getClassLoader().getResource("general-9.81.yml").getFile());
+  File file = new File(getClass().getClassLoader().getResource("general-9.85.yml").getFile());
   String userDir = file.getParent() + "/otl-1.7.1b/";
 
-//  File file = new File(getClass().getClassLoader().getResource("general-9.83.yml").getFile());
-//  String userDir = file.getParent() + "/otl-1.7.1b/";
 
   @Test
   public void run() {

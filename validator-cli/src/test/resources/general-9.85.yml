@@ -6,7 +6,7 @@ environment:
     type: graphdb
     config:
       endpoint: http://localhost:7200
-  cleanUp: false
+  cleanUp: true
   createRepo: true
   destroyRepo: false
 
@@ -66,8 +66,7 @@ run:
   - type: ProfileValidation
     profile:
       type: online
-#      path: profiles/profile.lite-9.85-virtuoso.xml
-      uri: http://localhost:9877/profile.lite-9.85-virtuoso.xml
+      uri: http://localhost:9877/profile.lite-9.85-generated.xml
     maxResults: 100
     reportInferenceResults: false
 

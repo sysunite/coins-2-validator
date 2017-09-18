@@ -1,6 +1,7 @@
 package com.sysunite.coinsweb.filemanager;
 
 import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.connector.ConnectorException;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.parser.config.pojo.Source;
@@ -19,9 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
+import java.util.zip.*;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -65,7 +64,9 @@ public class ContainerFileImpl extends File implements ContainerFile {
   public boolean isScanned() {
     return scanned;
   }
+
   public boolean isCorruptZip() {
+    if(!scanned) scan();
     return corruptZip;
   }
   public boolean hasWrongSlashes() {
@@ -220,12 +221,16 @@ public class ContainerFileImpl extends File implements ContainerFile {
   private void scan() {
 
     if(!exists()) {
-      throw new RuntimeException("Container file could not be found");
+      return;
     }
 
     Path leadingPath = null;
 
     try {
+
+      // See if this finds parsing problems
+      new ZipFile(this);
+
 
       // Get the zip file content
       ZipInputStream zis = new ZipInputStream(new FileInputStream(this));
@@ -325,12 +330,10 @@ public class ContainerFileImpl extends File implements ContainerFile {
       zis.closeEntry();
       zis.close();
 
-    } catch(IOException e) {
-      log.error(e.getMessage(), e);
-
-      scanned = true;
+    } catch(ZipException e) {
       corruptZip = true;
-      throw new RuntimeException("Something went wrong scanning the container file, concluding invalid zip");
+    } catch(IOException e) {
+      corruptZip = true;
     }
 
     scanned = true;
@@ -346,7 +349,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
     pendingAttachmentFiles.add(file);
   }
 
-  public ContainerFileImpl writeZip(Path containerFile, Connector connector) {
+  public ContainerFileImpl writeZip(Path containerFile, Connector connector) throws ConnectorException {
     log.info("Will create container file at "+containerFile.toString());
 
     List<Object> sources = connector.listPhiGraphs();

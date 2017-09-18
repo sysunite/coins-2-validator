@@ -1,6 +1,7 @@
 package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.connector.ConnectorException;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
@@ -22,25 +23,26 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   private static final Logger log = LoggerFactory.getLogger(ContainerGraphSetImpl.class);
 
 
-  private ContainerFileImpl lazyLoad = null;
+  private ContainerFileImpl containerToLazyLoad = null;
   private Map<String, Set<GraphVar>> inferencePreference;
 
   private boolean disabled;
+  private boolean loadingFailed = false;
   private Connector connector;
   private ComposePlan composePlan;
 
   private GraphVarImpl main;
 
-  private List<Mapping> variables;
+  private List<Mapping> mappings;
 
 
-  public ContainerGraphSetImpl(List<Mapping> variables) {
-    this.variables = variables;
+  public ContainerGraphSetImpl(List<Mapping> mappings) {
+    this.mappings = mappings;
     this.disabled = true;
   }
 
-  public ContainerGraphSetImpl(List<Mapping> variables, Connector connector) {
-    this.variables = variables;
+  public ContainerGraphSetImpl(List<Mapping> mappings, Connector connector) {
+    this.mappings = mappings;
     this.connector = connector;
     this.disabled = false;
   }
@@ -52,7 +54,18 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     this.main = (GraphVarImpl) main;
   }
 
+
+
+
+
+  @Override
+  public void lazyLoad(ContainerFile container, Map<String, Set<GraphVar>> inferencePreference) {
+    this.containerToLazyLoad = (ContainerFileImpl)container;
+    this.inferencePreference = inferencePreference;
+  }
+
   // Execute postponed lazy load
+  @Override
   public void load() {
 
     if(!requiresLoad()) {
@@ -61,30 +74,34 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
     // Essential step to get rid of the wildcards in the configFile
     log.info("Will now expand any wildcard usage in the config.yml section of this file");
-    DescribeFactoryImpl.expandGraphConfig(lazyLoad.getConfig(), lazyLoad);
+    try {
+      DescribeFactoryImpl.expandGraphConfig(containerToLazyLoad.getConfig(), containerToLazyLoad);
+    } catch (RuntimeException e) {
+      log.error(e.getMessage());
+      setFailed();
+      return;
+    }
 
     if(disabled) {
       return;
     }
 
     log.info("Load stuff to connector");
-    composePlan = ContainerGraphSetFactory.load(this, connector, lazyLoad, inferencePreference);
+    composePlan = ContainerGraphSetFactory.load(this, connector, containerToLazyLoad, inferencePreference);
 
-    log.info("Tried compose plan: " + ReportFactory.buildJson(variables));
+    log.trace("Will use this compose plan: " + ReportFactory.buildJson(mappings));
 
 
-    lazyLoad.getConfig().setVariables(variables);
-    this.lazyLoad = null;
+    containerToLazyLoad.getConfig().setVariables(mappings);
+    this.containerToLazyLoad = null;
   }
 
   public Connector getConnector() {
     return connector;
   }
 
-  /**
-   * returns true if it least one result was found
-   */
-  public List<Object> select(String query) {
+
+  public List<Object> select(String query) throws ConnectorException {
 
     if(requiresLoad()) {
       load();
@@ -93,7 +110,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     List<Object> result = connector.select(query);
     return result;
   }
-  public List<Object> select(String query, long limit) {
+  public List<Object> select(String query, long limit) throws ConnectorException {
 
     if(requiresLoad()) {
       load();
@@ -112,11 +129,11 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
 
 
-  public void setVariables(List<Mapping> variables) {
-    this.variables = variables;
+  public void setVariables(List<Mapping> mappings) {
+    this.mappings = mappings;
   }
-  public List<Mapping> getVariables() {
-    return variables;
+  public List<Mapping> getMappings() {
+    return mappings;
   }
 
   public Map<GraphVar, String> contextMap() {
@@ -125,7 +142,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     }
 
     HashMap<GraphVar, String> graphs = new HashMap();
-    for(Mapping mapping : variables) {
+    for(Mapping mapping : mappings) {
       graphs.put(mapping.getVariable(), mapping.getGraphname());
     }
     return graphs;
@@ -147,27 +164,33 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   }
 
   public Map<String, String> getImports(GraphVar graphVar) {
+    Map<String, String> result = new HashMap<>();
     if(requiresLoad()) {
       load();
     }
     String context = contextMap().get(graphVar);
-    return connector.getImports(context);
+    try {
+      result = connector.getImports(context);
+    } catch (ConnectorException e) {
+      log.error("Failed determining imports", e);
+    }
+    return result;
   }
 
 
 
 
-  public void update(String query) {
+  public boolean update(String query) {
     if(requiresLoad()) {
       load();
     }
-    connector.update(query);
-  }
-
-  @Override
-  public void lazyLoad(ContainerFile container, Map<String, Set<GraphVar>> inferencePreference) {
-    this.lazyLoad = (ContainerFileImpl)container;
-    this.inferencePreference = inferencePreference;
+    try {
+      connector.update(query);
+    } catch (ConnectorException e) {
+      log.error("Update query failed", e);
+      return false;
+    }
+    return true;
   }
 
 
@@ -183,21 +206,43 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
     if(!requiresLoad()) {
 
-      ArrayList<String> contexts = new ArrayList<>();
+      HashSet<String> contexts = new HashSet<>();
       log.info("Will wipe these graphs (if enabled) to remove GraphSet graphs from the Connector:");
-      for(String context : contextMap().values()) {
+      for(Mapping mapping : mappings) {
+        if(mapping.getGraphname() != null) {
+          contexts.add(mapping.getGraphname());
+        }
+        for(String context : mapping.getInclusionSet()) {
+          if(context != null) {
+            contexts.add(context);
+          }
+        }
+      }
+      for(String context : contexts) {
         log.info("- "+context);
-        contexts.add(context);
       }
 
-      connector.cleanup(contexts);
+      ArrayList<String> list = new ArrayList<>();
+      list.addAll(contexts);
+      try {
+        connector.cleanup(list);
+      } catch (ConnectorException e) {
+        log.error("Cleanup failed");
+      }
     }
   }
 
 
 
   public boolean requiresLoad() {
-    return (lazyLoad != null);
+    return (containerToLazyLoad != null);
+  }
+
+  public void setFailed() {
+    loadingFailed = true;
+  }
+  public boolean loadingFailed() {
+    return loadingFailed;
   }
 
 
@@ -224,7 +269,13 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   @Override
   public String getCompositionFingerPrint(Set<GraphVar> graphVars) {
 
-    Map<String, Set<String>> hashToContext = connector.listPhiContextsPerHash();
+    Map<String, Set<String>> hashToContext;
+    try {
+      hashToContext = connector.listPhiContextsPerHash();
+    } catch (ConnectorException e) {
+      log.error("Failed building composition fingerprint", e);
+      return null;
+    }
     Map<String, String> contextToHash = new HashMap<>();
     for(String hash : hashToContext.keySet()) {
       Set<String> contexts = hashToContext.get(hash);
@@ -236,7 +287,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     HashSet<String> contexts = new HashSet<>();
     for(GraphVar graphVar : graphVars) {
       String context = contextMap().get(graphVar);
-      contexts.addAll(relatedGraphs(context, variables));
+      contexts.addAll(relatedGraphs(context, mappings));
     }
 
     Set<String> hashes = new HashSet<>();

@@ -21,45 +21,44 @@ public interface Connector {
 
   void init();
   boolean testConnection();
-  void cleanup(List<String> contexts);
+  void cleanup(List<String> contexts) throws ConnectorException;
   void close();
 
-  List<Object> select(String queryString);
-  List<Object> select(String queryString, long limit);
-  void update(String queryString);
-//  void booleanQuery(String queryString);
-  void sparqlCopy(String fromContext, String toContext);
-  void sparqlAdd(String fromContext, String toContext);
-  void replaceResource(String context, String resource, String replace);
+  List<Object> select(String queryString) throws ConnectorException;
+  List<Object> select(String queryString, long limit) throws ConnectorException;
+  void update(String queryString) throws ConnectorException;
+  void sparqlCopy(String fromContext, String toContext) throws ConnectorException;
+  void sparqlAdd(String fromContext, String toContext) throws ConnectorException;
+  void replaceResource(String context, String resource, String replace) throws ConnectorException;
 
 
-  void uploadFile(File file, List<String> contexts);
-  void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts);
+  void uploadFile(File file, List<String> contexts) throws ConnectorException;
+  void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts) throws ConnectorException;
 
-  void storePhiGraphExists(Object source, String context, String fileName, String hash);
-  void storeSigmaGraphExists(String context, Set<String> inclusionSet);
-  void storeFinishedInferences(String compositionFingerPrint, Set<GraphVar> graphVars, Map<GraphVar, String> contextMap, String inferenceCode);
+  void storePhiGraphExists(Object source, String context, String fileName, String hash) throws ConnectorException;
+  void storeSigmaGraphExists(String context, Set<String> inclusionSet) throws ConnectorException;
+  void storeFinishedInferences(String compositionFingerPrint, Set<GraphVar> graphVars, Map<GraphVar, String> contextMap, String inferenceCode) throws ConnectorException;
 
-  Map<String, String> exportPhiGraph(String contexts, OutputStream outputStream);
+  Map<String, String> exportPhiGraph(String contexts, OutputStream outputStream) throws ConnectorException;
 
   long quadCount(String context);
   List<String> getContexts();
 
 //  String graphExists(String context);
 
-  List<Object> listPhiGraphs();
-  Map<String, Set<String>> listPhiContextsPerHash();
-  Map<String, String> listFileNamePerPhiContext();
-  Set<String> listSigmaGraphs();
-  Map<Set<String>, Set<String>> listSigmaGraphsWithIncludes();
-  Map<String, Set<String>> listInferenceCodePerSigmaGraph();
-  Map<String, String> listSigmaGraphsByInferenceCode();
-  List<Object> listMappings();
+  List<Object> listPhiGraphs() throws ConnectorException;
+  Map<String, Set<String>> listPhiContextsPerHash() throws ConnectorException;
+  Map<String, String> listFileNamePerPhiContext() throws ConnectorException;
+  Set<String> listSigmaGraphs() throws ConnectorException;
+  Map<Set<String>, Set<String>> listSigmaGraphsWithIncludes() throws ConnectorException;
+  Map<String, Set<String>> listInferenceCodePerSigmaGraph() throws ConnectorException;
+  Map<String, String> listSigmaGraphsByInferenceCode() throws ConnectorException;
+  List<Object> listMappings() throws ConnectorException;
 
-  List<String> findPhiGraphWithImports(String hash, Map<String, String> originalContextsWithHash);
+  List<String> findPhiGraphWithImports(String hash, Map<String, String> originalContextsWithHash) throws ConnectorException;
 
   void writeContextsToFile(List<String> contexts, OutputStream outputStream, Map<String, String> prefixMap, String mainContext);
   void writeContextsToFile(List<String> contexts, OutputStream outputStream, Map<String, String> prefixMap, String mainContext, Function filter);
 
-  Map<String, String> getImports(String context);
+  Map<String, String> getImports(String context) throws ConnectorException;
 }

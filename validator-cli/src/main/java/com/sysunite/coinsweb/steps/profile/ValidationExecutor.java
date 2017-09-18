@@ -25,6 +25,7 @@
 package com.sysunite.coinsweb.steps.profile;
 
 
+import com.sysunite.coinsweb.connector.ConnectorException;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphVar;
 import com.sysunite.coinsweb.graphset.QueryFactory;
@@ -55,8 +56,9 @@ public class ValidationExecutor {
   private ProfileValidation validationConfig;
 
   private String defaultPrefixes = null;
-  private Map<String, String> validationGraphs;
-  Map<String, List<String>> executedInferences;        // map context to list of inferenceCode
+  private Map<String, String> validationGraphs = new HashMap<>();
+  // Map context to list of inferenceCode
+  Map<String, List<String>> executedInferences = new HashMap();
 
 
   public ValidationExecutor(ProfileFile profile, ContainerGraphSet graphSet, ProfileValidation validationConfig) {
@@ -68,18 +70,12 @@ public class ValidationExecutor {
       defaultPrefixes = profile.getQueryConfiguration().getDefaultPrefixes();
     }
 
-
     log.info("Using contextMap ("+graphSet.contextMap().keySet().size()+"):");
-    validationGraphs = new HashMap<>();
-    executedInferences = new HashMap();
-
     for(GraphVar graphVar : graphSet.contextMap().keySet()) {
       String context = graphSet.contextMap().get(graphVar);
       log.info("- " + graphVar + " > "+context);
 
       validationGraphs.put(graphVar.toString(), '<'+context+'>');
-      List<String> list = getFinishedInferences(context);
-      executedInferences.put(context, list);
     }
   }
 
@@ -92,32 +88,46 @@ public class ValidationExecutor {
 
     boolean valid = true;
 
+    try {
 
-    // Execute bundles in order of appearance
-    for(Bundle bundle : profile.getBundles()) {
-
-      long start = new Date().getTime();
-
-      if(Bundle.INFERENCE.equals(bundle.getType())) {
-
-        InferenceBundleStatistics enhanced = executeInferenceBundle(bundle);
-        validationConfig.addBundle(enhanced);
-        long executionTime = (new Date().getTime()) - start;
-        enhanced.addExecutionTimeMs(executionTime);
-
-      } else if(Bundle.VALIDATION.equals(bundle.getType())) {
-
-        ValidationBundleStatistics enhanced = executeValidationBundle(bundle);
-        validationConfig.addBundle(enhanced);
-
-        valid &= enhanced.getValid();
-
-        long executionTime = (new Date().getTime()) - start;
-        enhanced.addExecutionTimeMs(executionTime);
-
-      } else {
-        throw new RuntimeException("Bundle type "+bundle.getType()+" not supported");
+      // Load executed interferences
+      for(GraphVar graphVar : graphSet.contextMap().keySet()) {
+        String context = graphSet.contextMap().get(graphVar);
+        List<String> list = getFinishedInferences(context);
+        executedInferences.put(context, list);
       }
+
+      // Execute bundles in order of appearance
+      for (Bundle bundle : profile.getBundles()) {
+
+        long start = new Date().getTime();
+
+        if (Bundle.INFERENCE.equals(bundle.getType())) {
+
+          InferenceBundleStatistics enhanced = executeInferenceBundle(bundle);
+          validationConfig.addBundle(enhanced);
+          long executionTime = (new Date().getTime()) - start;
+          enhanced.addExecutionTimeMs(executionTime);
+
+        } else if (Bundle.VALIDATION.equals(bundle.getType())) {
+
+          ValidationBundleStatistics enhanced = executeValidationBundle(bundle);
+          validationConfig.addBundle(enhanced);
+
+          valid &= enhanced.getValid();
+
+          long executionTime = (new Date().getTime()) - start;
+          enhanced.addExecutionTimeMs(executionTime);
+
+        } else {
+          throw new RuntimeException("Bundle type " + bundle.getType() + " not supported");
+        }
+      }
+    } catch (ConnectorException e) {
+      log.error("Executing bundle failed", e);
+
+      validationConfig.setFailed(true);
+      return;
     }
 
     validationConfig.setFailed(false);
@@ -126,7 +136,7 @@ public class ValidationExecutor {
 
 
 
-  private InferenceBundleStatistics executeInferenceBundle(Bundle bundle) {
+  private InferenceBundleStatistics executeInferenceBundle(Bundle bundle) throws ConnectorException {
 
 
     InferenceBundleStatistics bundleStats = new InferenceBundleStatistics(bundle);
@@ -253,7 +263,7 @@ public class ValidationExecutor {
     return bundleStats;
   }
 
-  private ValidationBundleStatistics executeValidationBundle(Bundle bundle) {
+  private ValidationBundleStatistics executeValidationBundle(Bundle bundle) throws ConnectorException {
 
     ValidationBundleStatistics bundleStats = new ValidationBundleStatistics(bundle);
 
@@ -273,13 +283,8 @@ public class ValidationExecutor {
 
       long start = new Date().getTime();
 
-      List<Object> result;
-      try {
-        result = graphSet.select(queryString, Integer.toUnsignedLong(max));
+      List<Object> result = graphSet.select(queryString, Integer.toUnsignedLong(max));
 
-      } catch (RuntimeException e) {
-        throw new RuntimeException("Error during execution of update query "+query.getReference() +" of bundle "+bundle.getReference());
-      }
 
       LinkedList<Map<String, String>> results = new LinkedList<>();
       ArrayList<String> formattedResults = new ArrayList<>();
@@ -339,7 +344,7 @@ public class ValidationExecutor {
 
 
 
-  public List<String> getFinishedInferences(String context) {
+  public List<String> getFinishedInferences(String context) throws ConnectorException {
 
     String query =
 

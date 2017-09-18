@@ -1,6 +1,7 @@
 package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.connector.ConnectorException;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 
 import java.util.List;
@@ -17,9 +18,9 @@ public interface ContainerGraphSet {
 
   Connector getConnector();
 
-  List<Object> select(String query);
-  List<Object> select(String query, long limit);
-  void update(String query);
+  List<Object> select(String query) throws ConnectorException;
+  List<Object> select(String query, long limit) throws ConnectorException;
+  boolean update(String query);
 
   Map<String, String> getImports(GraphVar graphVar);
   boolean hasContext(GraphVar graphVar);
@@ -33,6 +34,8 @@ public interface ContainerGraphSet {
 
   void load();
   boolean requiresLoad();
+  void setFailed();
+  boolean loadingFailed();
 
   Object getMain();
   void setMain(Object graphVar);

@@ -72,10 +72,9 @@
         </table>
 
       <#else>
-        <#if container.getLocation().fileExists()>
 
-          <!-- Container Statistics -->
-          <#include "statistics.ftl">
+        <!-- Container Statistics -->
+        <#include "statistics.ftl">
 
           <!-- Validation Details -->
           <#list container.steps as step>
@@ -101,14 +100,7 @@
             </#switch>
           </#list>
 
-        <#else>
 
-          <#assign path = container.getLocation().toString() />
-          <table>
-            <tr><th>name</th><td>${path} was not found</td></tr>
-          </table>
-
-        </#if>
       </#if>
 
     </#list>

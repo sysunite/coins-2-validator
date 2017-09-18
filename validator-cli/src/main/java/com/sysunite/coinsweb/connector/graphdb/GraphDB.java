@@ -8,6 +8,8 @@ import org.eclipse.rdf4j.model.util.GraphUtil;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
+import org.eclipse.rdf4j.repository.manager.RemoteRepositoryManager;
+import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
@@ -30,7 +32,7 @@ public class GraphDB extends Rdf4jConnector {
   public static final String REFERENCE = "graphdb";
 
   private String url;
-//  RepositoryManager manager;
+  RepositoryManager manager;
   String repositoryId;
 
 
@@ -63,35 +65,35 @@ public class GraphDB extends Rdf4jConnector {
 
   public void init() {
 
-//    if(initialized) {
-//      return;
-//    }
-//
-//    log.info("Initialize connector ("+REFERENCE+")");
-//
-//    manager = new RemoteRepositoryManager(url);
-//    manager.initialize();
-//
-//    try {
-//
-//      if(repositoryId == null){
-//        repositoryId = "validator-generated";
-//      }
-//      if(manager.hasRepositoryConfig(repositoryId)) {
-//        log.info("Found existing repository");
-//      } else {
-//        if(createRepo) {
-//          manager.addRepositoryConfig(createRepositoryConfig(repositoryId));
-//        } else {
-//          log.warn("Not allowed to create repo, but needs to");
-//          return;
-//        }
-//      }
-//    } catch (IOException e) {
-//      log.error(e.getMessage(), e);
-//    }
-//    repository = manager.getRepository(repositoryId);
-//    initialized = true;
+    if(initialized) {
+      return;
+    }
+
+    log.info("Initialize connector ("+REFERENCE+")");
+
+    manager = new RemoteRepositoryManager(url);
+    manager.initialize();
+
+    try {
+
+      if(repositoryId == null){
+        repositoryId = "validator-generated";
+      }
+      if(manager.hasRepositoryConfig(repositoryId)) {
+        log.info("Found existing repository");
+      } else {
+        if(createRepo) {
+          manager.addRepositoryConfig(createRepositoryConfig(repositoryId));
+        } else {
+          log.warn("Not allowed to create repo, but needs to");
+          return;
+        }
+      }
+    } catch (IOException e) {
+      log.error(e.getMessage(), e);
+    }
+    repository = manager.getRepository(repositoryId);
+    initialized = true;
   }
 
 
@@ -100,15 +102,15 @@ public class GraphDB extends Rdf4jConnector {
 
   @Override
   public void close() {
-//    if(!initialized) {
-//      return;
-//    }
-//    repository.shutDown();
-//    if(wipeOnClose) {
-//      if (manager != null && repositoryId != null) {
-//        manager.removeRepository(repositoryId);
-//      }
-//    }
+    if(!initialized) {
+      return;
+    }
+    repository.shutDown();
+    if(wipeOnClose) {
+      if (manager != null && repositoryId != null) {
+        manager.removeRepository(repositoryId);
+      }
+    }
   }
 
 

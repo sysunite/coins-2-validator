@@ -11,11 +11,11 @@ services:
 #    - ./data:/opt/graphdb-free-8.1.1/data
 #    - ./data:/opt/graphdb-free-8.2.0/data
 #    - ./data:/opt/graphdb-free-8.3.0/data
-    mem_limit: 12g
+    mem_limit: 10g
     environment:
 #    - GDB_JAVA_OPTS=d      #- Sets additional Java options (-D or -X)
-    - GDB_MIN_MEM=8g        #- Sets the Java minimum heap size (-Xms option).
-    - GDB_MAX_MEM=12g       #- Sets the Java maximum heap size (-Xmx option).
+    - GDB_MIN_MEM=6g        #- Sets the Java minimum heap size (-Xms option).
+    - GDB_MAX_MEM=8g       #- Sets the Java maximum heap size (-Xmx option).
 #    - GDB_HEAP_SIZE=d      #- Sets the Java minimum and maximum heap size (-Xms and -Xmx option).
 #                           #  Overrides both GDB_MIN_MEM and GDB_MAX_MEM.
 #                           #  Recommended if you need to specify the heap size.

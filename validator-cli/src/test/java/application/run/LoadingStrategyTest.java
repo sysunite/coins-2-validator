@@ -1,6 +1,5 @@
 package application.run;
 
-import application.SimpleHttpServer;
 import com.sysunite.coinsweb.cli.Application;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -12,16 +11,12 @@ import java.io.File;
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class LoadingStrategyTest {
+public class LoadingStrategyTest extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(LoadingStrategyTest.class);
 
-  File file = new File(getClass().getClassLoader().getResource("loading-strategy/config-9.85-virtuoso.yml").getFile());
+  File file = new File(getClass().getClassLoader().getResource("loading-strategy/config-9.85.yml").getFile());
 
-  static {
-    File profile = new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/profiles/profile.lite-9.85-virtuoso.xml");
-    SimpleHttpServer.serveFile(profile, "application/xml", 9877);
-  }
 
   @Test
   public void run() {

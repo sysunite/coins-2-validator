@@ -1,6 +1,5 @@
 package application.run;
 
-import application.SimpleHttpServer;
 import com.sysunite.coinsweb.cli.Application;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -11,16 +10,12 @@ import java.io.File;
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class Otl210Test {
+public class Otl210Test extends HostFiles{
 
   Logger log = LoggerFactory.getLogger(Otl210Test.class);
 
-  File config = new File(getClass().getClassLoader().getResource("general-9.85-virtuoso.yml").getFile());
-//  File config = new File(getClass().getClassLoader().getResource("general-9.83.yml").getFile());
-static {
-  File profile = new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/profiles/profile.lite-9.85-virtuoso.xml");
-  SimpleHttpServer.serveFile(profile, "application/xml", 9877);
-}
+  File config = new File(getClass().getClassLoader().getResource("general-9.85.yml").getFile());
+
 
   @Test
   public void test() {

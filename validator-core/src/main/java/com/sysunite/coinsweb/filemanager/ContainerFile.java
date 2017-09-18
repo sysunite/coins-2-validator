@@ -10,6 +10,9 @@ import java.util.Set;
  */
 public interface ContainerFile {
 
+  boolean  isCorruptZip();
+  boolean  hasWrongSlashes();
+
   Set<String> getContentFiles();
   Set<String> getInvalidContentFiles();
   Set<String> getRepositoryFiles();

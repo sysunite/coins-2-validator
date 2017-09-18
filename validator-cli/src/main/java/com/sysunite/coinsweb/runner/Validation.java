@@ -53,9 +53,16 @@ public class Validation {
         String containerFilePath = FileFactory.toFile(containerConfig.getLocation()).toString();
         log.info("\uD83D\uDCD0 Validate "+containerFilePath);
       }
-      ContainerFile containerFile = new ContainerFileImpl(containerConfig);
+      ContainerFileImpl containerFile = new ContainerFileImpl(containerConfig);
 
       containerConfig.setContainer(containerFile);
+
+
+//      // Skip all tests if loading container file failed
+//      if(!containerFile.exists() || containerFile.isCorruptZip()) {
+//        log.warn("Skipping validation because of problem with container file");
+//        continue;
+//      }
 
 
       // Get inference preferences
@@ -72,8 +79,16 @@ public class Validation {
       ContainerGraphSet graphSet = ContainerGraphSetFactory.lazyLoad(containerFile, containerConfig, connector, inferencePreference);
 
 
+
+
       // Execute the steps
       for (ValidationStep stepTemplate : configFile.getRun().getSteps()) {
+
+        // Skip all tests if loading container graph set failed
+        if(graphSet.loadingFailed()) {
+          log.warn("Skipping validation step because of problem loading graphs for this graph set");
+          continue;
+        }
 
         // Make this step container-specific
         ValidationStep step = stepTemplate.clone();

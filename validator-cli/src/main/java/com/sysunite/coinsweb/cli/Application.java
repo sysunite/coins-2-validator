@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.connector.ConnectorException;
 import com.sysunite.coinsweb.connector.ConnectorFactory;
 import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
@@ -142,24 +143,28 @@ public class Application {
 
     if(options.describeStoreMode()) {
       log.info("\uD83C\uDFC4 Running in describe-store mode");
-      if(options.hasConfigFile()) {
+      try {
+        if (options.hasConfigFile()) {
 
-        if(options.hasUri() > 0) {
+          if (options.hasUri() > 0) {
 
-          File file = options.getConfigFile().toFile();
-          ConfigFile configFile = getConfigFile(file);
-          Connector connector = getConnector(configFile);
-          String response = Describe.run(connector, options.getUri(0)); // todo: more than one
-          System.out.print(response);
+            File file = options.getConfigFile().toFile();
+            ConfigFile configFile = getConfigFile(file);
+            Connector connector = getConnector(configFile);
+            String response = Describe.run(connector, options.getUri(0)); // todo: more than one
+            System.out.print(response);
 
-        } else {
+          } else {
 
-          File file = options.getConfigFile().toFile();
-          ConfigFile configFile = getConfigFile(file);
-          Connector connector = getConnector(configFile);
-          String response = Describe.run(connector);
-          System.out.print(response);
+            File file = options.getConfigFile().toFile();
+            ConfigFile configFile = getConfigFile(file);
+            Connector connector = getConnector(configFile);
+            String response = Describe.run(connector);
+            System.out.print(response);
+          }
         }
+      } catch (ConnectorException e) {
+        log.error("Describe in store mode failed", e);
       }
     }
 
@@ -177,10 +182,14 @@ public class Application {
           ConfigFile configFile = getConfigFile(file);
           Path containerFilePath = options.getContainerFile(0);
           Connector connector = getConnector(configFile);
-          Describe.run(connector, containerFilePath, options.getUri(0));
+          try {
+            Describe.run(connector, containerFilePath, options.getUri(0));
+          } catch (ConnectorException e) {
+            log.error("Describing container failed", e);
+          }
 
         } else {
-          throw new RuntimeException("Please specify the main graph (phi namespace) as cli argument");
+          throw new RuntimeException("Please specify the main graph (phi context) as cli argument");
         }
       }
     }

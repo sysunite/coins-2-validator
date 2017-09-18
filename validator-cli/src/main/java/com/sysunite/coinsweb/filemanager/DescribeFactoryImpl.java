@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
 
+import static com.sysunite.coinsweb.rdfutil.Utils.equalNamespace;
 import static com.sysunite.coinsweb.rdfutil.Utils.withoutHash;
 
 /**
@@ -52,14 +53,14 @@ public class DescribeFactoryImpl implements DescribeFactory {
       container.setVariables(ConfigFactory.getDefaultMapping(expandedGraphs));
     }
   }
-  public static void expandGraphConfig(Container container, ContainerFileImpl containerFile) {
+  public static void expandGraphConfig(Container containerConfig, ContainerFileImpl containerFile) {
 
-    log.info("Expand graph settings for container of type "+container.getType());
-    ArrayList<Graph> expandedGraphs = ContainerGraphSetFactory.loadList(container.getGraphs(), containerFile);
-    container.setGraphs(expandedGraphs);
+    log.info("Expand graph settings for container of type "+containerConfig.getType());
+    ArrayList<Graph> expandedGraphs = ContainerGraphSetFactory.loadList(containerConfig.getGraphs(), containerFile);
+    containerConfig.setGraphs(expandedGraphs);
 
-    if(container.getVariables().isEmpty()) {
-      container.setVariables(ConfigFactory.getDefaultMapping(expandedGraphs));
+    if(containerConfig.getVariables().isEmpty()) {
+      containerConfig.setVariables(ConfigFactory.getDefaultMapping(expandedGraphs));
     }
   }
 
@@ -185,9 +186,9 @@ public class DescribeFactoryImpl implements DescribeFactory {
       return;
     }
 
-    // If not look for ontologies
+    // If not, look for ontologies
     for(Resource ontology : model.getOntologies()) {
-      if(ontology != null) {
+      if(ontology != null && !equalNamespace(backupNamespace, ontology.stringValue())) {
         String ontologyString = withoutHash(ontology.stringValue());
         log.info("Add ontology to represent set triples in file: "+ontologyString);
         result.add(ontologyString);
@@ -217,12 +218,12 @@ public class DescribeFactoryImpl implements DescribeFactory {
 
   public static void contextsInFile(InputStream inputStream, String fileName, HashMap<String, ArrayList<String>> namespacesMap, HashMap<String, ArrayList<String>> importsMap) {
 
-    ArrayList<String> namespaces = new ArrayList<>();
+    ArrayList<String> contexts = new ArrayList<>();
     ArrayList<String> imports = new ArrayList<>();
 
-    contextsInFile(inputStream, fileName, namespaces, imports);
+    contextsInFile(inputStream, fileName, contexts, imports);
 
-    namespacesMap.put(fileName, namespaces);
+    namespacesMap.put(fileName, contexts);
     importsMap.put(fileName, imports);
   }
 

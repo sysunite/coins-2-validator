@@ -62,7 +62,11 @@ public class ComposePlan {
 
   public List<Move> get() {
     if(!unFinished.isEmpty()) {
-      throw new RuntimeException("ComposePlan still consists of unFinished Moves");
+      String message = "";
+      for(Move move : unFinished) {
+        message += "\n- "+move.toString();
+      }
+      throw new RuntimeException("ComposePlan still consists of unFinished Moves:" + message);
     }
     return list;
   }

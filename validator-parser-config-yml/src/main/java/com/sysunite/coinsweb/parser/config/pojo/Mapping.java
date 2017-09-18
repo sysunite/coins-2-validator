@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.util.StdConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
@@ -26,7 +27,7 @@ public class Mapping extends ConfigPart {
   private String filename;
   private String hash;
 //  @JsonIgnore
-  private Set<String> inclusionSet;
+  private Set<String> inclusionSet = new HashSet<>();
   private Set<String> bundleFingerPrints;
   @JsonIgnore
   private boolean initialized = false;

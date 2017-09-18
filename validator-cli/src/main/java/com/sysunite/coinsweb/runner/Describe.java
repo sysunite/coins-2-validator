@@ -2,6 +2,7 @@ package com.sysunite.coinsweb.runner;
 
 import com.sysunite.coinsweb.cli.CliOptions;
 import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.connector.ConnectorException;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.graphset.QueryFactory;
 import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
@@ -45,7 +46,7 @@ public class Describe {
     return yml;
   }
 
-  public static String run(Connector connector) {
+  public static String run(Connector connector) throws ConnectorException {
 
     Map<Set<String>, Set<String>> map = connector.listSigmaGraphsWithIncludes();
     String sigmaYml = ConfigFactory.toYml(map);
@@ -71,7 +72,7 @@ public class Describe {
     return sigmaYml + "\n" + imports + "\n" + phiYml;
   }
 
-  public static String run(Connector connector, String context) {
+  public static String run(Connector connector, String context) throws ConnectorException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     Map<String, String> imports = connector.exportPhiGraph(context, baos);
     try {
@@ -81,7 +82,7 @@ public class Describe {
     }
   }
 
-  public static void run(Connector connector, Path toCcr, String context) {
+  public static void run(Connector connector, Path toCcr, String context) throws ConnectorException {
     ContainerFileImpl containerFile = new ContainerFileImpl(toCcr.toString()+".tmp");
     containerFile.setPendingContentContext(context);
     containerFile.addPendingAttachmentFile(new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/composetest.yml"));

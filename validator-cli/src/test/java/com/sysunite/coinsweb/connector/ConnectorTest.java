@@ -1,6 +1,5 @@
 package com.sysunite.coinsweb.connector;
 
-import application.SimpleHttpServer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.sysunite.coinsweb.connector.graphdb.GraphDB;
@@ -24,10 +23,7 @@ public class ConnectorTest {
 
   Logger log = LoggerFactory.getLogger(ConnectorTest.class);
 
-  static {
-    File profile = new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/profiles/profile.lite-9.85-generated.xml");
-    SimpleHttpServer.serveFile(profile, "application/xml", 9877);
-  }
+
 
   @Test
   public void listMapping() {

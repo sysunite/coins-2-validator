@@ -48,7 +48,11 @@
       <exclusions>
         <exclusion>
           <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>*</artifactId>
+          <artifactId>httpcore-osgi</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient-osgi</artifactId>
         </exclusion>
         <exclusion>
           <groupId>commons-logging</groupId>

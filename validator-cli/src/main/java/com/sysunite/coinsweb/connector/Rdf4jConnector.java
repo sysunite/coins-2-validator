@@ -46,11 +46,6 @@ public abstract class Rdf4jConnector implements Connector {
   protected boolean cleanUp = false;
   protected boolean wipeOnClose = false;
 
-  protected long max_update_limit = 10l;
-
-
-
-
 
 
 
@@ -68,7 +63,7 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   @Override
-  public List<Object> select(String queryString) {
+  public List<Object> select(String queryString) throws ConnectorException {
     if(!initialized) {
       init();
     }
@@ -86,13 +81,12 @@ public abstract class Rdf4jConnector implements Connector {
       }
       return resultList;
     } catch (Exception e) {
-      log.error(e.getMessage(), e);
-      throw new RuntimeException("A problem with this select query (message: "+e.getLocalizedMessage()+")");
+      throw new ConnectorException("A problem with this select query (message: "+e.getLocalizedMessage()+")", e);
     }
   }
 
   @Override
-  public List<Object> select(String queryString, long limit) {
+  public List<Object> select(String queryString, long limit) throws ConnectorException {
     if(!initialized) {
       init();
     }
@@ -113,20 +107,14 @@ public abstract class Rdf4jConnector implements Connector {
       }
       return resultList;
     } catch (Exception e) {
-      log.error(e.getMessage(), e);
-      throw new RuntimeException("A problem with this select query (message: "+e.getLocalizedMessage()+")");
+      throw new ConnectorException("A problem with this select query (message: "+e.getLocalizedMessage()+")", e);
     }
   }
 
   @Override
-  public void update(String queryString) {
+  public void update(String queryString) throws ConnectorException {
     if(!initialized) {
       init();
-    }
-
-    if(max_update_limit > 0l && queryString.contains("WHERE")) {
-      queryString = queryString.replaceFirst("WHERE", "WHERE { SELECT * WHERE") ;
-      queryString = queryString + " LIMIT " + max_update_limit + " }";
     }
 
     try (RepositoryConnection con = repository.getConnection()) {
@@ -141,53 +129,22 @@ public abstract class Rdf4jConnector implements Connector {
 
 
     } catch (Exception e) {
-      log.error(e.getMessage(), e);
-      throw new RuntimeException("A problem with this update query");
+      throw new ConnectorException("A problem with this update query", e);
     }
   }
 
   @Override
-  public void sparqlCopy(String fromContext, String toContext) {
+  public void sparqlCopy(String fromContext, String toContext) throws ConnectorException {
     update("COPY <"+fromContext+"> TO <"+toContext+">");
   }
   @Override
-  public void sparqlAdd(String fromContext, String toContext) {
+  public void sparqlAdd(String fromContext, String toContext) throws ConnectorException {
     update("ADD <"+fromContext+"> TO <"+toContext+">");
   }
 
 
-
-//  @Override
-//  public void booleanQuery(String queryString) {
-//    if(!initialized) {
-//      init();
-//    }
-//
-//
-//
-//    try {
-//      RepositoryConnection con = repository.getConnection();
-//
-//      log.trace(queryString.replace("\n", " "));
-//
-//      con.begin(IsolationLevels.NONE);
-//
-//      BooleanQuery booleanQuery = con.prepareBooleanQuery(QueryLanguage.SPARQL, queryString);
-//      booleanQuery.setIncludeInferred(false);
-//      booleanQuery.evaluate();
-//
-//
-//
-//      con.close();
-//
-//    } catch (Exception e) {
-//      log.error(e.getMessage(), e);
-//      throw new RuntimeException("A problem with this update query");
-//    }
-//  }
-
   @Override
-  public void replaceResource(String context, String resource, String replace) {
+  public void replaceResource(String context, String resource, String replace) throws ConnectorException {
 
     context = withoutHash(context);
     resource = withoutHash(resource);
@@ -225,16 +182,20 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   @Override
-  public void cleanup(List<String> contexts) {
+  public void cleanup(List<String> contexts) throws ConnectorException {
     if(!initialized) {
       init();
     }
     if(repository != null) {
       if(cleanUp) {
         try (RepositoryConnection con = repository.getConnection()) {
-          con.clear(Rdf4jConnector.asResource(contexts));
+          Resource[] resources = Rdf4jConnector.asResource(contexts);
+          for(Resource resource : resources) {
+            log.info("Clear context " + resource);
+          }
+          con.clear(resources);
         } catch (RepositoryException e) {
-          log.error(e.getMessage(), e);
+          throw new ConnectorException(e);
         }
       }
     }
@@ -248,7 +209,7 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   @Override
-  public void uploadFile(File file, List<String> contexts) {
+  public void uploadFile(File file, List<String> contexts) throws ConnectorException {
     if(!initialized) {
       init();
     }
@@ -256,24 +217,22 @@ public abstract class Rdf4jConnector implements Connector {
     try (RepositoryConnection con = repository.getConnection()) {
       RDFFormat format = Rdf4jUtil.interpretFormat(file.toString());
       if(format == null) {
-        throw new RuntimeException("Could not determine the type of file this is: " + file.getName());
+        throw new ConnectorException("Could not determine the type of file this is: " + file.getName());
       }
-
-
 
 //      con.begin(IsolationLevels.NONE);
       con.add(file, null, format, asResource(contexts));
 
     } catch (RepositoryException e) {
-      log.error(e.getMessage(), e);
+      throw new ConnectorException(e);
     } catch (IOException e) {
-      log.error(e.getMessage(), e);
+      throw new ConnectorException(e);
     }
   }
 
 
   @Override
-  public void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts) {
+  public void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts) throws ConnectorException {
     if(!initialized) {
       init();
     }
@@ -284,19 +243,18 @@ public abstract class Rdf4jConnector implements Connector {
         throw new RuntimeException("Could not determine the type of file this is: " + fileName);
       }
 
-
 //      con.begin(IsolationLevels.NONE);
       con.add(inputStream, baseUri, format, asResource(contexts));
 
     } catch (RepositoryException e) {
-      log.error(e.getMessage(), e); // todo, this means a problem
+      throw new ConnectorException(e);
     } catch (IOException e) {
-      log.error(e.getMessage(), e);
+      throw new ConnectorException(e);
     }
   }
 
 
-  public List<Object> listPhiGraphs() {
+  public List<Object> listPhiGraphs() throws ConnectorException {
 
     ArrayList<Object> list = new ArrayList<>();
 
@@ -335,7 +293,7 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
 
-  public Map<String, String> listFileNamePerPhiContext() {
+  public Map<String, String> listFileNamePerPhiContext() throws ConnectorException {
 
     HashMap<String, String> map = new HashMap<>();
 
@@ -362,7 +320,7 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
 
-  public Map<String, Set<String>> listPhiContextsPerHash() {
+  public Map<String, Set<String>> listPhiContextsPerHash() throws ConnectorException {
 
     Map<String, Set<String>> list = new HashMap<>();
 
@@ -405,7 +363,7 @@ public abstract class Rdf4jConnector implements Connector {
    * List all sigma graphs
    * @return
    */
-  public Set<String> listSigmaGraphs() {
+  public Set<String> listSigmaGraphs() throws ConnectorException {
     Set<String> set = new HashSet<>();
 
     String query =
@@ -430,7 +388,7 @@ public abstract class Rdf4jConnector implements Connector {
 
     return set;
   }
-  public Map<Set<String>, Set<String>> listSigmaGraphsWithIncludes() {
+  public Map<Set<String>, Set<String>> listSigmaGraphsWithIncludes() throws ConnectorException {
 
     HashMap<String, Set<String>> list = new HashMap<>();
 
@@ -500,7 +458,7 @@ public abstract class Rdf4jConnector implements Connector {
   // The inferenceCode should have the "|" separator and have this format:
   // 1c73af7f95863c2f088053b1a1f5cc2d-57d50697b28694734038a545031e56eb-58fe7035dbea97e9d62619bf24a7fe73|COINS 2.0 Lite_0.9.85/0.9.85/coins container inference
 
-  public Map<String, String> listSigmaGraphsByInferenceCode() {
+  public Map<String, String> listSigmaGraphsByInferenceCode() throws ConnectorException {
 
     HashMap<String, String> set = new HashMap<>();
 
@@ -534,7 +492,7 @@ public abstract class Rdf4jConnector implements Connector {
    * @param graphVars
    * @param inferenceCode
    */
-  public void storeFinishedInferences(String hashes, Set<GraphVar> graphVars, Map<GraphVar, String> contextMap, String inferenceCode) {
+  public void storeFinishedInferences(String hashes, Set<GraphVar> graphVars, Map<GraphVar, String> contextMap, String inferenceCode) throws ConnectorException {
 
     for(GraphVar graphVar : graphVars) {
       String context = contextMap.get(graphVar);
@@ -554,7 +512,7 @@ public abstract class Rdf4jConnector implements Connector {
     }
   }
 
-  public Map<String, Set<String>> listInferenceCodePerSigmaGraph() {
+  public Map<String, Set<String>> listInferenceCodePerSigmaGraph() throws ConnectorException {
 
     HashMap<String, Set<String>> list = new HashMap<>();
 
@@ -598,7 +556,7 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   // If value is null in originalContextsWithHash, treat this key as the import context
-  public List<String> findPhiGraphWithImports(String hash, Map<String, String> originalContextsWithHash) {
+  public List<String> findPhiGraphWithImports(String hash, Map<String, String> originalContextsWithHash) throws ConnectorException {
 
 
     ArrayList<String> keySet = new ArrayList<>();
@@ -647,7 +605,7 @@ public abstract class Rdf4jConnector implements Connector {
     return contexts;
   }
 
-  public List<Object> listMappings() {
+  public List<Object> listMappings() throws ConnectorException {
     HashMap<String, Mapping> resultMap = new HashMap<>();
 
     Map<Set<String>, Set<String>> sigmaGraphs = listSigmaGraphsWithIncludes();
@@ -674,7 +632,7 @@ public abstract class Rdf4jConnector implements Connector {
     return result;
   }
 
-  public void storePhiGraphExists(Object sourceObject, String context, String fileName, String hash) {
+  public void storePhiGraphExists(Object sourceObject, String context, String fileName, String hash) throws ConnectorException {
 
     Source source = (Source) sourceObject;
 
@@ -695,7 +653,7 @@ public abstract class Rdf4jConnector implements Connector {
     update(query);
   }
 
-  public void storeSigmaGraphExists(String context, Set<String> inclusionSet) {
+  public void storeSigmaGraphExists(String context, Set<String> inclusionSet) throws ConnectorException {
 
     String timestamp = new Timestamp(System.currentTimeMillis()).toString();
 
@@ -800,7 +758,7 @@ public abstract class Rdf4jConnector implements Connector {
 
   // Writes the file to the outputStream and returns a Map of imports: fileUpload context -> original context
   @Override
-  public Map<String, String> exportPhiGraph(String context, OutputStream outputStream) {
+  public Map<String, String> exportPhiGraph(String context, OutputStream outputStream) throws ConnectorException {
 
     String sourceContext = null;
     Resource contextResource = asResource(context);
@@ -862,7 +820,7 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   // Get the contexts that are imported in this context, the value is the original uri
-  public Map<String, String> getImports(String context) {
+  public Map<String, String> getImports(String context) throws ConnectorException {
 
     log.info("Look for imports in context "+context);
 

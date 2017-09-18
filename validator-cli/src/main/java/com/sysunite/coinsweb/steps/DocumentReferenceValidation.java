@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.sysunite.coinsweb.connector.ConnectorException;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigPart;
@@ -153,6 +154,10 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
 
 
     } catch (RuntimeException e) {
+      log.warn("Executing failed validationStep of type "+getType());
+      log.warn(e.getMessage());
+      failed = true;
+    } catch (ConnectorException e) {
       log.warn("Executing failed validationStep of type "+getType());
       log.warn(e.getMessage());
       failed = true;

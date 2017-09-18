@@ -36,7 +36,7 @@ public class Container extends ConfigPart {
   private List<Attachment> attachments = new ArrayList<>();
   @JsonInclude(Include.NON_EMPTY)
   private List<ValidationStep> steps = new ArrayList<>();
-  private Boolean valid;
+  private Boolean valid = Boolean.FALSE;
   @JsonIgnore
   private ContainerFile containerFile;
 

@@ -1,6 +1,7 @@
 package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.connector.ConnectorException;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
@@ -9,7 +10,6 @@ import com.sysunite.coinsweb.parser.config.pojo.*;
 import com.sysunite.coinsweb.parser.profile.factory.ProfileFactory;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.rdfutil.Utils;
-import com.sysunite.coinsweb.report.ReportFactory;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,12 +80,12 @@ public class ContainerGraphSetFactory {
   public static ComposePlan load(ContainerGraphSetImpl graphSet, Connector connector, ContainerFile container, Map<String, Set<GraphVar>> inferencePreference) {
 
     Container containerConfig = ((ContainerFileImpl)container).getConfig();
-    List<Graph> originalGraphs = containerConfig.getGraphs();
+    List<Graph> loadList = containerConfig.getGraphs();
 
     // Load all files (φ - graphs)
 
-    Map<String, String> originalContextToHashMap = new HashMap<>();
-    ArrayList<Graph> loadList = loadList(originalGraphs, container);
+//    Map<String, String> originalContextToHashMap = new HashMap<>();
+//    ArrayList<Graph> loadList = loadList(originalGraphs, container);
     ArrayList<Graph> phiGraphs = new ArrayList<>();
     for (Graph graph : loadList) {
       if(Source.ONLINE.equals(graph.getSource().getType()) ||
@@ -94,8 +94,8 @@ public class ContainerGraphSetFactory {
         phiGraphs.add(graph);
 
 
-        FileFactory.calculateAndSetHash(graph.getSource(), container);
-        originalContextToHashMap.put(withoutHash(graph.getSource().getGraphname()), graph.getSource().getHash());
+//        FileFactory.calculateAndSetHash(graph.getSource(), container);
+//        originalContextToHashMap.put(withoutHash(graph.getSource().getGraphname()), graph.getSource().getHash());
 
       }
     }
@@ -103,46 +103,51 @@ public class ContainerGraphSetFactory {
 
 
     HashMap<String, String> changeMap = new HashMap<>();
-    HashMap<String, String> doneImports = new HashMap<>();
+    HashSet<String> doneImports = new HashSet<>();
     while(!phiGraphs.isEmpty()) {
 
       boolean foundOne = false;
       for(Graph phiGraph : phiGraphs) {
         ArrayList<String> imports = FileFactory.getImports(phiGraph.getSource(), container);
-        if (doneImports.keySet().containsAll(imports)) {
+        if (doneImports.containsAll(imports)) {
 
-          HashMap<String, String> originalContextsWithHash = new HashMap<>();
-          for(String context : imports) {
-
-
-            // If one was already selected, use that
-            if(doneImports.keySet().contains(context)) {
-              originalContextsWithHash.put(doneImports.get(context), null);
-
-            } else {
-              originalContextsWithHash.put(context, originalContextToHashMap.get(context));
-            }
-          }
+//          HashMap<String, String> originalContextsWithHash = new HashMap<>();
+//          for(String context : imports) {
+//
+//
+//            // If one was already selected, use that
+//            if(doneImports.keySet().contains(context)) {
+//              originalContextsWithHash.put(doneImports.get(context), null);
+//
+//            } else {
+//              originalContextsWithHash.put(context, originalContextToHashMap.get(context));
+//            }
+//          }
 
 
           // If there is already an identical file with identical uploads use that instead
 
-          String register = null;
+//          String register = null;
 
 
           executeLoad(phiGraph.getSource(), connector, container);
-          register = withoutHash(phiGraph.getSource().getStoreContext());
+//          register = withoutHash(phiGraph.getSource().getStoreContext());
 
           changeMap.put(withoutHash(phiGraph.getSource().getGraphname()), withoutHash(phiGraph.getSource().getStoreContext()));
 
           for(String originalContext : changeMap.keySet()) {
-            connector.replaceResource(phiGraph.getSource().getStoreContext(), originalContext, changeMap.get(originalContext));
+            try {
+              connector.replaceResource(phiGraph.getSource().getStoreContext(), originalContext, changeMap.get(originalContext));
+            } catch (ConnectorException e) {
+              log.error("Failed replacing resource", e);
+              graphSet.setFailed();
+            }
           }
 
 
 
 
-          doneImports.put(withoutHash(phiGraph.getSource().getGraphname()), register);
+          doneImports.add(withoutHash(phiGraph.getSource().getGraphname()));
 
 
           foundOne = true;
@@ -151,8 +156,12 @@ public class ContainerGraphSetFactory {
         }
       }
       if(!foundOne) {
-        throw new RuntimeException("For these graphs no source can be found: "+ ReportFactory.buildJson(phiGraphs));
-
+        log.error("For these graphs no source can be found: ");
+        for(Graph graph : phiGraphs) {
+          log.error("- " + graph.getSource().getGraphname());
+        }
+        graphSet.setFailed();
+        return null;
       }
 
 
@@ -162,7 +171,7 @@ public class ContainerGraphSetFactory {
     // Create all composition graphs (σ - graphs)
     Container containerConfig2 = ((ContainerFileImpl) container).getConfig();  // todo check if this is a duplicate
     List<Mapping> variables = containerConfig2.getVariables();
-    ComposePlan composePlan = composeSigmaList(graphSet, connector, variables, originalGraphs, inferencePreference);
+    ComposePlan composePlan = composeSigmaList(graphSet, connector, variables, loadList, inferencePreference);
 
 
     executeCompose(graphSet, composePlan, connector, false);
@@ -172,29 +181,50 @@ public class ContainerGraphSetFactory {
   }
 
   public static void executeCompose(ContainerGraphSetImpl graphSet, ComposePlan composePlan, Connector connector, boolean updateMode) {
-    for (ComposePlan.Move move : composePlan.get()) {
+    List<ComposePlan.Move> list;
+    try {
+      list = composePlan.get();
+    } catch (RuntimeException e) {
+      log.error(e.getMessage());
+      graphSet.setFailed();
+      return;
+    }
+    for (ComposePlan.Move move : list) {
 
       // Skip if this operation only needs to be executed when updating
       if(!updateMode && move.onlyUpdate) {
         continue;
       }
 
-      if(!updateMode && move.action == ComposePlan.Action.COPY) {
-        log.info("Execute compose copy " + move.toString());
-        connector.sparqlCopy(move.from.toString(), move.to.toString());
-      } else {
+      try {
+        if(!updateMode && move.action == ComposePlan.Action.COPY) {
+          log.info("Execute compose copy " + move.toString());
+          connector.sparqlCopy(move.from.toString(), move.to.toString());
+        } else {
 
-        log.info("Execute compose add " + move.toString());
-        connector.sparqlAdd(move.from.toString(), move.to.toString());
+          log.info("Execute compose add " + move.toString());
+          connector.sparqlAdd(move.from.toString(), move.to.toString());
+        }
+      } catch (ConnectorException e) {
+        log.error("Failed executing compose copy or add operation", e);
+        graphSet.setFailed();
+        return;
       }
     }
 
-    for(Mapping mapping : graphSet.getVariables()) {
-      connector.storeSigmaGraphExists(mapping.getGraphname(), mapping.getInclusionSet());
+    for(Mapping mapping : graphSet.getMappings()) {
+      try {
+        connector.storeSigmaGraphExists(mapping.getGraphname(), mapping.getInclusionSet());
+      } catch (ConnectorException e) {
+        log.error("Failed saving sigma graph header", e);
+        graphSet.setFailed();
+        return;
+      }
     }
   }
 
-  private static void executeLoad(Source source, Connector connector, ContainerFile container) {
+  // Returns true if loading was successful
+  private static boolean executeLoad(Source source, Connector connector, ContainerFile container) {
 
     String fileName;
     String filePath = source.getPath();
@@ -212,10 +242,21 @@ public class ContainerGraphSetFactory {
 
     log.info("Upload rdf-file to connector: " + filePath);
     DigestInputStream inputStream = FileFactory.toInputStream(source, container);
-    connector.uploadFile(inputStream, fileName, source.getGraphname(), contexts);
+    try {
+      connector.uploadFile(inputStream, fileName, source.getGraphname(), contexts);
+    } catch (ConnectorException e) {
+      log.error("Error uploading file", e);
+      return false;
+    }
 
     log.info("Uploaded, store phi graph header");
-    connector.storePhiGraphExists(source, context, fileName, source.getHash());
+    try {
+      connector.storePhiGraphExists(source, context, fileName, source.getHash());
+    } catch (ConnectorException e) {
+      log.error("Failed saving phi graph header", e);
+      return false;
+    }
+    return true;
   }
 
 
@@ -223,6 +264,7 @@ public class ContainerGraphSetFactory {
     return QueryFactory.VALIDATOR_HOST + "uploadedFile-" + RandomStringUtils.random(8, true, true);
   }
 
+  // Extends wildcards and loads the namespace for each file
   public static ArrayList<Graph> loadList(List<Graph> originalGraphs, ContainerFile container) {
 
     Graph allContentFile = null;
@@ -469,9 +511,7 @@ public class ContainerGraphSetFactory {
 
     ComposePlan composePlan = new ComposePlan();
 
-    Map<Set<String>, Set<String>> sigmaGraphsMap = connector.listSigmaGraphsWithIncludes();
-    Map<String, Set<String>> reversedSigmaMap = reverseSigmaGraphsMap(sigmaGraphsMap);
-    Map<String, Set<String>> actualInferences = connector.listInferenceCodePerSigmaGraph();
+
 
 
     HashMap<GraphVar, String> varMap = new HashMap();
@@ -479,15 +519,15 @@ public class ContainerGraphSetFactory {
       varMap.put(mapping.getVariable(), mapping.getGraphname());
     }
 
-    Map<String, Set<String>> hashToContext = connector.listPhiContextsPerHash();
-    Map<String, String> contextToHash = new HashMap<>();
-    for(String hash : hashToContext.keySet()) {
-      Set<String> contexts = hashToContext.get(hash);
-      for(String context : contexts) {
-        contextToHash.put(context, hash);
-      }
-    }
-    Map<String, String> contextToFileName = connector.listFileNamePerPhiContext();
+//    Map<String, Set<String>> hashToContext = connector.listPhiContextsPerHash();
+//    Map<String, String> contextToHash = new HashMap<>();
+//    for(String hash : hashToContext.keySet()) {
+//      Set<String> contexts = hashToContext.get(hash);
+//      for(String context : contexts) {
+//        contextToHash.put(context, hash);
+//      }
+//    }
+//    Map<String, String> contextToFileName = connector.listFileNamePerPhiContext();
 
 
     // Create wish lists
@@ -572,9 +612,6 @@ public class ContainerGraphSetFactory {
       String mappedContext = varMap.get(next);
 
 
-
-      log.info("Could not find an existing sigma graph for " + next);
-
       // Include phi graph
       if(graphVarIncludesPhiGraphMap.containsKey(next)) {
         List<String> froms = graphVarIncludesPhiGraphMap.get(next);
@@ -588,17 +625,9 @@ public class ContainerGraphSetFactory {
         Set<String> fromSet = new HashSet<>();
         fromSet.addAll(froms);
 
-        String fileName = null;
-        if(contextToFileName.containsKey(mappedContext)) {
-          fileName = contextToFileName.get(mappedContext);
-        }
 
-        String hash = null;
-        if(contextToHash.containsKey(mappedContext)) {
-          hash = contextToHash.get(mappedContext);
-        }
 
-        Mapping mapping = new Mapping(next, mappedContext, fileName, hash, fromSet, new HashSet());
+        Mapping mapping = new Mapping(next, mappedContext, null, null, fromSet, new HashSet());
         mapping.setInitialized();
         updatedVarList.add(mapping);
       }

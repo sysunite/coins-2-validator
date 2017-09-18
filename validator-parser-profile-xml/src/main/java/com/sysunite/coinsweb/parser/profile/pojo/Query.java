@@ -84,7 +84,7 @@ public class Query {
       try {
         formatTemplate = cfg.getTemplate("resultFormat");
       } catch (IOException e) {
-        e.printStackTrace();
+        log.error(e.getMessage(), e);
         throw new RuntimeException("Something went wrong creating the query result format");
       }
     }

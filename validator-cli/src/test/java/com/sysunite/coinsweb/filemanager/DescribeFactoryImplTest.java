@@ -31,7 +31,7 @@ public class DescribeFactoryImplTest {
       assert(namespaces.contains("http://dataroom.otl.rws.nl/otl171#"));
 
     } catch (FileNotFoundException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     }
 
 
@@ -49,7 +49,7 @@ public class DescribeFactoryImplTest {
       assert(namespaces.contains("http://example.org/graphs/superman"));
 
     } catch (FileNotFoundException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     }
   }
 }

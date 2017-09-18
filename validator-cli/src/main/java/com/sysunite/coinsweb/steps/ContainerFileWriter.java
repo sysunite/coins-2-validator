@@ -109,9 +109,9 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
 //          ((ContainerFileImpl)container).addAttachmentFile(FileFactory.toFile(attachment.getLocation()));
 //        }
 //      } catch (FileNotFoundException e) {
-//        e.printStackTrace();
+//        log.error(e.getMessage(), e);
 //      } catch (IOException e) {
-//        e.printStackTrace();
+//        log.error(e.getMessage(), e);
 //      }
 
 

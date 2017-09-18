@@ -176,13 +176,13 @@ public class FileFactory {
       dis.close();
       return StringUtils.leftPad(new BigInteger(1, md5.digest()).toString(16), 32, '0');
     } catch (FileNotFoundException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);;
       throw new RuntimeException("Failed calculating md5 hash", e);
     } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);;
       throw new RuntimeException("Failed calculating md5 hash", e);
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);;
       throw new RuntimeException("Failed calculating md5 hash", e);
     }
   }

@@ -1,5 +1,8 @@
 package com.sysunite.coinsweb.filemanager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
@@ -9,6 +12,9 @@ import java.security.NoSuchAlgorithmException;
  * copied from https://stackoverflow.com/questions/4693968/is-there-an-existing-fileinputstream-delete-on-close
  */
 public class DeleteOnCloseFileInputStream extends FileInputStream {
+
+  static Logger log = LoggerFactory.getLogger(DeleteOnCloseFileInputStream.class);
+
   private File file;
   public DeleteOnCloseFileInputStream(String name) throws FileNotFoundException {
     this(new File(name));
@@ -40,7 +46,7 @@ public class DeleteOnCloseFileInputStream extends FileInputStream {
     try {
       return new DigestInputStream(new BufferedInputStream(new DeleteOnCloseFileInputStream(name)), MessageDigest.getInstance("md5"));
     } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);;
     }
     return null;
   }
@@ -48,7 +54,7 @@ public class DeleteOnCloseFileInputStream extends FileInputStream {
     try {
       return new DigestInputStream(new BufferedInputStream(new DeleteOnCloseFileInputStream(file)), MessageDigest.getInstance("md5"));
     } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);;
       return null;
     }
   }

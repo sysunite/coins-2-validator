@@ -68,7 +68,7 @@ public class Application {
         log.info("Using temp folder: "+temp.getParent());
         temp.delete();
       } catch (IOException e) {
-        e.printStackTrace();
+        log.error(e.getMessage(), e);
       }
 
     } else {
@@ -115,17 +115,17 @@ public class Application {
             String xml = bufferStream.toString("UTF-8");
             System.out.println(xml);
           } catch (JsonMappingException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
           } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
           } catch (JsonParseException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
           } catch (JsonGenerationException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
           } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
           } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
           }
         }
 
@@ -301,8 +301,13 @@ public class Application {
       fileAppender.setAppend(false);
 
 
-      root.addAppender(fileAppender);
-      root.setLevel(Level.INFO);
+      ch.qos.logback.classic.Logger loggers = lc.getLogger("com.sysunite");
+      loggers.addAppender(fileAppender);
+      if(options.writeTraceLog()) {
+        loggers.setLevel(Level.TRACE);
+      } else {
+        loggers.setLevel(Level.INFO);
+      }
     }
   }
 

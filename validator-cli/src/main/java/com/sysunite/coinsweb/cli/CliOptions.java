@@ -61,6 +61,7 @@ public class CliOptions {
     options.addOption("a", "absolute", false, "use absolute paths when generating config-generated.yml");
     options.addOption("h", "help", false, "print help");
     options.addOption("l", "log", false, "write log file");
+    options.addOption(null, "log-trace", false, "write verbose log file");
     options.addOption("q", false, "quiet, no output to the console");
     options.addOption(null, "yml-to-console", false, "print the generated config to the console");
 
@@ -117,7 +118,8 @@ public class CliOptions {
   public boolean absolutePaths() { return cmd.hasOption("a"); }
   public boolean quietMode() { return cmd.hasOption("q") || ymlToConsole(); }
   public boolean printHelpOption() { return cmd.hasOption("h"); }
-  public boolean writeLog() { return cmd.hasOption("l"); }
+  public boolean writeLog() { return cmd.hasOption("l") || writeTraceLog(); }
+  public boolean writeTraceLog() { return cmd.hasOption("log-trace"); }
 
 
 

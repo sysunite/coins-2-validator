@@ -477,31 +477,40 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
-               select distinct ?this  ?min ?aantal ?property 
-              
-               WHERE {{
-               select distinct ?this ?class ?min (count(distinct ?value) as ?aantal) ?property 
-              
-               WHERE {Graph ${FULL_UNION_GRAPH}{
-               ?class owl:minCardinality ?min . 
-                 ?class a owl:Restriction .   
-                 ?class owl:onProperty ?property  
-              }
-              Graph ${FULL_UNION_GRAPH}{
-               {?this a ?class .
-               	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } 
-               union 
-               { ?this a ?class .
-               	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity> } 
-               optional{ ?this ?property ?value. 
-               filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } }
-              }
-              
-              }group by ?this ?class ?min ?property
-              }
-              filter(xsd:integer(?aantal)<xsd:integer(?min))
-              
+
+              SELECT DISTINCT ?this ?min ?aantal ?property
+              FROM ${FULL_UNION_GRAPH}
+              WHERE
+              {
+                {
+                  SELECT ?this ?property ?min (count(distinct ?value) as ?aantal)
+                  WHERE {
+
+                    {
+                      SELECT DISTINCT ?class ?min ?property
+                      WHERE {
+                        ?class a owl:Restriction .
+                        ?class owl:minCardinality ?min .
+                        ?class owl:onProperty ?property
+                      }
+                    }
+
+                    ?this a ?class .
+                    FILTER NOT EXISTS {
+                      ?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>
+                    }
+                    OPTIONAL {
+                      ?this ?property ?value.
+                      FILTER NOT EXISTS {
+                        ?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>
+                      }
+                    }
+                  } GROUP BY ?this ?property ?min
+                }
+
+                FILTER(
+                  (xsd:integer(?aantal) < xsd:integer(?min))
+                )
               }
             ]]>
           </sparql>
@@ -510,7 +519,7 @@
           <description>This rule validates if individuals conform to the exactly cardinality contraints for properties. Properties (datatype and objecttype) can have an exact cardinality constraint via owl:cardinality. This validation assesses the propertyvalues and determines if they comply with the exact amount. If an individual has more or less propertyvalues then demanded then this will be reported. The amount of propertyvalues and the demand amount will we reported.[Click here for more information.](http://www.coinsweb.nl/wiki2/index.php/COINS-carex)</description>
           <resultFormat>
             <![CDATA[
-              ${this} has ${aantal} properties of ${property}.  Exactly ${min} is necessary.
+              ${this} has ${aantal} properties of ${property}.  Exactly ${ex} is necessary.
             ]]>
           </resultFormat>
           <sparql>
@@ -519,31 +528,40 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
-               select distinct ?this  ?min ?aantal ?property 
-              
-               WHERE {{
-               select distinct ?this ?class ?min (count(distinct ?value) as ?aantal) ?property 
-              
-               WHERE {Graph ${FULL_UNION_GRAPH}{
-                 ?class a owl:Restriction .   
-                ?class owl:cardinality ?min . 
-                 ?class owl:onProperty ?property  
-              }
-              Graph ${FULL_UNION_GRAPH}{
-               {?this a ?class .
-               	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } 
-               union 
-               { ?this a ?class .
-               	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity> } 
-               optional{ ?this ?property ?value. 
-               filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} } }
-              }
-              
-              }group by ?this ?class ?min ?property
-              }
-              filter((xsd:integer(?aantal)<xsd:integer(?min)) || (xsd:integer(?aantal)>xsd:integer(?min)) )
-              
+
+              SELECT DISTINCT ?this ?ex ?aantal ?property
+              FROM ${FULL_UNION_GRAPH}
+              WHERE
+              {
+                {
+                  SELECT ?this ?property ?ex (count(distinct ?value) as ?aantal)
+                  WHERE {
+
+                    {
+                      SELECT DISTINCT ?class ?ex ?property
+                      WHERE {
+                        ?class a owl:Restriction .
+                        ?class owl:cardinality ?ex .
+                        ?class owl:onProperty ?property
+                      }
+                    }
+
+                    ?this a ?class .
+                    FILTER NOT EXISTS {
+                      ?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>
+                    }
+                    OPTIONAL {
+                      ?this ?property ?value.
+                      FILTER NOT EXISTS {
+                        ?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>
+                      }
+                    }
+                  } GROUP BY ?this ?property ?ex
+                }
+
+                FILTER(
+                  (xsd:integer(?aantal) != xsd:integer(?ex))
+                )
               }
             ]]>
           </sparql>
@@ -552,7 +570,7 @@
           <description>This rule validates if individuals conform to the maximum cardinality contraints for properties. Properties (datatype and objecttype) can have a maximum cardinality constraint via owl:minCardinality. This validation assesses the propertyvalues and determines if they comply with the maximum. If an individual has more propertyvalues then demanded then this will be reported. The exact amount of propertyvalues and the maximum demand will we reported.[Click here for more information.](http://www.coinsweb.nl/wiki2/index.php/COINS-maxCar)</description>
           <resultFormat>
             <![CDATA[
-              ${this} has ${aantal} properties of ${property}.  The maximum is ${min}.
+              ${this} has ${aantal} properties of ${property}.  The maximum is ${max}.
             ]]>
           </resultFormat>
           <sparql>
@@ -561,29 +579,40 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
-               select distinct ?this ?class ?min ?aantal ?property 
-              
-               WHERE {{
-               select distinct ?this  ?min (count(distinct ?value) as ?aantal) ?property 
-              
-               WHERE {Graph ${FULL_UNION_GRAPH}{
-                ?class owl:maxCardinality ?min .  
-                ?class a owl:Restriction .   
-                 ?class owl:onProperty ?property   
-              }
-              Graph ${FULL_UNION_GRAPH}{
-              #fuseki bugfix 
-               ?this a ?class . 
-              	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}  
-               ?this ?property ?value. 
-               filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}	
-              }
-              
-              }group by ?this ?class ?min ?property
-              }
-              filter(xsd:integer(?aantal)>xsd:integer(?min))
-              
+
+              SELECT DISTINCT ?this ?max ?aantal ?property
+              FROM ${FULL_UNION_GRAPH}
+              WHERE
+              {
+                {
+                  SELECT ?this ?property ?max (count(distinct ?value) as ?aantal)
+                  WHERE {
+
+                    {
+                      SELECT DISTINCT ?class ?max ?property
+                      WHERE {
+                        ?class a owl:Restriction .
+                        ?class owl:maxCardinality ?max .
+                        ?class owl:onProperty ?property
+                      }
+                    }
+
+                    ?this a ?class .
+                    FILTER NOT EXISTS {
+                      ?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>
+                    }
+                    OPTIONAL {
+                      ?this ?property ?value.
+                      FILTER NOT EXISTS {
+                        ?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>
+                      }
+                    }
+                  } GROUP BY ?this ?property ?max
+                }
+
+                FILTER(
+                  (xsd:integer(?aantal) > xsd:integer(?max))
+                )
               }
             ]]>
           </sparql>
@@ -601,30 +630,32 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
+
                select distinct ?this  ?min ?aantal ?property  ?onClass
-              
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {{
                select distinct ?this ?class ?min (count(distinct ?value) as ?aantal) ?property ?onClass
-              
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
-                ?class a owl:Restriction .  
-                ?class owl:onClass ?onClass . 
-               ?class owl:qualifiedCardinality ?min . 
+                ?class a owl:Restriction .
+                ?class owl:onClass ?onClass .
+               ?class owl:qualifiedCardinality ?min .
                  ?class owl:onProperty ?property .
               }
               Graph ${FULL_UNION_GRAPH}{
-               {   ?this a ?class .	
-              	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} }union {?this a ?class .	
-              	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} 	
+               {   ?this a ?class .
+              	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} }union {?this a ?class .
+              	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}
               	optional{   ?this ?property ?value.	filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}
                 ?value a ?onClass } }
               }
-              
+
               }  group by ?this ?class ?min  ?property  ?onClass
               }
               filter((?aantal<?min) || (?aantal>?min) )
-              
+
               }
             ]]>
           </sparql>
@@ -642,28 +673,30 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
-               select distinct ?this ?class ?min ?aantal ?property 
-              
+
+               select distinct ?this ?class ?min ?aantal ?property
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {{
-               select distinct ?this ?class ?min  (count(distinct ?value) as ?aantal)	 ?property 
-              
+               select distinct ?this ?class ?min  (count(distinct ?value) as ?aantal)	 ?property
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
-                  ?class a owl:Restriction .  
-               ?class owl:onClass ?onClass.  
-               ?class owl:maxQualifiedCardinality ?min .  
+                  ?class a owl:Restriction .
+               ?class owl:onClass ?onClass.
+               ?class owl:maxQualifiedCardinality ?min .
                 ?class owl:onProperty ?property .
               }
               Graph ${FULL_UNION_GRAPH}{
-                  ?this a ?class . 	
-               filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} 	
-               optional{ ?this ?property ?value. filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}.?value a ?onClass}		
+                  ?this a ?class .
+               filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}
+               optional{ ?this ?property ?value. filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}.?value a ?onClass}
               }
-              
-              }  group by  ?this ?class ?min  ?property  
+
+              }  group by  ?this ?class ?min  ?property
               }
-               filter((xsd:integer(?aantal)>xsd:integer(?min)) )  
-              
+               filter((xsd:integer(?aantal)>xsd:integer(?min)) )
+
               }
             ]]>
           </sparql>
@@ -681,31 +714,33 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
-               select distinct ?this  ?min ?aantal ?property 
-              
+
+               select distinct ?this  ?min ?aantal ?property
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {{
-               select distinct ?this ?class ?min (count(distinct ?value) as ?aantal)  ?property 
-              
+               select distinct ?this ?class ?min (count(distinct ?value) as ?aantal)  ?property
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
-                ?class a owl:Restriction . 
-                ?class owl:onClass ?onClass. 
-                ?class owl:minQualifiedCardinality ?min .  
+                ?class a owl:Restriction .
+                ?class owl:onClass ?onClass.
+                ?class owl:minQualifiedCardinality ?min .
                 ?class owl:onProperty ?property .
               }
               Graph ${FULL_UNION_GRAPH}{
-                {  ?this a ?class .	
-              	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}  }union { ?this a ?class .	
-              	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}	
-              	optional{   ?this ?property ?value. 
-               ?value a ?onClass. 
-               filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} }	}  	
+                {  ?this a ?class .
+              	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}  }union { ?this a ?class .
+              	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}
+              	optional{   ?this ?property ?value.
+               ?value a ?onClass.
+               filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} }	}
               }
-              
-              }  group by ?this ?class ?min  ?property  
+
+              }  group by ?this ?class ?min  ?property
               }
-              filter((xsd:integer(?aantal)<xsd:integer(?min)) )  
-              
+              filter((xsd:integer(?aantal)<xsd:integer(?min)) )
+
               }
             ]]>
           </sparql>
@@ -723,25 +758,27 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
+
                select distinct ?this  ?property ?aantal
-              
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {{
-               select distinct ?this ?property  (count(distinct ?value) as ?aantal) 
-              
+               select distinct ?this ?property  (count(distinct ?value) as ?aantal)
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
                  ?property a owl:FunctionalProperty
               }
               Graph ${FULL_UNION_GRAPH}{
-               ?this ?property ?value. 
-              	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>} 
-               filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}  
+               ?this ?property ?value.
+              	filter not exists {?this a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}
+               filter not exists {?value a <http://www.coinsweb.nl/cbim-2.0.rdf#ExpiredEntity>}
               }
-              
-              } group by  ?this ?property  
+
+              } group by  ?this ?property
               }
-              filter(xsd:integer(?aantal)>1) 
-              
+              filter(xsd:integer(?aantal)>1)
+
               }
             ]]>
           </sparql>
@@ -759,18 +796,20 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
+
                select distinct ?a ?prop ?range ?value (Datatype(?value) as ?dat)
-              
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
-                ?prop  a owl:DatatypeProperty . 	
-              		   ?prop rdfs:range ?range. 
+                ?prop  a owl:DatatypeProperty .
+              		   ?prop rdfs:range ?range.
               }
               Graph ${FULL_UNION_GRAPH}{
                 ?a ?prop ?value
               }
               filter (Datatype(?value) !=?range)
-              
+
               }
             ]]>
           </sparql>
@@ -788,17 +827,19 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
+
                select distinct ?a ?prop ?value
-              
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
-                ?prop  a owl:DatatypeProperty 
+                ?prop  a owl:DatatypeProperty
               }
               Graph ${FULL_UNION_GRAPH}{
-                ?a ?prop ?value. 
-              	filter(!isLiteral(?value)) 
+                ?a ?prop ?value.
+              	filter(!isLiteral(?value))
               }
-              
+
               }
             ]]>
           </sparql>
@@ -816,17 +857,19 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
+
                select distinct ?a ?prop ?value
-              
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
-                ?prop  a owl:ObjectProperty 
+                ?prop  a owl:ObjectProperty
               }
               Graph ${FULL_UNION_GRAPH}{
-                ?a ?prop ?value. 
-              	filter(!isIRI(?value)) 
+                ?a ?prop ?value.
+              	filter(!isIRI(?value))
               }
-              
+
               }
             ]]>
           </sparql>
@@ -844,16 +887,18 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
+
                select distinct ?value ?prop ?a ?xsd
-              
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
-                  ?prop  a owl:DatatypeProperty .  ?r a owl:Restriction . ?r owl:onProperty ?prop. ?r owl:allValuesFrom ?xsd 
+                  ?prop  a owl:DatatypeProperty .  ?r a owl:Restriction . ?r owl:onProperty ?prop. ?r owl:allValuesFrom ?xsd
               }
               Graph ${FULL_UNION_GRAPH}{
                ?a a ?r. ?a ?prop ?value.  filter (Datatype(?value) !=?xsd). filter ( (Datatype(?value)=<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString>) && (?xsd=xsd:string))
               }
-              
+
               }
             ]]>
           </sparql>
@@ -871,16 +916,18 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
-               select distinct ?a ?prop ?b 
-              
+
+               select distinct ?a ?prop ?b
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
                    ?prop a owl:ObjectProperty. ?prop rdfs:domain ?domain.
               }
               Graph ${FULL_UNION_GRAPH}{
                ?a ?prop ?b. filter not exists { ?a a ?domain}
               }
-              
+
               }
             ]]>
           </sparql>
@@ -898,16 +945,18 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
-               select distinct ?a ?prop ?b 
-              
+
+               select distinct ?a ?prop ?b
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
                    ?prop a owl:ObjectProperty. ?prop rdfs:range  ?range.
               }
               Graph ${FULL_UNION_GRAPH}{
                ?a ?prop ?b. filter not exists { ?b a ?range}
               }
-              
+
               }
             ]]>
           </sparql>
@@ -925,9 +974,11 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
+
                select distinct ?res ?a ?prop ?value
-              
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
                ?res  a owl:Restriction. ?res owl:hasValue ?value. ?res owl:onProperty ?prop
               }
@@ -937,10 +988,10 @@
               }
               } minus {
               Graph ${FULL_UNION_GRAPH}{
-               ?a a ?res. ?a ?prop ?value 
+               ?a a ?res. ?a ?prop ?value
               }
               }
-              
+
               }
             ]]>
           </sparql>
@@ -958,35 +1009,37 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
+
                select distinct ?res ?a ?prop ?value
-              
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {{
               {
-               select distinct ?res ?a ?prop 
-              
+               select distinct ?res ?a ?prop
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
                ?res  a owl:Restriction. ?res owl:allValuesFrom/owl:oneOf/rdf:rest*/rdf:first ?value. ?res owl:onProperty ?prop
               }
               Graph ${FULL_UNION_GRAPH}{
                ?a a ?res
               }
-              
+
               }}
               } minus {
               {
-               select distinct ?res ?a ?prop 
-              
+               select distinct ?res ?a ?prop
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
                ?res  a owl:Restriction. ?res owl:allValuesFrom/owl:oneOf/rdf:rest*/rdf:first ?value. ?res owl:onProperty ?prop
               }
               Graph ${FULL_UNION_GRAPH}{
                 ?a a ?res. ?a ?prop ?value
               }
-              
+
               }}
               }
-              
+
               }
             ]]>
           </sparql>
@@ -1004,16 +1057,18 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
+
                select distinct ?res ?a ?prop ?x
-              
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
-               ?res a owl:Restriction. ?res owl:allValuesFrom ?c. ?c a owl:Class. filter not exists  {?c owl:oneOf ?oo} .?res owl:onProperty ?prop 
+               ?res a owl:Restriction. ?res owl:allValuesFrom ?c. ?c a owl:Class. filter not exists  {?c owl:oneOf ?oo} .?res owl:onProperty ?prop
               }
               Graph ${FULL_UNION_GRAPH}{
                  ?x a ?res . ?x ?prop ?a. filter not exists  {?a a ?c}
               }
-              
+
               }
             ]]>
           </sparql>
@@ -1031,13 +1086,15 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
-               select distinct ?a  
-              
+
+               select distinct ?a
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
-                   ?restriction owl:unionOf  ?list.    ?a a ?restriction  filter not exists {  ?list rdf:rest*/rdf:first ?first . ?a a ?first } 
+                   ?restriction owl:unionOf  ?list.    ?a a ?restriction  filter not exists {  ?list rdf:rest*/rdf:first ?first . ?a a ?first }
               }
-              
+
               }
             ]]>
           </sparql>
@@ -1055,21 +1112,23 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
+
                select distinct ?x ?c1 ?c2
-              
+
+               FROM ${FULL_UNION_GRAPH}
+
                WHERE {Graph ${FULL_UNION_GRAPH}{
-               ?y a owl:AllDisjointClasses .  
-                ?y owl:members ?members .  
-                 ?members rdf:rest*/rdf:first ?c1 .	
-              	    ?members rdf:rest*/rdf:first ?c2 .  	
+               ?y a owl:AllDisjointClasses .
+                ?y owl:members ?members .
+                 ?members rdf:rest*/rdf:first ?c1 .
+              	    ?members rdf:rest*/rdf:first ?c2 .
               	    FILTER (?c1 != ?c2) .
               }
               Graph ${FULL_UNION_GRAPH}{
-               ?x a ?c1 . 	
-               ?x a ?c2 
+               ?x a ?c1 .
+               ?x a ?c2
               }
-              
+
               }
             ]]>
           </sparql>
@@ -1087,8 +1146,10 @@
               PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               PREFIX owl: <http://www.w3.org/2002/07/owl#>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              
+
                select distinct ?x ?c1 ?c2
+
+               FROM ${FULL_UNION_GRAPH}
               
                WHERE {Graph ${FULL_UNION_GRAPH}{
                ?c1 owl:disjointWith ?c2 

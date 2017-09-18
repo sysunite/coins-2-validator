@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.connector;
 
+import com.sysunite.coinsweb.graphset.GraphVar;
 import com.sysunite.coinsweb.graphset.QueryFactory;
 import com.sysunite.coinsweb.parser.config.pojo.Mapping;
 import com.sysunite.coinsweb.parser.config.pojo.Source;
@@ -45,6 +46,8 @@ public abstract class Rdf4jConnector implements Connector {
   protected boolean cleanUp = false;
   protected boolean wipeOnClose = false;
 
+  protected long max_update_limit = 10l;
+
 
 
 
@@ -72,6 +75,8 @@ public abstract class Rdf4jConnector implements Connector {
 
     try (RepositoryConnection con = repository.getConnection()) {
 
+      log.trace(queryString.replace("\n", " "));
+
       TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
       tupleQuery.setIncludeInferred(false);
 
@@ -81,9 +86,36 @@ public abstract class Rdf4jConnector implements Connector {
       }
       return resultList;
     } catch (Exception e) {
-      log.error("A problem with this select query (message: "+e.getLocalizedMessage()+"):\n"+queryString);
+      log.error(e.getMessage(), e);
+      throw new RuntimeException("A problem with this select query (message: "+e.getLocalizedMessage()+")");
     }
-    throw new RuntimeException("Was not able to build resultset for query: "+queryString);
+  }
+
+  @Override
+  public List<Object> select(String queryString, long limit) {
+    if(!initialized) {
+      init();
+    }
+
+    try (RepositoryConnection con = repository.getConnection()) {
+
+      log.trace(queryString.replace("\n", " "));
+
+      TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+      tupleQuery.setIncludeInferred(false);
+
+      List<Object> resultList = new ArrayList<>();
+      try (TupleQueryResult result = tupleQuery.evaluate()) {
+        int count = 0;
+        while((count++<limit) && result.hasNext()) {
+          resultList.add(result.next());
+        }
+      }
+      return resultList;
+    } catch (Exception e) {
+      log.error(e.getMessage(), e);
+      throw new RuntimeException("A problem with this select query (message: "+e.getLocalizedMessage()+")");
+    }
   }
 
   @Override
@@ -92,30 +124,67 @@ public abstract class Rdf4jConnector implements Connector {
       init();
     }
 
+    if(max_update_limit > 0l && queryString.contains("WHERE")) {
+      queryString = queryString.replaceFirst("WHERE", "WHERE { SELECT * WHERE") ;
+      queryString = queryString + " LIMIT " + max_update_limit + " }";
+    }
+
     try (RepositoryConnection con = repository.getConnection()) {
+
+      log.trace(queryString.replace("\n", " "));
+
+//      con.begin(IsolationLevels.NONE);
 
       Update updateQuery = con.prepareUpdate(QueryLanguage.SPARQL, queryString);
       updateQuery.setIncludeInferred(false);
+      updateQuery.execute();
 
-      try {
-        updateQuery.execute();
-      } catch (Exception e) {
-        log.error("A problem with this update query (message: "+e.getLocalizedMessage()+"):\n"+queryString);
-      }
+
     } catch (Exception e) {
       log.error(e.getMessage(), e);
+      throw new RuntimeException("A problem with this update query");
     }
   }
 
   @Override
   public void sparqlCopy(String fromContext, String toContext) {
     update("COPY <"+fromContext+"> TO <"+toContext+">");
-//    storeGraphExists(toContext, fromContext);
   }
   @Override
   public void sparqlAdd(String fromContext, String toContext) {
     update("ADD <"+fromContext+"> TO <"+toContext+">");
   }
+
+
+
+//  @Override
+//  public void booleanQuery(String queryString) {
+//    if(!initialized) {
+//      init();
+//    }
+//
+//
+//
+//    try {
+//      RepositoryConnection con = repository.getConnection();
+//
+//      log.trace(queryString.replace("\n", " "));
+//
+//      con.begin(IsolationLevels.NONE);
+//
+//      BooleanQuery booleanQuery = con.prepareBooleanQuery(QueryLanguage.SPARQL, queryString);
+//      booleanQuery.setIncludeInferred(false);
+//      booleanQuery.evaluate();
+//
+//
+//
+//      con.close();
+//
+//    } catch (Exception e) {
+//      log.error(e.getMessage(), e);
+//      throw new RuntimeException("A problem with this update query");
+//    }
+//  }
 
   @Override
   public void replaceResource(String context, String resource, String replace) {
@@ -164,6 +233,8 @@ public abstract class Rdf4jConnector implements Connector {
       if(cleanUp) {
         try (RepositoryConnection con = repository.getConnection()) {
           con.clear(Rdf4jConnector.asResource(contexts));
+        } catch (RepositoryException e) {
+          log.error(e.getMessage(), e);
         }
       }
     }
@@ -187,8 +258,14 @@ public abstract class Rdf4jConnector implements Connector {
       if(format == null) {
         throw new RuntimeException("Could not determine the type of file this is: " + file.getName());
       }
+
+
+
+//      con.begin(IsolationLevels.NONE);
       con.add(file, null, format, asResource(contexts));
 
+    } catch (RepositoryException e) {
+      log.error(e.getMessage(), e);
     } catch (IOException e) {
       log.error(e.getMessage(), e);
     }
@@ -206,9 +283,13 @@ public abstract class Rdf4jConnector implements Connector {
       if(format == null) {
         throw new RuntimeException("Could not determine the type of file this is: " + fileName);
       }
+
+
+//      con.begin(IsolationLevels.NONE);
       con.add(inputStream, baseUri, format, asResource(contexts));
 
-
+    } catch (RepositoryException e) {
+      log.error(e.getMessage(), e); // todo, this means a problem
     } catch (IOException e) {
       log.error(e.getMessage(), e);
     }
@@ -254,7 +335,34 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
 
-  public Map<String, Set<String>> listPhiSourceIdsPerHash() {
+  public Map<String, String> listFileNamePerPhiContext() {
+
+    HashMap<String, String> map = new HashMap<>();
+
+    String query =
+
+    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
+    "SELECT DISTINCT ?context ?fileName " +
+    "WHERE { graph ?context { " +
+    "?context val:sourceFile    ?fileName . " +
+    "}}";
+
+
+    List<Object> result = select(query);
+    for(Object rowObject :  result) {
+      BindingSet row = (BindingSet) rowObject;
+
+      String context         = row.getBinding("context").getValue().stringValue();
+      String fileName        = row.getBinding("fileName").getValue().stringValue();
+
+      map.put(context, fileName);
+    }
+
+    return map;
+  }
+
+
+  public Map<String, Set<String>> listPhiContextsPerHash() {
 
     Map<String, Set<String>> list = new HashMap<>();
 
@@ -390,27 +498,20 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
   // The inferenceCode should have the "|" separator and have this format:
-  // COINS 2.0 Lite_0.9.85/0.9.85/coins container inference|1c73af7f95863c2f088053b1a1f5cc2d-57d50697b28694734038a545031e56eb-58fe7035dbea97e9d62619bf24a7fe73
+  // 1c73af7f95863c2f088053b1a1f5cc2d-57d50697b28694734038a545031e56eb-58fe7035dbea97e9d62619bf24a7fe73|COINS 2.0 Lite_0.9.85/0.9.85/coins container inference
 
-  public Set<String> findSigmaGraphsByInferenceCode(String inferenceCodeWithHashes) {
-    if(inferenceCodeWithHashes.length()-1 != inferenceCodeWithHashes.replace("|","").length()) {
-      throw new RuntimeException("The inferenceCode does not have the right amount of | separators");
-    }
-    if(inferenceCodeWithHashes.length()-2 != inferenceCodeWithHashes.replace("/","").length()) {
-      throw new RuntimeException("The inferenceCode does not have the right amount of / separators");
-    }
-    String fingerPrint = inferenceCodeWithHashes.substring(0, inferenceCodeWithHashes.indexOf("|"));
-    String inferenceCode = inferenceCodeWithHashes.substring(inferenceCodeWithHashes.indexOf("|")+1);
+  public Map<String, String> listSigmaGraphsByInferenceCode() {
 
-    Set<String> set = new HashSet<>();
+    HashMap<String, String> set = new HashMap<>();
 
     String query =
 
     "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
-    "SELECT DISTINCT ?context  " +
+    "SELECT DISTINCT ?context ?inferenceCodeWithHashes " +
     "WHERE { graph ?context { " +
-    "  ?context val:bundle \""+inferenceCode+"\" . " +
-    "  ?context val:compositionFingerPrint \""+fingerPrint+"\" . " +
+    "  ?context val:compositionFingerPrint ?hashes . " +
+    "  ?context val:bundle ?inferenceCode . " +
+    "  BIND ( concat(str(?hashes), \"|\", str(?inferenceCode)) as ?inferenceCodeWithHashes ) . " +
     "}} ORDER BY ?context";
 
 
@@ -420,10 +521,37 @@ public abstract class Rdf4jConnector implements Connector {
       BindingSet row = (BindingSet) rowObject;
 
       String context = row.getBinding("context").getValue().stringValue();
-      set.add(context);
+      String inferenceCodeWithHashes = row.getBinding("inferenceCodeWithHashes").getValue().stringValue();
+      set.put(inferenceCodeWithHashes, context);
+      log.trace("Found fingerprint "+inferenceCodeWithHashes+" for "+context);
     }
 
     return set;
+  }
+
+  /**
+   *
+   * @param graphVars
+   * @param inferenceCode
+   */
+  public void storeFinishedInferences(String hashes, Set<GraphVar> graphVars, Map<GraphVar, String> contextMap, String inferenceCode) {
+
+    for(GraphVar graphVar : graphVars) {
+      String context = contextMap.get(graphVar);
+      log.info("Store for " + context);
+      log.info(hashes + "|" + inferenceCode);
+
+      String query =
+
+      "PREFIX val: <" + QueryFactory.VALIDATOR_NS + "> " +
+      "INSERT DATA { " +
+      "  GRAPH <" + context + "> { " +
+      "    <" + context + "> val:compositionFingerPrint \"" + hashes + "\" ." +
+      "    <" + context + "> val:bundle \"" + inferenceCode + "\" . " +
+      " }}";
+
+      update(query);
+    }
   }
 
   public Map<String, Set<String>> listInferenceCodePerSigmaGraph() {
@@ -480,7 +608,7 @@ public abstract class Rdf4jConnector implements Connector {
 
     "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
     "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
-    "SELECT ?context " +
+    "SELECT DISTINCT ?context " +
     "WHERE { " +
     "  graph ?context { ";
     for(int i = 0; i < originalContextsWithHash.size(); i++ ) {
@@ -507,13 +635,15 @@ public abstract class Rdf4jConnector implements Connector {
     query +=
     "}";
 
-    ArrayList<String> contexts = new ArrayList<>();
+    HashSet<String> contextsMap = new HashSet<>();
     List<Object> result = select(query);
     for (Object bindingSet : result) {
 
-      String namespace = ((BindingSet)bindingSet).getBinding("context").getValue().stringValue();
-      contexts.add(namespace);
+      String namespace = withoutHash(((BindingSet)bindingSet).getBinding("context").getValue().stringValue());
+      contextsMap.add(namespace);
     }
+    ArrayList<String> contexts = new ArrayList<>();
+    contexts.addAll(contextsMap);
     return contexts;
   }
 
@@ -592,7 +722,10 @@ public abstract class Rdf4jConnector implements Connector {
 
     try (RepositoryConnection con = repository.getConnection()) {
       return con.size(asResource(context));
+    } catch (RepositoryException e) {
+      log.error(e.getMessage(), e);
     }
+    return 0l;
   }
 
 
@@ -611,6 +744,8 @@ public abstract class Rdf4jConnector implements Connector {
         log.info("- " + graphName.toString());
         contexts.add(graphName.toString());
       }
+    } catch (RepositoryException e) {
+      log.error(e.getMessage(), e);
     }
     return contexts;
   }
@@ -658,6 +793,8 @@ public abstract class Rdf4jConnector implements Connector {
         }
       }
       writer.endRDF();
+    } catch (RepositoryException e) {
+      log.error(e.getMessage(), e);
     }
   }
 
@@ -665,7 +802,7 @@ public abstract class Rdf4jConnector implements Connector {
   @Override
   public Map<String, String> exportPhiGraph(String context, OutputStream outputStream) {
 
-    String sourceContext;
+    String sourceContext = null;
     Resource contextResource = asResource(context);
     try (RepositoryConnection con = repository.getConnection();
          RepositoryResult<Statement> statements = con.getStatements(contextResource, (IRI)asResource(QueryFactory.VALIDATOR_NS+"sourceContext"), null, contextResource)) {
@@ -673,13 +810,17 @@ public abstract class Rdf4jConnector implements Connector {
         throw new RuntimeException("Source context could not be read from the connector");
       }
       sourceContext = statements.next().getObject().stringValue();
+    } catch (RepositoryException e) {
+      log.error(e.getMessage(), e);
     }
 
     Map<String, String> importsMap = getImports(context);
     List<String> uploadedFileContexts = new ArrayList<>();
     uploadedFileContexts.addAll(importsMap.keySet());
     final Map<String, String> contextMap = new HashMap<>();
-    contextMap.put(context, sourceContext);
+    if(sourceContext != null) {
+      contextMap.put(context, sourceContext);
+    }
 
     Map<String, String> prefixMap = new HashMap<>();
     for(int i = 1; i <= uploadedFileContexts.size(); i++) {

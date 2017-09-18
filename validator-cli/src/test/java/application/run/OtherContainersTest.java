@@ -16,7 +16,7 @@ public class OtherContainersTest {
   Logger log = LoggerFactory.getLogger(OtherContainersTest.class);
 
 //  File config = new File(getClass().getClassLoader().getResource("general-9.85.yml").getFile());
-  File config = new File(getClass().getClassLoader().getResource("general-9.85-virtuoso.yml").getFile());
+  File config = new File(getClass().getClassLoader().getResource("general-9.85-stardog.yml").getFile());
 
   static {
     File profile = new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/profiles/profile.lite-9.85-virtuoso.xml");
@@ -31,8 +31,8 @@ public class OtherContainersTest {
 
     System.setProperty("user.dir", config.getParent());
 
-    String[] args = {"run", config.getPath(), "-l",
-      "/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/dataroom-1.43/Dataroom-1.43_.ccr"
+    String[] args = {"run", config.getPath(), "--log-trace",
+      "/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/dataroom-1.43/Dataroom-1.43.ccr"
 //      "VC_CodelistV2.ccr"
     };
     Application.main(args);

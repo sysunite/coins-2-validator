@@ -112,7 +112,7 @@ public class Stardog extends Rdf4jConnector {
 
     try {
       String payload = "query=" + URLEncoder.encode(query, "UTF-8") + "&reasoning=false";
-      String response = ReportFactory.postReport(payload, "http://localhost:5820/annex/repo/sparql/query", "admin", "admin", "application/x-www-form-urlencoded"); // todo: parametrise
+      String response = ReportFactory.postReport(payload, "http://localhost:5820/annex/repo/sparql/query", "application/x-www-form-urlencoded", "admin", "admin"); // todo: parametrise
       log.info(response);
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();

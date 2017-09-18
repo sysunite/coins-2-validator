@@ -13,22 +13,24 @@
     <table>
       <tr><th colspan="4">${bundleKey}</th></tr>
       <#list bundle.queries as query>
+        <#if instanceOf(query, "QueryStatistics")>
 
 
 
-        <tr><td><#if query.valid>&#x2705;<#else>&#x26D4;</#if></td><th>${query.reference}</th><td>${query.parseDescription()}</td></tr>
+          <tr><td><#if query.valid>&#x2705;<#else>&#x26D4;</#if></td><th>${query.reference}</th><td>${query.parseDescription()}</td></tr>
 
-        <#if query.formattedResults?has_content>
-        <tr><td colspan="3">
-        <ul>
-        <#list 0..query.formattedResults?size-1 as i>
-          <li>${query.formattedResults[i]}</li>
-        </#list>
-        </ul>
-        </td></tr>
+          <#if query.formattedResults?has_content>
+          <tr><td colspan="3">
+          <ul>
+          <#list 0..query.formattedResults?size-1 as i>
+            <li>${query.formattedResults[i]}</li>
+          </#list>
+          </ul>
+          </td></tr>
+          </#if>
+
+
         </#if>
-
-
       </#list>
     </table>
   <#else>

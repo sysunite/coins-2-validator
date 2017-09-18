@@ -6,14 +6,12 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
-import com.sysunite.coinsweb.graphset.GraphVar;
 import com.sysunite.coinsweb.steps.ValidationStep;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static com.sysunite.coinsweb.parser.Parser.*;
@@ -68,22 +66,6 @@ public class Container extends ConfigPart {
       mapping.setInitialized();
     }
     return variables;
-  }
-  @JsonIgnore
-  public HashMap<GraphVar, String> getVariablesContextMap() {
-    HashMap<GraphVar, String> graphs = new HashMap();
-    for(Mapping mapping : getVariables()) {
-      graphs.put(mapping.getVariable(), mapping.getGraphname());
-    }
-    return graphs;
-  }
-  @JsonIgnore
-  public HashMap<GraphVar, String> getVariablesFileNameMap() {
-    HashMap<GraphVar, String> graphs = new HashMap();
-    for(Mapping mapping : getVariables()) {
-      graphs.put(mapping.getVariable(), mapping.getFilename());
-    }
-    return graphs;
   }
   public List<Graph> getGraphs() {
     return graphs;

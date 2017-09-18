@@ -2,15 +2,12 @@ package com.sysunite.coinsweb.connector.graphdb;
 
 import com.sysunite.coinsweb.connector.Rdf4jConnector;
 import com.sysunite.coinsweb.parser.config.pojo.Environment;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.GraphUtil;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
-import org.eclipse.rdf4j.repository.manager.RemoteRepositoryManager;
-import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
@@ -33,7 +30,7 @@ public class GraphDB extends Rdf4jConnector {
   public static final String REFERENCE = "graphdb";
 
   private String url;
-  RepositoryManager manager;
+//  RepositoryManager manager;
   String repositoryId;
 
 
@@ -66,39 +63,35 @@ public class GraphDB extends Rdf4jConnector {
 
   public void init() {
 
-    if(initialized) {
-      return;
-    }
-
-    log.info("Initialize connector ("+REFERENCE+")");
-
-    manager = new RemoteRepositoryManager(url);
-    manager.initialize();
-
-    try {
-
-      if(repositoryId == null){
-        if(repoPerRun) {
-          repositoryId = "validator-generated-" + RandomStringUtils.random(8, true, true);
-        } else {
-          repositoryId = "validator-generated";
-        }
-      }
-      if(manager.hasRepositoryConfig(repositoryId)) {
-        log.info("Found existing repository");
-      } else {
-        if(createRepo) {
-          manager.addRepositoryConfig(createRepositoryConfig(repositoryId));
-        } else {
-          log.warn("Not allowed to create repo, but needs to");
-          return;
-        }
-      }
-    } catch (IOException e) {
-      log.error(e.getMessage(), e);
-    }
-    repository = manager.getRepository(repositoryId);
-    initialized = true;
+//    if(initialized) {
+//      return;
+//    }
+//
+//    log.info("Initialize connector ("+REFERENCE+")");
+//
+//    manager = new RemoteRepositoryManager(url);
+//    manager.initialize();
+//
+//    try {
+//
+//      if(repositoryId == null){
+//        repositoryId = "validator-generated";
+//      }
+//      if(manager.hasRepositoryConfig(repositoryId)) {
+//        log.info("Found existing repository");
+//      } else {
+//        if(createRepo) {
+//          manager.addRepositoryConfig(createRepositoryConfig(repositoryId));
+//        } else {
+//          log.warn("Not allowed to create repo, but needs to");
+//          return;
+//        }
+//      }
+//    } catch (IOException e) {
+//      log.error(e.getMessage(), e);
+//    }
+//    repository = manager.getRepository(repositoryId);
+//    initialized = true;
   }
 
 
@@ -107,15 +100,15 @@ public class GraphDB extends Rdf4jConnector {
 
   @Override
   public void close() {
-    if(!initialized) {
-      return;
-    }
-    repository.shutDown();
-    if(wipeOnClose) {
-      if (manager != null && repositoryId != null) {
-        manager.removeRepository(repositoryId);
-      }
-    }
+//    if(!initialized) {
+//      return;
+//    }
+//    repository.shutDown();
+//    if(wipeOnClose) {
+//      if (manager != null && repositoryId != null) {
+//        manager.removeRepository(repositoryId);
+//      }
+//    }
   }
 
 
@@ -140,7 +133,7 @@ public class GraphDB extends Rdf4jConnector {
     "            sail:sailType \"graphdb:FreeSail\" ;\n" +
     "            owlim:base-URL \"http://example.org/graphdb#\" ;\n" +
     "            owlim:defaultNS \"\" ;\n" +
-    "            owlim:entity-index-size \"10000000\" ;\n" +
+    "            owlim:entity-index-size \"1000000000\" ;\n" +
     "            owlim:entity-id-size  \"32\" ;\n" +
     "            owlim:imports \"\" ;\n" +
     "            owlim:repository-type \"file-repository\" ;\n" +

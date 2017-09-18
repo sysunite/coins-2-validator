@@ -1,5 +1,6 @@
 package com.sysunite.coinsweb.graphset;
 
+import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 
 import java.util.List;
@@ -14,15 +15,16 @@ import java.util.Set;
  */
 public interface ContainerGraphSet {
 
+  Connector getConnector();
 
   List<Object> select(String query);
+  List<Object> select(String query, long limit);
   void update(String query);
 
   Map<String, String> getImports(GraphVar graphVar);
   boolean hasContext(GraphVar graphVar);
 
   void lazyLoad(ContainerFile container, Map<String, Set<GraphVar>> inferencePreference);
-  void setConfigFile(Object configFile);
   Map<GraphVar, String> contextMap();
   Map<GraphVar, Long> quadCount();
 
@@ -34,10 +36,6 @@ public interface ContainerGraphSet {
 
   Object getMain();
   void setMain(Object graphVar);
-//  String graphExists(GraphVar graphVar);
-
-//  void writeContextToFile(List<String> contexts, OutputStream outputStream);
-//  void writeContextToFile(List<String> contexts, OutputStream outputStream, Function filter);
 
   void pushUpdatesToCompose();
 

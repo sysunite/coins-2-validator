@@ -77,11 +77,6 @@ public class ValidationExecutor {
       String context = graphSet.contextMap().get(graphVar);
       log.info("- " + graphVar + " > "+context);
 
-//      String originalContext = graphSet.graphExists(graphVar); todo
-//      if(originalContext == null) {
-//        throw new RuntimeException("The graph "+graphVar+" ("+context+") is not available in the store");
-//      }
-
       validationGraphs.put(graphVar.toString(), '<'+context+'>');
       List<String> list = getFinishedInferences(context);
       executedInferences.put(context, list);
@@ -177,14 +172,19 @@ public class ValidationExecutor {
       long start = new Date().getTime();
 
 
-      for (Query query : bundleStats.getQueries()) {
+      for (int i = 0; i < bundleStats.getQueries().size(); i++) {
 
         long startQuery = new Date().getTime();
+        Query query = bundleStats.getQueries().get(i);
         QueryStatistics queryStats = bundleStats.getQuery(query.getReference());
 
         String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes);
         queryStats.setExecutedQuery(queryString);
-        graphSet.update(queryString);
+        try {
+          graphSet.update(queryString);
+        } catch (RuntimeException e) {
+          throw new RuntimeException("Error during execution of update query "+query.getReference() +" of bundle "+bundle.getReference());
+        }
 
         long executionTimeQuery = (new Date().getTime()) - startQuery;
         queryStats.addExecutionTimeMs(executionTimeQuery);
@@ -241,15 +241,9 @@ public class ValidationExecutor {
 
     // Store that this inference bundle was executed
     if(Bundle.INFERENCE.equals(bundle.getType())) {
-      Map<GraphVar, Long> bundleTotal = quadsAddedPerGraph(beforeBundle, previous);
 
-      Long total = 1l; // todo set back to 0l
-      for(GraphVar graphVar : QueryFactory.usedVars(bundle)) {
-        total += bundleTotal.get(graphVar);
-      }
-      if(total > 0l) {
-        storeFinishedInferences(QueryFactory.usedVars(bundle), inferenceCode);
-      }
+      Set<GraphVar> usedVars = QueryFactory.usedVars(bundle);
+      graphSet.getConnector().storeFinishedInferences(graphSet.getCompositionFingerPrint(usedVars), usedVars, graphSet.contextMap(), inferenceCode);
 
     }
 
@@ -265,17 +259,27 @@ public class ValidationExecutor {
 
     boolean valid = true;
 
-    for (Query query : bundleStats.getQueries()) {
+    for (int i = 0; i < bundleStats.getQueries().size(); i++) {
 
+      Query query = bundleStats.getQueries().get(i);
       QueryStatistics queryStats = bundleStats.getQuery(query.getReference());
 
-      String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes, validationConfig.getMaxResults());
+      log.info("Execute \""+query.getReference()+"\":");
+
+      int max = validationConfig.getMaxResults();
+
+      String queryString = QueryFactory.buildQuery(query, validationGraphs, defaultPrefixes, max);
       queryStats.setExecutedQuery(queryString);
 
       long start = new Date().getTime();
 
-      List<Object> result = graphSet.select(queryString);
+      List<Object> result;
+      try {
+        result = graphSet.select(queryString, Integer.toUnsignedLong(max));
 
+      } catch (RuntimeException e) {
+        throw new RuntimeException("Error during execution of update query "+query.getReference() +" of bundle "+bundle.getReference());
+      }
 
       LinkedList<Map<String, String>> results = new LinkedList<>();
       ArrayList<String> formattedResults = new ArrayList<>();
@@ -284,11 +288,11 @@ public class ValidationExecutor {
 
       if(result.isEmpty()) {
         hasNoResults = true;
-        log.info("No results for \""+query.getReference()+"\", which is good");
+        log.info("No results, which is good");
 
       } else {
         hasNoResults = false;
-        log.info("Results found for \""+query.getReference()+"\", this is bad");
+        log.info("Results found, this is bad");
 
 
 
@@ -353,34 +357,8 @@ public class ValidationExecutor {
       String inferenceCode = ((BindingSet)bindingSet).getBinding("inferenceCode").getValue().stringValue();
       String fingerPrint = ((BindingSet)bindingSet).getBinding("fingerPrint").getValue().stringValue();
       inferenceCodes.add(fingerPrint + "|" + inferenceCode);
-      log.info("The inference >>"+inferenceCode+"<< was previously executed for "+context);
     }
     return inferenceCodes;
-  }
-
-  /**
-   *
-   * @param graphVars
-   * @param inferenceCode
-   */
-  public void storeFinishedInferences(Set<GraphVar> graphVars, String inferenceCode) {
-
-    String compositionFingerPrint = graphSet.getCompositionFingerPrint(graphVars);
-
-    for(GraphVar graphVar : graphVars) {
-      String context = graphSet.contextMap().get(graphVar);
-      log.info("Store inferenceCode >>" + inferenceCode + "<< for " + context);
-
-      String query =
-
-      "PREFIX val: <" + QueryFactory.VALIDATOR_NS + "> " +
-      "INSERT DATA { " +
-      "  GRAPH <" + context + "> { " +
-      "    <" + context + "> val:bundle \"" + inferenceCode + "\" . " +
-      "    <" + context + "> val:compositionFingerPrint \"" + compositionFingerPrint + "\" . }}";
-
-      graphSet.update(query);
-    }
   }
 
 

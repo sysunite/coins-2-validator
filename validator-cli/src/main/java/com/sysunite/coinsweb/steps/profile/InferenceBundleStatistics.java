@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +50,7 @@ public class InferenceBundleStatistics extends Bundle {
   private String id;
   private long executionTimeMs = 0l;
   @JsonIgnore
-  private HashMap<String, Query> queryMap;
+  private ArrayList<Query> queryList;
   private List<Map<GraphVar, Long>> runStatistics = new ArrayList<>();
   private int runs = 0;
   private long quadsAdded = 0l;
@@ -75,10 +74,7 @@ public class InferenceBundleStatistics extends Bundle {
 
     // Make new fields
     this.id = Long.toHexString(Double.doubleToLongBits(Math.random()));
-    this.queryMap = new HashMap();
-    for(Query query : bundleConfig.getQueries()) {
-      this.queryMap.put(query.getReference(), query);
-    }
+    this.queryList = bundleConfig.getQueries();
   }
 
 
@@ -103,9 +99,7 @@ public class InferenceBundleStatistics extends Bundle {
 
   @Override
   public ArrayList<Query> getQueries() {
-    ArrayList<Query> queries = new ArrayList();
-    queries.addAll(queryMap.values());
-    return queries;
+    return queryList;
   }
 
   public void addExecutionTimeMs(long executionTimeMs) {
@@ -123,22 +117,32 @@ public class InferenceBundleStatistics extends Bundle {
   public void setSkipped(Boolean skipped) {
     this.skipped = skipped;
     if(this.skipped != null && this.skipped) {
-      this.queryMap = new HashMap<>();
+      this.queryList = new ArrayList<>();
     }
   }
 
   public void updateQuery(Query query) {
-    this.queryMap.put(query.getReference(), query);
+
+    for(int i = 0; i < queryList.size(); i++) {
+      if(queryList.get(i).getReference().equals(query.getReference())) {
+        queryList.remove(i);
+        queryList.add(i, query);
+        return;
+      }
+    }
+    queryList.add(query);
   }
   public QueryStatistics getQuery(String reference) {
-    Query current = this.queryMap.get(reference);
-    if(current == null) {
-      throw new RuntimeException("No Query registered with this reference code: "+reference);
+    for(Query query : queryList) {
+      if(query.getReference().equals(reference)) {
+        if (!(query instanceof QueryStatistics)) {
+          updateQuery(new QueryStatistics(query));
+          return getQuery(reference);
+        }
+        return (QueryStatistics) query;
+      }
     }
-    if(!(current instanceof QueryStatistics)) {
-      updateQuery(new QueryStatistics(current));
-    }
-    return (QueryStatistics) this.queryMap.get(reference);
+    throw new RuntimeException("No Query registered with this reference code: " + reference);
   }
 
   public Boolean getValid() {

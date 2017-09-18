@@ -45,6 +45,7 @@ public class QueryFactory {
     if(maxResults > 0) {
       finalQuery += " LIMIT " + maxResults;
     }
+    log.trace(finalQuery.replace("\n", " "));
     return finalQuery;
   }
 

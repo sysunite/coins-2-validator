@@ -83,8 +83,8 @@ public class QueryStatistics extends Query {
   public String getResultFormat() {
     return super.getResultFormat();
   }
-  @Override
-  public String getQuery() {
+
+  public String getExecutedQuery() {
     return executedQuery;
   }
 

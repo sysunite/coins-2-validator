@@ -19,7 +19,20 @@
   </tr>
   <tr>
     <td><#if step.valid>&#x2705;<#else>&#x26D4;</#if></td>
-    <th>unmatched references</th>
+    <th>unmatchedInternalDocumentReferences</th>
+    <td>All internalDocumentReferences should point to available attachment files (listing invalid files):<br/>
+    <#if step.unmatchedInternalDocumentReferences?has_content>
+      <ul>
+        <#list step.unmatchedInternalDocumentReferences?keys as doc>
+          <li>${step.unmatchedInternalDocumentReferences[doc]} (${doc})</li>
+        </#list>
+      </ul>
+    </#if>
+    </td>
+  </tr>
+  <tr>
+    <td><#if step.valid>&#x2705;<#else>&#x26D4;</#if></td>
+    <th>unmatchedExternalDocumentReferences</th>
     <td>All internalDocumentReferences should point to available attachment files (listing invalid files):<br/>
     <#if step.unmatchedInternalDocumentReferences?has_content>
       <ul>

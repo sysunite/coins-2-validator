@@ -14,6 +14,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.eclipse.rdf4j.query.Binding;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.slf4j.Logger;
@@ -24,7 +25,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -98,26 +101,38 @@ public class ReportFactory {
     throw new RuntimeException("Was not able to build the report from template.");
   }
 
-  public static void postReport(String payload, String uri) {
+  public static String postReport(String payload, String uri, String contentType) {
+    return postReport(payload, uri, contentType, null, null);
+  }
+  public static String postReport(String payload, String uri, String contentType, String username, String password) {
 
     int code = 0;
+    String responseBody = "";
     try {
 
       URL obj = new URL(uri);
-      HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+      HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
+      if(username != null && password != null) {
+        String encoded = Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
+        connection.setRequestProperty("Authorization", "Basic " + encoded);
+      }
 
       // Setting basic post request
-      con.setRequestMethod("POST");
-      con.setRequestProperty("Content-Type", "application/xml");
+      connection.setRequestMethod("POST");
+      if(contentType != null) {
+        connection.setRequestProperty("Content-Type", contentType);
+      }
 
       // Send post request
-      con.setDoOutput(true);
-      DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+      connection.setDoOutput(true);
+      DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
       wr.writeBytes(payload);
       wr.flush();
       wr.close();
 
-      code = con.getResponseCode();
+      code = connection.getResponseCode();
+      responseBody = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);
+      return responseBody;
     } catch (MalformedURLException e) {
       log.error(e.getMessage(), e);
     } catch (ProtocolException e) {
@@ -129,6 +144,7 @@ public class ReportFactory {
     if(code != 200) {
       throw new RuntimeException("Not able to upload report to uri "+uri);
     }
+    return responseBody;
   }
 
 
@@ -187,7 +203,7 @@ public class ReportFactory {
     try {
       return xmlWriter.writeValueAsString(reportFile);
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     }
     throw new RuntimeException("Failed to produce xml");
   }
@@ -195,11 +211,12 @@ public class ReportFactory {
   public static String buildJson(Object reportFile) {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+    objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
     try {
       return objectMapper.writeValueAsString(reportFile);
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     }
     throw new RuntimeException("Failed to produce json");
   }

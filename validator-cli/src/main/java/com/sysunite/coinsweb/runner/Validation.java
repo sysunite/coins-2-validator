@@ -35,6 +35,7 @@ public class Validation {
   public static boolean run(ConfigFile configFile, Connector connector) {
 
     boolean successful = true;
+    boolean failed = false;
 
 
     log.info("Entered first phase of run, \uD83D\uDD0E iterate over containers");
@@ -84,6 +85,7 @@ public class Validation {
         if(step.getFailed()) {
           containerConfig.addStep(step);
           valid &= false;
+          failed &= true;
           break;
         } else {
           containerConfig.addStep(step);
@@ -132,8 +134,12 @@ public class Validation {
         ReportFactory.saveReport(payload, path);
       }
       if(Locator.ONLINE.equals(report.getLocation().getType()) && payload != null) {
-        ReportFactory.postReport(payload, report.getLocation().getUri());
+        ReportFactory.postReport(payload, report.getLocation().getUri(), "application/xml");
       }
+    }
+
+    if(failed) {
+      throw new RuntimeException("This run failed, incomplete reports where generated.");
     }
 
     return successful;

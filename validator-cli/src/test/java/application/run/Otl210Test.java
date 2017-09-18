@@ -1,5 +1,6 @@
 package application.run;
 
+import application.SimpleHttpServer;
 import com.sysunite.coinsweb.cli.Application;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -14,18 +15,21 @@ public class Otl210Test {
 
   Logger log = LoggerFactory.getLogger(Otl210Test.class);
 
-  File config = new File(getClass().getClassLoader().getResource("general-9.81.yml").getFile());
+  File config = new File(getClass().getClassLoader().getResource("general-9.85-virtuoso.yml").getFile());
 //  File config = new File(getClass().getClassLoader().getResource("general-9.83.yml").getFile());
-
+static {
+  File profile = new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/profiles/profile.lite-9.85-virtuoso.xml");
+  SimpleHttpServer.serveFile(profile, "application/xml", 9877);
+}
 
   @Test
   public void test() {
 
     log.info("Read "+config.getPath());
 
-    System.setProperty("user.dir", config.getParent() + "/otl-1.7.1/");
+    System.setProperty("user.dir", config.getParent() + "/otl-2.1/");
 
-    String[] args = {"run", config.getPath(), "-l",
+    String[] args = {"run", config.getPath(), "--log-trace",
       "01_NetwerkRuimteVoorbeeld_OTL21.ccr",
       "02_DecompositieWegNetwerk1_OTL21.ccr",
       "03_DecompositieWegNetwerk1_OTL21.ccr",

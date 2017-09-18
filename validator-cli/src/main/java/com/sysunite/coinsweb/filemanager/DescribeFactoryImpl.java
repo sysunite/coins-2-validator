@@ -1,7 +1,7 @@
 package com.sysunite.coinsweb.filemanager;
 
 import com.sysunite.coinsweb.connector.Connector;
-import com.sysunite.coinsweb.connector.NullModel;
+import com.sysunite.coinsweb.connector.OutlineModel;
 import com.sysunite.coinsweb.connector.Rdf4jUtil;
 import com.sysunite.coinsweb.graphset.ContainerGraphSetFactory;
 import com.sysunite.coinsweb.graphset.QueryFactory;
@@ -21,7 +21,10 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Optional;
+
+import static com.sysunite.coinsweb.rdfutil.Utils.withoutHash;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -106,7 +109,8 @@ public class DescribeFactoryImpl implements DescribeFactory {
 
       log.info("Look for graphs in content file "+repositoryFile);
       try {
-        for (String namespace : containerFile.getRepositoryFileNamespaces(repositoryFile)) {
+        ArrayList<String> namespaces = containerFile.getRepositoryFileNamespaces(repositoryFile);
+        for (String namespace : namespaces) {
 
           Source source = new Source();
           source.setType("container");
@@ -126,22 +130,24 @@ public class DescribeFactoryImpl implements DescribeFactory {
   }
 
 
-  public static void namespacesForFile(InputStream inputStream, String fileName, HashMap<String, ArrayList<String>> namespacesMap, HashMap<String, ArrayList<String>> importsMap) {
-
-    ArrayList<String> namespaces = new ArrayList<>();
-    ArrayList<String> imports = new ArrayList<>();
-
-    namespacesForFile(inputStream, fileName, namespaces, imports);
-
-    namespacesMap.put(fileName, namespaces);
-    importsMap.put(fileName, imports);
-  }
-  public static void namespacesForFile(InputStream inputStream, String fileName, ArrayList<String> namespaces, ArrayList<String> imports) {
+  /**
+   * To represent each set of triples in a file URI's are used
+   *
+   * Finding them is tried in this order:
+   *
+   * - If the file consists of contexts itself (e.g. nquad or trix files) these are returned
+   * - If no context is specified (subj) -rdf:type->  owl:Ontology definitions are collected and returned
+   * - Use the namespace with the empty prefix
+   * - Fall back to the backup namespace that is composed of the fileName
+   *
+   * @param inputStream
+   * @param fileName
+   * @param resultContexts
+   * @param resultImports
+   */
+  public static void contextsInFile(InputStream inputStream, String fileName, ArrayList<String> resultContexts, ArrayList<String> resultImports) {
 
     String backupNamespace = QueryFactory.VALIDATOR_HOST + fileName;
-
-    ArrayList<String> result = new ArrayList();
-
 
     RDFFormat format = Rdf4jUtil.interpretFormat(fileName);
     if(format == null) {
@@ -150,7 +156,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
     log.info("Found file type "+format.getName()+" for file: "+fileName);
     log.info("Parse the file to determine contexts");
 
-    NullModel model = new NullModel();
+    OutlineModel model = new OutlineModel();
     RDFParser rdfParser = Rio.createParser(format);
     rdfParser.setRDFHandler(new StatementCollector(model));
 
@@ -160,30 +166,64 @@ public class DescribeFactoryImpl implements DescribeFactory {
       throw new RuntimeException(e.getMessage());
     }
 
+    // Store imports
+    resultImports.addAll(model.getImports());
+
+
+    HashSet<String> result = new HashSet<>();
+
     // If there are contexts, use these
-    for(Resource context : model.contexts()) {
+    for(Resource context : model.getContexts()) {
       if(context != null) {
-        log.info("Found context in file: "+context.toString());
-        result.add(context.toString());
+        String contextString = withoutHash(context.stringValue());
+        log.info("Add context to represent set triples in file: "+contextString);
+        result.add(contextString);
       }
+    }
+    if(result.size() > 0) {
+      resultContexts.addAll(result);
+      return;
+    }
+
+    // If not look for ontologies
+    for(Resource ontology : model.getOntologies()) {
+      if(ontology != null) {
+        String ontologyString = withoutHash(ontology.stringValue());
+        log.info("Add ontology to represent set triples in file: "+ontologyString);
+        result.add(ontologyString);
+      }
+    }
+    if(result.size() > 0) {
+      resultContexts.addAll(result);
+      return;
     }
 
     // If no contexts, use the empty namespace
-    if(result.size() < 1) {
-      Optional<Namespace> namespace = model.getNamespace("");
-      if (namespace.isPresent()) {
-        log.info("No context found to represent this file, falling back to empty prefix namespace: "+namespace.get().getName());
-        result.add(namespace.get().getName());
-      }
+    Optional<Namespace> namespace = model.getNamespace("");
+    if (namespace.isPresent()) {
+      String namespaceString = withoutHash(namespace.get().getName());
+      log.info("Add empty-prefix namespace to represent set triples in file: "+namespace.get().getName());
+      result.add(namespaceString);
+    }
+    if(result.size() > 0) {
+      resultContexts.addAll(result);
+      return;
     }
 
     // If still no namespace
-    if(result.size() < 1) {
-      log.warn("No context found to represent this file, falling back to " + backupNamespace);
-      result.add(backupNamespace);
-    }
-
-    namespaces.addAll(result);
-    imports.addAll(model.getImports());
+    log.info("Add default namespace to represent set triples in file: "+namespace.get().getName());
+    resultContexts.add(backupNamespace);
   }
+
+  public static void contextsInFile(InputStream inputStream, String fileName, HashMap<String, ArrayList<String>> namespacesMap, HashMap<String, ArrayList<String>> importsMap) {
+
+    ArrayList<String> namespaces = new ArrayList<>();
+    ArrayList<String> imports = new ArrayList<>();
+
+    contextsInFile(inputStream, fileName, namespaces, imports);
+
+    namespacesMap.put(fileName, namespaces);
+    importsMap.put(fileName, imports);
+  }
+
 }

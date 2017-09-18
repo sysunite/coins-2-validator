@@ -23,7 +23,7 @@ public class DescribeFactoryImplTest {
     try {
       ArrayList<String> namespaces = new ArrayList<>();
       ArrayList<String> imports = new ArrayList<>();
-      DescribeFactoryImpl.namespacesForFile(new FileInputStream(dataroom), dataroom.getName(), namespaces, imports);
+      DescribeFactoryImpl.contextsInFile(new FileInputStream(dataroom), dataroom.getName(), namespaces, imports);
       for(String item : namespaces) {
         log.info(item);
       }
@@ -40,7 +40,7 @@ public class DescribeFactoryImplTest {
     try {
       ArrayList<String> namespaces = new ArrayList<>();
       ArrayList<String> imports = new ArrayList<>();
-      DescribeFactoryImpl.namespacesForFile(new FileInputStream(nquad), nquad.getName(), namespaces, imports);
+      DescribeFactoryImpl.contextsInFile(new FileInputStream(nquad), nquad.getName(), namespaces, imports);
       for(String item : namespaces) {
         log.info(item);
       }

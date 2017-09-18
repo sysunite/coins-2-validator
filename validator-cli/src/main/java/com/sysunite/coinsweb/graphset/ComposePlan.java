@@ -1,6 +1,5 @@
 package com.sysunite.coinsweb.graphset;
 
-import com.sysunite.coinsweb.parser.config.pojo.Mapping;
 import org.eclipse.rdf4j.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,28 +16,26 @@ public class ComposePlan {
 
   private List<Move> list = new ArrayList<>();
   private List<Move> unFinished = new ArrayList<>();
-  private List<Mapping> varMap;
 
   private int pointer = 0;
 
 
-  private boolean failed = false;
 
   public enum Action { COPY, ADD }
 
-  public void addToStart(Action action, GraphVar from, Resource to) {
-    Move move = new Move(action, from, to);
+  public void addReversed(Action action, GraphVar from, Resource to, boolean onlyUpdate) {
+    Move move = new Move(action, from, to, onlyUpdate);
     list.add(pointer, move);
     unFinished.add(move);
   }
 
-  public void addToStart(Action action, Resource from, Resource to) {
-    Move move = new Move(action, from, to);
+  public void addReversed(Action action, Resource from, Resource to, boolean onlyUpdate) {
+    Move move = new Move(action, from, to, onlyUpdate);
     list.add(pointer, move);
   }
 
-  public void add(Action action, Resource from, Resource to) {
-    Move move = new Move(action, from, to);
+  public void add(Action action, Resource from, Resource to, boolean onlyUpdate) {
+    Move move = new Move(action, from, to, onlyUpdate);
     list.add(move);
     pointer = list.size();
   }
@@ -53,12 +50,7 @@ public class ComposePlan {
     }
   }
 
-  public void setFailed() {
-    failed = true;
-  }
-  public boolean isFailed() {
-    return  failed;
-  }
+
 
   public String toString() {
     String result = "";
@@ -75,28 +67,23 @@ public class ComposePlan {
     return list;
   }
 
-  public List<Mapping> getVarMap() {
-    return varMap;
-  }
-
-  public void setVarMap(List<Mapping> varMap) {
-    this.varMap = varMap;
-  }
-
   public class Move {
     public final Action action;
     public Resource from;
     public GraphVar fromPending;
     public final Resource to;
-    public Move(Action action, Resource from, Resource to) {
+    public boolean onlyUpdate;
+    public Move(Action action, Resource from, Resource to, boolean onlyUpdate) {
       this.action = action;
       this.from = from;
       this.to = to;
+      this.onlyUpdate = onlyUpdate;
     }
-    public Move(Action action, GraphVar fromPending, Resource to) {
+    public Move(Action action, GraphVar fromPending, Resource to, boolean onlyUpdate) {
       this.action = action;
       this.fromPending = fromPending;
       this.to = to;
+      this.onlyUpdate = onlyUpdate;
     }
     public GraphVar getFrom() {
       return fromPending;

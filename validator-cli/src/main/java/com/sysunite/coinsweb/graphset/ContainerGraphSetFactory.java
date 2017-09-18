@@ -9,6 +9,7 @@ import com.sysunite.coinsweb.parser.config.pojo.*;
 import com.sysunite.coinsweb.parser.profile.factory.ProfileFactory;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.rdfutil.Utils;
+import com.sysunite.coinsweb.report.ReportFactory;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +36,11 @@ public class ContainerGraphSetFactory {
     Environment environment = containerConfig.getParent().getEnvironment();
 
     if("none".equals(environment.getStore().getType())) {
-      return new ContainerGraphSetImpl(containerConfig);
+      return new ContainerGraphSetImpl(containerConfig.getVariables());
     }
 
     log.info("Construct and lazy load graphSet");
-    ContainerGraphSet graphSet = new ContainerGraphSetImpl(containerConfig, connector);
-    graphSet.setConfigFile(containerConfig.getParent());
+    ContainerGraphSet graphSet = new ContainerGraphSetImpl(containerConfig.getVariables(), connector);
     graphSet.lazyLoad(container, inferencePreference);
 
     Graph main = null;
@@ -77,7 +77,7 @@ public class ContainerGraphSetFactory {
    * Returns a map that maps
    *
    */
-  public static ComposePlan load(Connector connector, ContainerFile container, Map<String, Set<GraphVar>> inferencePreference) {
+  public static ComposePlan load(ContainerGraphSetImpl graphSet, Connector connector, ContainerFile container, Map<String, Set<GraphVar>> inferencePreference) {
 
     Container containerConfig = ((ContainerFileImpl)container).getConfig();
     List<Graph> originalGraphs = containerConfig.getGraphs();
@@ -133,6 +133,7 @@ public class ContainerGraphSetFactory {
 
             // Upload it anew
             executeLoad(phiGraph.getSource(), connector, container);
+            register = withoutHash(phiGraph.getSource().getStoreContext());
 
             changeMap.put(withoutHash(phiGraph.getSource().getGraphname()), withoutHash(phiGraph.getSource().getStoreContext()));
 
@@ -149,7 +150,12 @@ public class ContainerGraphSetFactory {
 
 
           } else {
-            throw new RuntimeException("Multiple choices of existing phiGraph");
+            String uris = "";
+            for(String uri : existing) {
+              uris += uri + ",";
+            }
+
+            throw new RuntimeException("Multiple choices of existing phiGraph: "+uris);
           }
 
 
@@ -162,7 +168,8 @@ public class ContainerGraphSetFactory {
         }
       }
       if(!foundOne) {
-        break;
+        throw new RuntimeException("For these graphs no source can be found: "+ ReportFactory.buildJson(phiGraphs));
+
       }
 
 
@@ -170,30 +177,36 @@ public class ContainerGraphSetFactory {
 
 
     // Create all composition graphs (σ - graphs)
-    HashMap<GraphVar, String> confVarMap = ((ContainerFileImpl) container).getConfig().getVariablesContextMap();
-    ComposePlan composePlan = composeSigmaList(connector, confVarMap, originalGraphs, inferencePreference);
+    Container containerConfig2 = ((ContainerFileImpl) container).getConfig();  // todo check if this is a duplicate
+    List<Mapping> variables = containerConfig2.getVariables();
+    ComposePlan composePlan = composeSigmaList(graphSet, connector, variables, originalGraphs, inferencePreference);
 
-    if(!composePlan.isFailed()) {
-//      executeCompose(composePlan, connector, true);
-    }
+
+    executeCompose(graphSet, composePlan, connector, false);
+
 
     return composePlan;
   }
 
-  public static void executeCompose(ComposePlan composePlan, Connector connector, boolean allowCopy) {
+  public static void executeCompose(ContainerGraphSetImpl graphSet, ComposePlan composePlan, Connector connector, boolean updateMode) {
     for (ComposePlan.Move move : composePlan.get()) {
 
-      if(allowCopy && move.action == ComposePlan.Action.COPY) {
-        log.info("execute compose copy " + move.toString());
+      // Skip if this operation only needs to be executed when updating
+      if(!updateMode && move.onlyUpdate) {
+        continue;
+      }
+
+      if(!updateMode && move.action == ComposePlan.Action.COPY) {
+        log.info("Execute compose copy " + move.toString());
         connector.sparqlCopy(move.from.toString(), move.to.toString());
       } else {
 
-        log.info("execute compose add " + move.toString());
+        log.info("Execute compose add " + move.toString());
         connector.sparqlAdd(move.from.toString(), move.to.toString());
       }
     }
 
-    for(Mapping mapping : composePlan.getVarMap()) {
+    for(Mapping mapping : graphSet.getVariables()) {
       connector.storeSigmaGraphExists(mapping.getGraphname(), mapping.getInclusionSet());
     }
   }
@@ -274,8 +287,12 @@ public class ContainerGraphSetFactory {
     ArrayList<Graph> loadList = new ArrayList();
     ArrayList<String> implicitGraphs = new ArrayList();
 
+    ArrayList<Graph> contentGraphs;
+    ArrayList<Graph> libraryGraphs;
+
     if(allContentFile != null) {
-      for(Graph graph : DescribeFactoryImpl.contentGraphsInContainer(container, allContentFile.getAs())) {
+      contentGraphs = DescribeFactoryImpl.contentGraphsInContainer(container, allContentFile.getAs());
+      for(Graph graph : contentGraphs) {
         String graphName = graph.getSource().getGraphname();
         log.info("Found graph in content file: "+graphName);
         if(!Utils.containsNamespace(graphName, explicitGraphs)) {
@@ -290,7 +307,8 @@ public class ContainerGraphSetFactory {
     }
 
     if(allLibraryFile != null) {
-      for(Graph graph : DescribeFactoryImpl.libraryGraphsInContainer(container, allLibraryFile.getAs())) {
+      libraryGraphs = DescribeFactoryImpl.libraryGraphsInContainer(container, allLibraryFile.getAs());
+      for(Graph graph : libraryGraphs) {
         String graphName = graph.getSource().getGraphname();
         log.info("Found graph in library file: "+graphName);
         if(!Utils.containsNamespace(graphName, explicitGraphs)) {
@@ -313,7 +331,7 @@ public class ContainerGraphSetFactory {
         try {
           ArrayList<String> namespaces = new ArrayList<>();
           ArrayList<String> imports = new ArrayList<>();
-          DescribeFactoryImpl.namespacesForFile(new FileInputStream(file), file.getName(), namespaces, imports);
+          DescribeFactoryImpl.contextsInFile(new FileInputStream(file), file.getName(), namespaces, imports);
           for (String graphName : namespaces) {
             log.info("Found graph in file/online: "+graphName);
             if (!Utils.containsNamespace(graphName, explicitGraphs)) {
@@ -464,25 +482,21 @@ public class ContainerGraphSetFactory {
 
 
 
-  /**
-   *
-   * @param varMap               contains a mapping that can be used if every graph should be newly created
-   * @param originalGraphs
-   * @param inferencePreference
-   * @return
-   */
-  public static ComposePlan composeSigmaList(Connector connector, HashMap<GraphVar, String> varMap, List<Graph> originalGraphs,  Map<String, Set<GraphVar>> inferencePreference) {
+  public static ComposePlan composeSigmaList(ContainerGraphSetImpl graphSet, Connector connector, List<Mapping> variables, List<Graph> originalGraphs,  Map<String, Set<GraphVar>> inferencePreference) {
 
     ComposePlan composePlan = new ComposePlan();
 
     Map<Set<String>, Set<String>> sigmaGraphsMap = connector.listSigmaGraphsWithIncludes();
-    Set<String> sigmaGraphs = connector.listSigmaGraphs();
+    Map<String, Set<String>> reversedSigmaMap = reverseSigmaGraphsMap(sigmaGraphsMap);
     Map<String, Set<String>> actualInferences = connector.listInferenceCodePerSigmaGraph();
 
 
+    HashMap<GraphVar, String> varMap = new HashMap();
+    for(Mapping mapping : variables) {
+      varMap.put(mapping.getVariable(), mapping.getGraphname());
+    }
 
-
-    Map<String, Set<String>> hashToContext = connector.listPhiSourceIdsPerHash();
+    Map<String, Set<String>> hashToContext = connector.listPhiContextsPerHash();
     Map<String, String> contextToHash = new HashMap<>();
     for(String hash : hashToContext.keySet()) {
       Set<String> contexts = hashToContext.get(hash);
@@ -490,8 +504,8 @@ public class ContainerGraphSetFactory {
         contextToHash.put(context, hash);
       }
     }
+    Map<String, String> contextToFileName = connector.listFileNamePerPhiContext();
 
-//    HashMap<String, Source> contextToSource = new HashMap<>();
 
     // Create wish lists
     HashSet<GraphVarImpl> allGraphVars = new HashSet<>();
@@ -518,8 +532,6 @@ public class ContainerGraphSetFactory {
 
       } else {
 
-//        contextToSource.put(graph.getSource().getStoreContext(), graph.getSource());
-
         for (GraphVarImpl as : graph.getAs()) {
           if(!allGraphVars.contains(as)) {
             allGraphVars.add(as);
@@ -537,8 +549,6 @@ public class ContainerGraphSetFactory {
 
     }
 
-    // Query status quo
-    Map<String, Set<String>> reversedSigmaMap = reverseSigmaGraphsMap(sigmaGraphsMap);
 
 
     List<Mapping> updatedVarList = new ArrayList<>();
@@ -583,26 +593,80 @@ public class ContainerGraphSetFactory {
       // Try to find one with the right inference
       String inferenceCodeNeedle = inferenceCodeNeedle(next, graphVarIncludesPhiGraphMap, graphVarIncludesGraphVarMap, inferencePreference, contextToHash);
       if(inferenceCodeNeedle != null) {
-        Set<String> sigmaGraphsWithInference = connector.findSigmaGraphsByInferenceCode(inferenceCodeNeedle);
-        for(String context : sigmaGraphsWithInference) {
+
+        log.info("For "+next+" try to find graph with inference code needle:");
+        log.info(inferenceCodeNeedle);
+        Map<String, String> sigmaGraphsWithInference = connector.listSigmaGraphsByInferenceCode();
+        if(sigmaGraphsWithInference.containsKey(inferenceCodeNeedle)) {
+          String context = sigmaGraphsWithInference.get(inferenceCodeNeedle);
           log.info("For "+next+" found graph "+context+" with signature "+inferenceCodeNeedle);
           mappedContext = context;
           foundExistingOne = true;
         }
+      } else {
+        log.warn("Not able to build an inference code needle for "+next);
+      }
+
+      // Try to find one with no inference
+      if(!foundExistingOne) {
+        String fingerPrint = null;
+
+        boolean foundAll  = true;
+        HashSet<String> set = new HashSet<>();
+        if(graphVarIncludesPhiGraphMap.containsKey(next)) {
+          set.addAll(graphVarIncludesPhiGraphMap.get(next));
+        } else if(graphVarIncludesGraphVarMap.containsKey(next)) {
+          for(GraphVarImpl var : graphVarIncludesGraphVarMap.get(next)) {
+            if(!mappedGraphVars.containsKey(var)) {
+              foundAll = false;
+              break;
+            }
+            set.add(mappedGraphVars.get(var));
+          }
+        }
+        if(foundAll && !set.isEmpty()) {
+          fingerPrint = fingerPrint(set,"-");
+          log.info("For "+next+" try to find graph without inferences with this finger print: "+fingerPrint);
+          if(reversedSigmaMap.containsKey(fingerPrint)) {
+
+            for(String candidateContext : reversedSigmaMap.get(fingerPrint)) {
+              if(!actualInferences.containsKey(candidateContext)) {
+
+                log.info("For "+next+" found graph "+candidateContext+" with fingerPrint "+fingerPrint);
+                mappedContext = candidateContext;
+                foundExistingOne = true;
+                break;
+              }
+            }
+
+
+
+          }
+        }
+
       }
 
 
       if(foundExistingOne) {
 
-
-        Set<String> fromSet = new HashSet<>();
+        ArrayList<String> froms = new ArrayList<>();
         for(Set<String> graphs : sigmaGraphsMap.keySet()) {
           for(String sigmaGraph : graphs) {
             if(mappedContext.equals(sigmaGraph)) {
-              fromSet.addAll(sigmaGraphsMap.get(graphs));
+              froms.addAll(sigmaGraphsMap.get(graphs));
             }
           }
         }
+
+        if (froms.size() > 0) {
+          for (int i = 0; i < froms.size() - 1; i++) {
+            composePlan.addReversed(ComposePlan.Action.ADD, asResource(froms.get(i)), asResource(mappedContext), true);
+          }
+          composePlan.addReversed(ComposePlan.Action.COPY, asResource(froms.get(froms.size() - 1)), asResource(mappedContext), true);
+        }
+
+        Set<String> fromSet = new HashSet<>();
+        fromSet.addAll(froms);
 
         Mapping mapping = new Mapping(next, mappedContext, null, null, fromSet, new HashSet());
         mapping.setInitialized();
@@ -613,25 +677,30 @@ public class ContainerGraphSetFactory {
 
         log.info("Could not find an existing sigma graph for " + next);
 
-
-
         // Include phi graph
         if(graphVarIncludesPhiGraphMap.containsKey(next)) {
           List<String> froms = graphVarIncludesPhiGraphMap.get(next);
           if (froms.size() > 0) {
             for (int i = 0; i < froms.size() - 1; i++) {
-              composePlan.addToStart(ComposePlan.Action.ADD, asResource(froms.get(i)), asResource(mappedContext));
+              composePlan.addReversed(ComposePlan.Action.ADD, asResource(froms.get(i)), asResource(mappedContext), false);
             }
-            composePlan.addToStart(ComposePlan.Action.COPY, asResource(froms.get(froms.size() - 1)), asResource(mappedContext));
+            composePlan.addReversed(ComposePlan.Action.COPY, asResource(froms.get(froms.size() - 1)), asResource(mappedContext), false);
           }
 
           Set<String> fromSet = new HashSet<>();
           fromSet.addAll(froms);
 
-//          Source source = contextToSource.get(mappedContext);
-//          String fileName = source.getDefaultFileName();
-//          String fileHash = source.getHash();
-          Mapping mapping = new Mapping(next, mappedContext, null, null, fromSet, new HashSet());
+          String fileName = null;
+          if(contextToFileName.containsKey(mappedContext)) {
+            fileName = contextToFileName.get(mappedContext);
+          }
+
+          String hash = null;
+          if(contextToHash.containsKey(mappedContext)) {
+            hash = contextToHash.get(mappedContext);
+          }
+
+          Mapping mapping = new Mapping(next, mappedContext, fileName, hash, fromSet, new HashSet());
           mapping.setInitialized();
           updatedVarList.add(mapping);
         }
@@ -641,9 +710,9 @@ public class ContainerGraphSetFactory {
           List<GraphVarImpl> froms = graphVarIncludesGraphVarMap.get(next);
           if (froms.size() > 0) {
             for (int i = 0; i < froms.size() - 1; i++) {
-              composePlan.addToStart(ComposePlan.Action.ADD, froms.get(i), asResource(mappedContext));
+              composePlan.addReversed(ComposePlan.Action.ADD, froms.get(i), asResource(mappedContext), false);
             }
-            composePlan.addToStart(ComposePlan.Action.COPY, froms.get(froms.size() - 1), asResource(mappedContext));
+            composePlan.addReversed(ComposePlan.Action.COPY, froms.get(froms.size() - 1), asResource(mappedContext), false);
           }
 
 
@@ -676,7 +745,7 @@ public class ContainerGraphSetFactory {
 
 
 
-    composePlan.setVarMap(updatedVarList);
+    graphSet.setVariables(updatedVarList);
     return composePlan;
   }
 

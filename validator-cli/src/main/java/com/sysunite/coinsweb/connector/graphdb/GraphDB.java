@@ -55,7 +55,7 @@ public class GraphDB extends Rdf4jConnector {
 
     cleanUp = config.getCleanUp();
     createRepo = config.getCreateRepo();
-    wipeOnClose = config.getDestroyRepo();
+    deleteRepo = config.getDestroyRepo();
 
   }
 
@@ -106,7 +106,7 @@ public class GraphDB extends Rdf4jConnector {
       return;
     }
     repository.shutDown();
-    if(wipeOnClose) {
+    if(deleteRepo) {
       if (manager != null && repositoryId != null) {
         manager.removeRepository(repositoryId);
       }

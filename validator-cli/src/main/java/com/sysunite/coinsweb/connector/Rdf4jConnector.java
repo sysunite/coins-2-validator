@@ -44,7 +44,7 @@ public abstract class Rdf4jConnector implements Connector {
 
 
   protected boolean cleanUp = false;
-  protected boolean wipeOnClose = false;
+  protected boolean deleteRepo = false;
 
 
 
@@ -179,6 +179,22 @@ public abstract class Rdf4jConnector implements Connector {
     "INSERT { ?s ?p <"+replace+"> } "+
     "WHERE { ?s ?p <"+resource+"#>  . FILTER (?p != val:sourceContext) } ";
     update(objectQuery);
+  }
+
+  @Override
+  public void wipe() throws ConnectorException {
+    if(!initialized) {
+      init();
+    }
+    if(repository != null) {
+      if(cleanUp) {
+        try (RepositoryConnection con = repository.getConnection()) {
+          con.clear();
+        } catch (RepositoryException e) {
+          throw new ConnectorException(e);
+        }
+      }
+    }
   }
 
   @Override

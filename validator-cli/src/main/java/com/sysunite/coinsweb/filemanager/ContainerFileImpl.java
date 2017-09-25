@@ -128,7 +128,10 @@ public class ContainerFileImpl extends File implements ContainerFile {
 
   HashMap<String, ArrayList<String>> fileImports = new HashMap();
   public ArrayList<String> getFileImports(Path zipPath) {
-    return fileImports.get(zipPath.getFileName().toString());
+    if(fileImports.containsKey(zipPath.getFileName().toString())) {
+      return fileImports.get(zipPath.getFileName().toString());
+    }
+    return new ArrayList<>();
   }
 
   HashMap<String, ArrayList<String>> contentFileNamespaces = new HashMap();
@@ -146,6 +149,46 @@ public class ContainerFileImpl extends File implements ContainerFile {
     }
     return repositoryFileNamespaces.get(filename);
   }
+
+  HashSet<String> collidingNamespaces;
+  public HashSet<String> getCollidingNamespaces() {
+    if(collidingNamespaces == null) {
+      if(!scanned) scan();
+      collidingNamespaces = new HashSet<>();
+    }
+    return collidingNamespaces;
+  }
+  HashMap<String, String> namespaceToFileMap;
+  public HashMap<String, String> getNamespaceToFileMap() {
+    if(namespaceToFileMap == null) {
+      namespaceToFileMap = new HashMap<>();
+
+      if(!scanned) scan();
+
+      for(String fileName : contentFileNamespaces.keySet()) {
+        for(String namespace : contentFileNamespaces.get(fileName)) {
+          if(Utils.containsNamespace(namespace, namespaceToFileMap.keySet())) {
+            collidingNamespaces.add(namespace);
+          } else {
+            namespaceToFileMap.put(namespace, fileName);
+          }
+        }
+      }
+
+      for(String fileName : repositoryFileNamespaces.keySet()) {
+        for(String namespace : repositoryFileNamespaces.get(fileName)) {
+          if(Utils.containsNamespace(namespace, namespaceToFileMap.keySet())) {
+            collidingNamespaces.add(namespace);
+          } else {
+            namespaceToFileMap.put(namespace, fileName);
+          }
+        }
+      }
+    }
+    return namespaceToFileMap;
+  }
+
+
 
   public Path getContentFilePath(String filename) {
     return contentFiles.get(filename);
@@ -252,6 +295,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
         // Detect wrong slashes
         if(ze.getName().contains("\\")) {
           wrongSlashes = true;
+          throw new RuntimeException();
         }
 
 //        // Skip file names that start with a dot
@@ -333,6 +377,8 @@ public class ContainerFileImpl extends File implements ContainerFile {
     } catch(ZipException e) {
       corruptZip = true;
     } catch(IOException e) {
+      corruptZip = true;
+    } catch(RuntimeException e) {
       corruptZip = true;
     }
 

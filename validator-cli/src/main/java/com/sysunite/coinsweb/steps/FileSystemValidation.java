@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 
@@ -129,6 +128,22 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
     this.noOrphans = noOrphans;
   }
 
+  private Boolean noCollidingNamespaces;
+  public Boolean getNoCollidingNamespaces() {
+    return noCollidingNamespaces;
+  }
+  public void setNoCollidingNamespaces(Boolean noCollidingNamespaces) {
+    this.noCollidingNamespaces = noCollidingNamespaces;
+  }
+
+  private Boolean isLoadableAsGraphSet;
+  public Boolean isLoadableAsGraphSet() {
+    return isLoadableAsGraphSet;
+  }
+  public void isLoadableAsGraphSet(Boolean isLoadableAsGraphSet) {
+    this.isLoadableAsGraphSet = isLoadableAsGraphSet;
+  }
+
   private Boolean allImportsImportable;
   public Boolean getAllImportsImportable() {
     return allImportsImportable;
@@ -168,66 +183,82 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
 
     ContainerFileImpl container = (ContainerFileImpl) containerCandidate;
 
-    try {
 
-      if(container.isScanned()) {
-        log.warn("This ContainerFileImpl was already scanned, please let FileSystemValidation be the first to do this");
-      }
-
-      if(!container.exists() || !container.isFile()) {
-        fileFound = false;
-        return;
-      }
-
-      fileFound = true;
-      nonCorruptZip = !container.isCorruptZip();
-      forwardSlashes = !container.hasWrongSlashes();
-      oneRepoFile = container.getContentFiles().size() == 1;
-      noWrongContentFile = container.getInvalidContentFiles().size() < 1;
-      noWrongRepositoryFile = container.getInvalidRepositoryFiles().size() < 1;
-
-      // Should be no sub folders in bim
-      noSubsInBim = true;
-      for (String path : container.getContentFiles()) {
-        noSubsInBim &= (Paths.get(path).getNameCount() == 1);
-      }
-
-      // Should be no orphan files
-      noOrphans = container.getOrphanFiles().isEmpty();
-
-      // Should be able to satisfy all ontology imports from repository folder
-      boolean allImportsImportable = true;
-      ArrayList<String> availableGraphs = new ArrayList();
-      for (String repoFilePath : container.getRepositoryFiles()) {
-        availableGraphs.addAll(container.getRepositoryFileNamespaces(repoFilePath));
-      }
-
-      if (graphSet.hasContext(getLookIn())) {
-        Map<String, String> imports = graphSet.getImports(getLookIn());
-        for (String storeContext : imports.keySet()) {
-
-          String originalNamespace = imports.get(storeContext);
-
-          log.info("Found import in content rdf-file: "+originalNamespace);
-
-          boolean found = Utils.containsNamespace(originalNamespace, availableGraphs);
-          this.imports.add(originalNamespace);
-          if (!found) {
-            log.info("Namespace to import " + originalNamespace + " was not found in " + String.join(", ", availableGraphs));
-            unmatchedImports.add(originalNamespace);
-          }
-          allImportsImportable &= found;
-        }
-      }
-      setAllImportsImportable(allImportsImportable);
-
-      valid = fileFound && nonCorruptZip && forwardSlashes && oneRepoFile && noWrongContentFile && noWrongRepositoryFile && noSubsInBim && noOrphans && allImportsImportable;
-      failed = false;
-
-    } catch (RuntimeException e) {
-      log.warn("Executing failed validationStep of type '"+getType()+"': "+e.getMessage(), e);
-      failed = true;
+    if(container.isScanned()) {
+      log.warn("This ContainerFileImpl was already scanned, please let FileSystemValidation be the first to do this");
     }
+
+    if(!container.exists() || !container.isFile()) {
+      fileFound = false;
+      failed = true;
+      return;
+    }
+    fileFound = true;
+
+    if(container.isCorruptZip()) {
+      nonCorruptZip = false;
+      failed = true;
+      return;
+    }
+    nonCorruptZip = true;
+
+    if(container.hasWrongSlashes()) {
+      forwardSlashes = false;
+      failed = true;
+      return;
+    }
+    forwardSlashes = true;
+
+    oneRepoFile = container.getContentFiles().size() == 1;
+    noWrongContentFile = container.getInvalidContentFiles().size() < 1;
+    noWrongRepositoryFile = container.getInvalidRepositoryFiles().size() < 1;
+
+    // Should be no sub folders in bim
+    noSubsInBim = true;
+    for (String path : container.getContentFiles()) {
+      noSubsInBim &= (Paths.get(path).getNameCount() == 1);
+    }
+
+    // Should be no orphan files
+    noOrphans = container.getOrphanFiles().isEmpty();
+
+    noCollidingNamespaces = container.getCollidingNamespaces().isEmpty();
+
+    // Should be able to satisfy all ontology imports from repository folder
+    boolean allImportsImportable = true;
+    ArrayList<String> availableGraphs = new ArrayList();
+    for (String repoFilePath : container.getRepositoryFiles()) {
+      availableGraphs.addAll(container.getRepositoryFileNamespaces(repoFilePath));
+    }
+
+    List<String> imports = new ArrayList<>();
+    if(!container.getContentFiles().isEmpty()) {
+      String fileName = container.getContentFiles().iterator().next();
+      imports = container.getFileImports(container.getContentFilePath(fileName));
+    }
+
+
+    for (String storeContext : imports) {
+      log.info("Found import in content triple file: "+storeContext);
+
+      boolean found = Utils.containsNamespace(storeContext, availableGraphs);
+      this.imports.add(storeContext);
+      if (!found) {
+        log.info("Namespace to import " + storeContext + " was not found in " + String.join(", ", availableGraphs));
+        unmatchedImports.add(storeContext);
+      }
+      allImportsImportable &= found;
+    }
+    setAllImportsImportable(allImportsImportable);
+
+
+    graphSet.load();
+    isLoadableAsGraphSet = !graphSet.loadingFailed();
+
+    valid = fileFound && nonCorruptZip && forwardSlashes && oneRepoFile && noWrongContentFile && noWrongRepositoryFile && noSubsInBim && noOrphans && noCollidingNamespaces && allImportsImportable && isLoadableAsGraphSet;
+    failed = !isLoadableAsGraphSet;
+
+
 
     // Prepare data to transfer to the template
     if(getFailed()) {

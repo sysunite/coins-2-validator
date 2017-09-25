@@ -33,7 +33,6 @@ import com.sysunite.coinsweb.parser.profile.factory.ProfileFactory;
 import com.sysunite.coinsweb.parser.profile.pojo.Bundle;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
-import com.sysunite.coinsweb.rdfutil.Utils;
 import com.sysunite.coinsweb.report.ReportFactory;
 import com.sysunite.coinsweb.steps.ProfileValidation;
 import freemarker.template.Template;
@@ -57,8 +56,8 @@ public class ValidationExecutor {
 
   private String defaultPrefixes = null;
   private Map<String, String> validationGraphs = new HashMap<>();
-  // Map context to list of inferenceCode
-  Map<String, List<String>> executedInferences = new HashMap();
+//  // Map context to list of inferenceCode
+//  Map<String, List<String>> executedInferences = new HashMap();
 
 
   public ValidationExecutor(ProfileFile profile, ContainerGraphSet graphSet, ProfileValidation validationConfig) {
@@ -90,12 +89,12 @@ public class ValidationExecutor {
 
     try {
 
-      // Load executed interferences
-      for(GraphVar graphVar : graphSet.contextMap().keySet()) {
-        String context = graphSet.contextMap().get(graphVar);
-        List<String> list = getFinishedInferences(context);
-        executedInferences.put(context, list);
-      }
+//      // Load executed interferences
+//      for(GraphVar graphVar : graphSet.contextMap().keySet()) {
+//        String context = graphSet.contextMap().get(graphVar);
+//        List<String> list = getFinishedInferences(context);
+//        executedInferences.put(context, list);
+//      }
 
       // Execute bundles in order of appearance
       for (Bundle bundle : profile.getBundles()) {
@@ -143,28 +142,6 @@ public class ValidationExecutor {
 
 
     String inferenceCode = ProfileFactory.inferenceCode(profile, bundle);
-
-    log.info("Will check all for these graphs if some inference was executed before");
-    for(GraphVar graphVar : QueryFactory.usedVars(bundle)) {
-      String context = graphSet.contextMap().get(graphVar);
-      List<String> list = new ArrayList<>();
-      if(Utils.containsNamespace(context, executedInferences.keySet())) {
-        list = executedInferences.get(context);
-      }
-      log.info("- "+graphVar+" > "+context+" has >>"+String.join("<<, >>", list)+"<<");
-      for(String existingInferenceCode : list) {
-        if(ProfileFactory.inferenceCodeWithoutRef(existingInferenceCode).equals(ProfileFactory.inferenceCodeWithoutRef(inferenceCode))) {
-          log.info("\u2728 Inference >>" + inferenceCode + "<< was executed before");
-          bundleStats.setSkipped(true);
-          return bundleStats;
-        } else {
-          throw new RuntimeException("Some other >>" + executedInferences.get(context) + "<< inference was executed before, this connector can not be used");
-        }
-      }
-
-      log.info("Inference >>" + inferenceCode + "<< was not executed before");
-    }
-
 
     long quadsAddedThisRunSum = 0l;
     Map<GraphVar, Long> previous = graphSet.quadCount();

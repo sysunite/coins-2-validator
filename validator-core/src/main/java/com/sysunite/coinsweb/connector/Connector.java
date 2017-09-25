@@ -21,6 +21,7 @@ public interface Connector {
 
   void init();
   boolean testConnection();
+  void wipe() throws ConnectorException;
   void cleanup(List<String> contexts) throws ConnectorException;
   void close();
 

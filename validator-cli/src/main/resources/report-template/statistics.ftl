@@ -4,6 +4,8 @@
 <#assign invalidContentFiles  = containerFile.getInvalidContentFiles()>
 <#assign libraries            = containerFile.getRepositoryFiles()>
 <#assign invalidLibraries     = containerFile.getInvalidRepositoryFiles()>
+<#assign collidingNamespaces  = containerFile.getCollidingNamespaces()>
+<#assign orphanFiles          = containerFile.getOrphanFiles()>
 <#assign attachments          = containerFile.getAttachmentFiles()>
 
 

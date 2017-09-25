@@ -33,11 +33,6 @@ public class ContainerGraphSetFactory {
   private static final Logger log = LoggerFactory.getLogger(ContainerGraphSetFactory.class);
 
   public static ContainerGraphSet lazyLoad(ContainerFile container, Container containerConfig, Connector connector, Map<String, Set<GraphVar>> inferencePreference) {
-    Environment environment = containerConfig.getParent().getEnvironment();
-
-    if("none".equals(environment.getStore().getType())) {
-      return new ContainerGraphSetImpl(containerConfig.getVariables());
-    }
 
     log.info("Construct and lazy load graphSet");
     ContainerGraphSet graphSet = new ContainerGraphSetImpl(containerConfig.getVariables(), connector);

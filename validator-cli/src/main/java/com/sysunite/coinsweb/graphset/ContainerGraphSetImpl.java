@@ -206,26 +206,24 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
     if(!requiresLoad()) {
 
-      HashSet<String> contexts = new HashSet<>();
-      log.info("Will wipe these graphs (if enabled) to remove GraphSet graphs from the Connector:");
-      for(Mapping mapping : mappings) {
-        if(mapping.getGraphname() != null) {
-          contexts.add(mapping.getGraphname());
-        }
-        for(String context : mapping.getInclusionSet()) {
-          if(context != null) {
-            contexts.add(context);
-          }
-        }
-      }
-      for(String context : contexts) {
-        log.info("- "+context);
-      }
+//      HashSet<String> contexts = new HashSet<>();
+//      log.info("Will wipe these graphs (if enabled) to remove GraphSet graphs from the Connector:");
+//      for(Mapping mapping : mappings) {
+//        if(mapping.getGraphname() != null) {
+//          contexts.add(mapping.getGraphname());
+//        }
+//        for(String context : mapping.getInclusionSet()) {
+//          if(context != null) {
+//            contexts.add(context);
+//          }
+//        }
+//      }
+//      for(String context : contexts) {
+//        log.info("- "+context);
+//      }
 
-      ArrayList<String> list = new ArrayList<>();
-      list.addAll(contexts);
       try {
-        connector.cleanup(list);
+        connector.wipe();
       } catch (ConnectorException e) {
         log.error("Cleanup failed");
       }

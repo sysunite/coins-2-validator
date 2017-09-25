@@ -34,7 +34,7 @@ public class Validation {
 
   public static boolean run(ConfigFile configFile, Connector connector) {
 
-    boolean successful = true;
+
     boolean failed = false;
 
 
@@ -100,7 +100,7 @@ public class Validation {
         if(step.getFailed()) {
           containerConfig.addStep(step);
           valid &= false;
-          failed &= true;
+          failed = true;
           break;
         } else {
           containerConfig.addStep(step);
@@ -153,11 +153,7 @@ public class Validation {
       }
     }
 
-    if(failed) {
-      throw new RuntimeException("This run failed, incomplete reports where generated.");
-    }
-
-    return successful;
+    return !failed;
   }
 
   private static HashMap<String, String> availableNamespaces(ContainerFile containerFile) {

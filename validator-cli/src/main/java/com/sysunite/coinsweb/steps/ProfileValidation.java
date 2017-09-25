@@ -198,14 +198,15 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     clone.setMaxResults(this.getMaxResults());
     clone.setMaxInferenceRuns(this.getMaxInferenceRuns());
     clone.setReportInferenceResults(this.getReportInferenceResults());
-    clone.setProfileFile(this.profileFile);
-    clone.setParent(this.getParent());
+    for(String bundleKey : getBundles().keySet()) {
+      Bundle bundle = getBundles().get(bundleKey);
+      clone.addBundle(bundle.clone());
+    }
+    ArrayList<String> bundleNames = new ArrayList<>();
+    bundleNames.addAll(this.getBundleNames());
+    clone.setBundleNames(bundleNames);
 
-    // Results
-//    clone.setBundleNames(this.getBundleNames());
-//    clone.setBundles(this.getBundles());
-//    clone.setValid(this.getValid());
-//    clone.setFailed(this.getFailed());
+    clone.setParent(this.getParent());
     return clone;
   }
 

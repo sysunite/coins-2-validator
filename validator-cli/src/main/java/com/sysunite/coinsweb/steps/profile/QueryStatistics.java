@@ -28,9 +28,11 @@ package com.sysunite.coinsweb.steps.profile;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.sysunite.coinsweb.parser.profile.pojo.Query;
+import com.sysunite.coinsweb.parser.profile.util.IndentedCDATAPrettyPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +57,12 @@ public class QueryStatistics extends Query {
 
   @JsonIgnore
   private List<String> formattedResults = new ArrayList<>();
+
+  @JsonIgnore
+  protected String query;
+
+  @JacksonXmlCData
+  @JacksonXmlProperty(localName = "sparql")
   private String executedQuery;
 
 
@@ -100,8 +108,8 @@ public class QueryStatistics extends Query {
 
 
 
-  public void setExecutedQuery(String executedQuery) {
-    this.executedQuery = executedQuery;
+  public void setExecutedQuery(String query) {
+    this.executedQuery = IndentedCDATAPrettyPrinter.indentText(query, 0).trim();
   }
   public void addExecutionTimeMs(long executionTimeMs) {
     this.executionTimeMs += executionTimeMs;

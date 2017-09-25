@@ -25,4 +25,12 @@ public class QueryConfiguration {
     this.defaultPrefixes = IndentedCDATAPrettyPrinter.indentText(defaultPrefixes, 0).trim();
   }
 
+  public QueryConfiguration clone() {
+    QueryConfiguration clone = new QueryConfiguration();
+
+    clone.setDefaultPrefixes(clone.getDefaultPrefixes());
+
+    return clone;
+  }
+
 }

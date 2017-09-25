@@ -103,4 +103,24 @@ public class ProfileFile {
   public void setBundles(ArrayList<Bundle> bundles) {
     this.bundles = bundles;
   }
+
+  @JsonIgnore
+  public ProfileFile clone() {
+    ProfileFile clone = new ProfileFile();
+
+    clone.setName(this.getName());
+    clone.setVersion(this.getVersion());
+    clone.setAuthor(this.getAuthor());
+    clone.setQueryLanguage(this.getQueryLanguage());
+    clone.setQueryConfiguration(this.getQueryConfiguration().clone());
+
+    ArrayList<Bundle> bundles = new ArrayList<>();
+    for(Bundle bundle : this.getBundles()) {
+      bundles.add(bundle.clone());
+    }
+    clone.setBundles(bundles);
+
+    return clone;
+  }
+
 }

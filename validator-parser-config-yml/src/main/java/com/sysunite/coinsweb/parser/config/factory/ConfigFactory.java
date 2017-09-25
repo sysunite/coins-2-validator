@@ -200,6 +200,7 @@ public class ConfigFactory {
     }
 
     Container container = new Container();
+    container.setParent(new ConfigFile());
     container.setType("container");
     container.setLocation(locator);
     container.setVariables(variables);

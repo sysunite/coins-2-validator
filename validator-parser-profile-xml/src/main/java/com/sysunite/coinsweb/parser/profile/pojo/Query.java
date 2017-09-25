@@ -36,7 +36,7 @@ public class Query {
 
   @JacksonXmlCData
   @JacksonXmlProperty(localName = "sparql")
-  private String query;
+  protected String query;
 
 
   public String getReference() {
@@ -100,4 +100,14 @@ public class Query {
   }
 
 
+  public Query clone() {
+    Query clone = new Query();
+
+    clone.setReference(this.getReference());
+    clone.setDescription(this.getDescription());
+    clone.setQuery(this.getQuery());
+    clone.setResultFormat(this.getResultFormat());
+
+    return clone;
+  }
 }

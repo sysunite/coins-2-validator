@@ -1,6 +1,7 @@
 package com.sysunite.coinsweb.parser.profile.pojo;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.sysunite.coinsweb.parser.profile.util.Markdown;
@@ -65,5 +66,21 @@ public class Bundle {
   }
   public void setQueries(ArrayList<Query> queries) {
     this.queries = queries;
+  }
+
+  @JsonIgnore
+  public Bundle clone() {
+    Bundle clone = new Bundle();
+    clone.setType(this.getType());
+    clone.setReference(this.getReference());
+    clone.setDescription(this.getDescription());
+    ArrayList<Query> queries = new ArrayList<>();
+
+    for(Query query : this.getQueries()) {
+      queries.add(query.clone());
+    }
+    clone.setQueries(queries);
+
+    return clone;
   }
 }

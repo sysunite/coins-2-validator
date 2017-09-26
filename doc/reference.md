@@ -3,7 +3,7 @@
 The coins-validator project consinsts of these packages:
 
 #### validator-core
-Mainly contains java interfaces, as litle dependencies as possible.
+Mainly contains java interfaces, as little dependencies as possible.
 
 #### validator-cli
 All the implementations, depends on graphdb api with rdf4j.

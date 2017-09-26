@@ -4,7 +4,7 @@
 Get a validation report of a coins container.
 
 ### Use command line interface (cross platform)
-* download fat jar [(latest)](https://github.com/sysunite/coins-2-validator/releases/download/v2.0.8/validator-cli-2.0.8.jar) from https://github.com/sysunite/coins-2-validator/releases
+* download fat jar [(latest)](https://github.com/sysunite/coins-2-validator/releases/download/v2.0.8/coins-validator-2.0.8.jar) from https://github.com/sysunite/coins-2-validator/releases
 * run the command:
 
 ```$ java -Xms6g -Xmx8g -jar validator-cli-2.0.8.jar [args]```

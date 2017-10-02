@@ -4,10 +4,9 @@ Two connectors are build in. The GraphDB connector and an in-mem connector. More
 
 The connector must return Rdf4j objects, so it is required the database being conntected has Rdf4j libraries.
 
-The easiest way is to extend the Rdf4jConnector and read the GraphDB class as example.
+The easiest way is to extend the `Rdf4jConnector` and read the `GraphDB` class as example.
 
 ### Connector Inferface
-Function 
 
 ```java
 public interface Connector {

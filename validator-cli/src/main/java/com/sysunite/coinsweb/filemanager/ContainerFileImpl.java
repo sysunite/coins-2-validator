@@ -395,6 +395,11 @@ public class ContainerFileImpl extends File implements ContainerFile {
     pendingAttachmentFiles.add(file);
   }
 
+  private List<File> pendingLibraryFiles = new ArrayList();
+  public void addPendingLibraryFile(File file) {
+    pendingLibraryFiles.add(file);
+  }
+
   public ContainerFileImpl writeZip(Path containerFile, Connector connector) throws ConnectorException {
     log.info("Will create container file at "+containerFile.toString());
 
@@ -461,12 +466,34 @@ public class ContainerFileImpl extends File implements ContainerFile {
       // Adding rdf files finished
       pendingContentContext = null;
 
+      for(File libraryFile : pendingLibraryFiles) {
+        String zipPath = "bim/repository/"+libraryFile.getName();
+        log.info("Adding to zip "+zipPath);
+        log.info("Checking for existence");
+        if (!libraryFile.exists()){
+          log.warn("Could not find file " + libraryFile.getAbsolutePath());
+          continue;
+        }
+
+        ZipEntry ze = new ZipEntry(zipPath);
+        zout.putNextEntry(ze);
+        FileInputStream inputStream = new FileInputStream(libraryFile);
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1)
+          zout.write(buffer, 0, bytesRead);
+        zout.closeEntry();
+        inputStream.close();
+      }
+
+      // Adding attachments finished
+      pendingLibraryFiles = new ArrayList();
+
       for(File attachmentFile : pendingAttachmentFiles) {
         String zipPath = "doc/"+attachmentFile.getName();
         log.info("Adding to zip "+zipPath);
         log.info("Checking for existence");
-        if (!new File(zipPath).exists()){
-          log.warn("Could not find file " + zipPath);
+        if (!attachmentFile.exists()){
+          log.warn("Could not find file " + attachmentFile.getAbsolutePath());
           continue;
         }
 

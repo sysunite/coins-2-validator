@@ -18,7 +18,6 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.rdfxml.util.RDFXMLPrettyWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -748,28 +747,42 @@ public abstract class Rdf4jConnector implements Connector {
 
     Function<Statement, Statement> filter = (Function<Statement, Statement>) statementFilter;
 
-    RDFXMLPrettyWriter writer = new RDFXMLPrettyWriter(outputStream);
+
+    RDFXMLBasePrettyWriter writer = new RDFXMLBasePrettyWriter(outputStream);
+    writer.setBase(mainContext);
+
 
     writer.handleNamespace("", mainContext);
     for(String prefix : prefixMap.keySet()) {
       writer.handleNamespace(prefix, prefixMap.get(prefix));
     }
 
+    SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    try (RepositoryConnection con = repository.getConnection();
-         RepositoryResult<Statement> statements = con.getStatements(null, null, null, false, asResource(contexts))) {
+    String fromBlock = "";
+    for(String context : contexts) {
+      fromBlock += "FROM NAMED <"+context+"> ";
+    }
+
+    try {
+      List<Object> rows = select("SELECT * " + fromBlock + " WHERE { GRAPH ?g { ?s ?p ?o } } ORDER BY ?s");
 
       writer.startRDF();
-      while (statements.hasNext()) {
-        Statement statement = filter.apply(statements.next());
-        if(statement != null) {
-          writer.handleStatement(statement);
+      for (Object rowObject : rows) {
+        BindingSet row = (BindingSet) rowObject;
+        Statement statement = valueFactory.createStatement((Resource) row.getValue("s"), (IRI) row.getValue("p"), row.getValue("o"), (Resource) row.getValue("g"));
+
+        Statement filteredStatement = filter.apply(statement);
+        if (filteredStatement != null) {
+          writer.handleStatement(filteredStatement);
         }
       }
       writer.endRDF();
-    } catch (RepositoryException e) {
+
+    } catch (ConnectorException e) {
       log.error(e.getMessage(), e);
     }
+
   }
 
   // Writes the file to the outputStream and returns a Map of imports: fileUpload context -> original context
@@ -807,6 +820,8 @@ public abstract class Rdf4jConnector implements Connector {
     prefixMap.put(RDFS.PREFIX, RDFS.NAMESPACE);
     prefixMap.put(XMLSchema.PREFIX, XMLSchema.NAMESPACE);
     prefixMap.put(OWL.PREFIX, OWL.NAMESPACE);
+    prefixMap.put("otl", "http://otl.rws.nl/otl#");
+    prefixMap.put("cbim", "http://www.coinsweb.nl/cbim-2.0.rdf#");
 
     // Now add the main context itself
     Function<Statement, Statement> filter = statement -> {

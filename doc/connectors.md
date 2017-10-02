@@ -6,6 +6,25 @@ The connector must return Rdf4j objects, so it is required the database being co
 
 The easiest way is to extend the `Rdf4jConnector` and read the `GraphDB` class as example.
 
+### Registering a custom Connector
+
+In order to make a custom Connector usable in a run these steps are required:
+* Register the custom Connector in the `ConnectorFactoryImpl`
+```java
+public class ConnectorFactoryImpl implements ConnectorFactory {
+
+  private static final Logger log = LoggerFactory.getLogger(ConnectorFactoryImpl.class);
+
+  private static final Map<String, Class<? extends Connector>> register;
+  static
+  {
+    register = new HashMap();
+    register.put(GraphDB.REFERENCE, GraphDB.class);
+    register.put(InMemRdf4j.REFERENCE, InMemRdf4j.class);
+```
+* Compile the cli with the custom Connector
+* Use the name set in `CustomConnector.REFERENCE` in a config.yml
+
 ### Connector Inferface
 
 ```java

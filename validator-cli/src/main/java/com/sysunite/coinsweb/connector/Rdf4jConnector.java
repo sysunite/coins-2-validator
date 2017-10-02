@@ -21,7 +21,6 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -223,27 +222,7 @@ public abstract class Rdf4jConnector implements Connector {
     }
   }
 
-  @Override
-  public void uploadFile(File file, List<String> contexts) throws ConnectorException {
-    if(!initialized) {
-      init();
-    }
 
-    try (RepositoryConnection con = repository.getConnection()) {
-      RDFFormat format = Rdf4jUtil.interpretFormat(file.toString());
-      if(format == null) {
-        throw new ConnectorException("Could not determine the type of file this is: " + file.getName());
-      }
-
-//      con.begin(IsolationLevels.NONE);
-      con.add(file, null, format, asResource(contexts));
-
-    } catch (RepositoryException e) {
-      throw new ConnectorException(e);
-    } catch (IOException e) {
-      throw new ConnectorException(e);
-    }
-  }
 
 
   @Override
@@ -308,31 +287,7 @@ public abstract class Rdf4jConnector implements Connector {
   }
 
 
-  public Map<String, String> listFileNamePerPhiContext() throws ConnectorException {
 
-    HashMap<String, String> map = new HashMap<>();
-
-    String query =
-
-    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
-    "SELECT DISTINCT ?context ?fileName " +
-    "WHERE { graph ?context { " +
-    "?context val:sourceFile    ?fileName . " +
-    "}}";
-
-
-    List<Object> result = select(query);
-    for(Object rowObject :  result) {
-      BindingSet row = (BindingSet) rowObject;
-
-      String context         = row.getBinding("context").getValue().stringValue();
-      String fileName        = row.getBinding("fileName").getValue().stringValue();
-
-      map.put(context, fileName);
-    }
-
-    return map;
-  }
 
 
   public Map<String, Set<String>> listPhiContextsPerHash() throws ConnectorException {
@@ -374,35 +329,7 @@ public abstract class Rdf4jConnector implements Connector {
     return list;
   }
 
-  /**
-   * List all sigma graphs
-   * @return
-   */
-  public Set<String> listSigmaGraphs() throws ConnectorException {
-    Set<String> set = new HashSet<>();
 
-    String query =
-
-    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
-    "SELECT DISTINCT ?context ?inclusion " +
-    "WHERE { graph ?context { " +
-    "?context val:contains ?inclusion . " +
-    "}} ORDER BY ?context";
-
-    List<Object> result = select(query);
-
-
-    for(Object rowObject : result) {
-      BindingSet row = (BindingSet) rowObject;
-      String context = row.getBinding("context").getValue().stringValue();
-
-      if(!set.contains(context)) {
-        set.add(context);
-      }
-    }
-
-    return set;
-  }
   public Map<Set<String>, Set<String>> listSigmaGraphsWithIncludes() throws ConnectorException {
 
     HashMap<String, Set<String>> list = new HashMap<>();
@@ -470,37 +397,7 @@ public abstract class Rdf4jConnector implements Connector {
     return compressedList;
   }
 
-  // The inferenceCode should have the "|" separator and have this format:
-  // 1c73af7f95863c2f088053b1a1f5cc2d-57d50697b28694734038a545031e56eb-58fe7035dbea97e9d62619bf24a7fe73|COINS 2.0 Lite_0.9.85/0.9.85/coins container inference
 
-  public Map<String, String> listSigmaGraphsByInferenceCode() throws ConnectorException {
-
-    HashMap<String, String> set = new HashMap<>();
-
-    String query =
-
-    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
-    "SELECT DISTINCT ?context ?inferenceCodeWithHashes " +
-    "WHERE { graph ?context { " +
-    "  ?context val:compositionFingerPrint ?hashes . " +
-    "  ?context val:bundle ?inferenceCode . " +
-    "  BIND ( concat(str(?hashes), \"|\", str(?inferenceCode)) as ?inferenceCodeWithHashes ) . " +
-    "}} ORDER BY ?context";
-
-
-    List<Object> result = select(query);
-
-    for(Object rowObject :  result) {
-      BindingSet row = (BindingSet) rowObject;
-
-      String context = row.getBinding("context").getValue().stringValue();
-      String inferenceCodeWithHashes = row.getBinding("inferenceCodeWithHashes").getValue().stringValue();
-      set.put(inferenceCodeWithHashes, context);
-      log.trace("Found fingerprint "+inferenceCodeWithHashes+" for "+context);
-    }
-
-    return set;
-  }
 
   /**
    *
@@ -568,56 +465,6 @@ public abstract class Rdf4jConnector implements Connector {
     }
 
     return list;
-  }
-
-  // If value is null in originalContextsWithHash, treat this key as the import context
-  public List<String> findPhiGraphWithImports(String hash, Map<String, String> originalContextsWithHash) throws ConnectorException {
-
-
-    ArrayList<String> keySet = new ArrayList<>();
-    keySet.addAll(originalContextsWithHash.keySet());
-
-    String query =
-
-    "PREFIX val: <"+QueryFactory.VALIDATOR_NS+"> " +
-    "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
-    "SELECT DISTINCT ?context " +
-    "WHERE { " +
-    "  graph ?context { ";
-    for(int i = 0; i < originalContextsWithHash.size(); i++ ) {
-      if(originalContextsWithHash.get(keySet.get(i)) == null) {
-        query += " ?context owl:imports <"+keySet.get(i)+"> . ";
-      } else {
-        query += " ?context owl:imports ?library_" + i + " . ";
-      }
-    }
-    query +=
-    "    ?context val:sourceHash    \""+hash+"\" . " +
-    "  } ";
-
-    for(int i = 0; i < originalContextsWithHash.size(); i++ ) {
-      if (originalContextsWithHash.get(keySet.get(i)) != null) {
-        query +=
-        "  graph ?library_" + i + " { " +
-        "    ?library val:sourceContext ?original . " +
-        "    ?library val:sourceHash    \"" + originalContextsWithHash.get(keySet.get(i)) + "\" . " +
-        "    FILTER(?original = <" + keySet.get(i) + "> || ?original = <" + keySet.get(i) + "#>) . " +
-        "  } ";
-      }
-    }
-    query +=
-    "}";
-
-    HashSet<String> contextsMap = new HashSet<>();
-    List<Object> result = select(query);
-    for (Object bindingSet : result) {
-
-      String namespace = withoutHash(((BindingSet)bindingSet).getBinding("context").getValue().stringValue());
-      contextsMap.add(namespace);
-    }
-    ArrayList<String> contexts = new ArrayList<>();
-    contexts.addAll(contextsMap);
-    return contexts;
   }
 
   public List<Object> listMappings() throws ConnectorException {

@@ -2,7 +2,6 @@ package com.sysunite.coinsweb.connector;
 
 import com.sysunite.coinsweb.graphset.GraphVar;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -32,8 +31,6 @@ public interface Connector {
   void sparqlAdd(String fromContext, String toContext) throws ConnectorException;
   void replaceResource(String context, String resource, String replace) throws ConnectorException;
 
-
-  void uploadFile(File file, List<String> contexts) throws ConnectorException;
   void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts) throws ConnectorException;
 
   void storePhiGraphExists(Object source, String context, String fileName, String hash) throws ConnectorException;
@@ -45,18 +42,13 @@ public interface Connector {
   long quadCount(String context);
   List<String> getContexts();
 
-//  String graphExists(String context);
-
   List<Object> listPhiGraphs() throws ConnectorException;
   Map<String, Set<String>> listPhiContextsPerHash() throws ConnectorException;
-  Map<String, String> listFileNamePerPhiContext() throws ConnectorException;
-  Set<String> listSigmaGraphs() throws ConnectorException;
+
   Map<Set<String>, Set<String>> listSigmaGraphsWithIncludes() throws ConnectorException;
   Map<String, Set<String>> listInferenceCodePerSigmaGraph() throws ConnectorException;
-  Map<String, String> listSigmaGraphsByInferenceCode() throws ConnectorException;
-  List<Object> listMappings() throws ConnectorException;
 
-  List<String> findPhiGraphWithImports(String hash, Map<String, String> originalContextsWithHash) throws ConnectorException;
+  List<Object> listMappings() throws ConnectorException;
 
   void writeContextsToFile(List<String> contexts, OutputStream outputStream, Map<String, String> prefixMap, String mainContext);
   void writeContextsToFile(List<String> contexts, OutputStream outputStream, Map<String, String> prefixMap, String mainContext, Function filter);

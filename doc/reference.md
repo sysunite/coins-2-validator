@@ -3,8 +3,8 @@
 
 ## Contents
 
-* [Brief overview](https://github.com/sysunite/coins-2-validator/edit/develop/doc/brief.md)
-* [Connectors](https://github.com/sysunite/coins-2-validator/edit/develop/doc/connectors.md)
+* [Brief overview](https://github.com/sysunite/coins-2-validator/blob/develop/doc/brief.md)
+* [Connectors](https://github.com/sysunite/coins-2-validator/blob/develop/doc/connectors.md)
 
 ## Modules
 

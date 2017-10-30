@@ -232,8 +232,7 @@ public class RDFXMLBasePrettyWriter extends RDFXMLWriter implements Closeable, F
 
   /**
    * Write out the stacks until we find subject. If subject == null, write out the entire stack
-   *
-   * @param newSubject
+   * @throws IOException
    */
   private void popStacks(Resource newSubject)
   throws IOException, RDFHandlerException

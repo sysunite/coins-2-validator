@@ -399,11 +399,7 @@ public abstract class Rdf4jConnector implements Connector {
 
 
 
-  /**
-   *
-   * @param graphVars
-   * @param inferenceCode
-   */
+
   public void storeFinishedInferences(String hashes, Set<GraphVar> graphVars, Map<GraphVar, String> contextMap, String inferenceCode) throws ConnectorException {
 
     for(GraphVar graphVar : graphVars) {

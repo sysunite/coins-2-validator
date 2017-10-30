@@ -44,7 +44,7 @@
     <dependency>
       <groupId>com.ontotext.graphdb</groupId>
       <artifactId>graphdb-free-runtime</artifactId>
-      <version>8.3.0</version>
+      <version>8.3.1</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.httpcomponents</groupId>

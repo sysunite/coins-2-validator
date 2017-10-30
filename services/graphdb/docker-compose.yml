@@ -3,7 +3,8 @@ services:
   graphdb:
 #    image: "sysunite/graphdb:8.1.1"
 #    image: "sysunite/graphdb:8.2.0"
-    image: "sysunite/graphdb:8.3.0"
+#    image: "sysunite/graphdb:8.3.0"
+    image: "sysunite/graphdb:8.3.1"
 #    command:  ["/opt/graphdb-free-8.2.0/bin/graphdb", "-s"]
     ports:
     - "7200:7200"

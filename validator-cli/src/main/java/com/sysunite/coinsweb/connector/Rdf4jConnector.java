@@ -590,6 +590,9 @@ public abstract class Rdf4jConnector implements Connector {
     writeContextsToFile(contexts, outputStream, prefixMap, mainContext, filter);
   }
   @Override
+  /**
+   * the mainContext is an uri without hash
+   */
   public void writeContextsToFile(List<String> contexts, OutputStream outputStream, Map<String, String> prefixMap, String mainContext, Function statementFilter) {
 
     Function<Statement, Statement> filter = (Function<Statement, Statement>) statementFilter;
@@ -599,7 +602,7 @@ public abstract class Rdf4jConnector implements Connector {
     writer.setBase(mainContext);
 
 
-    writer.handleNamespace("", mainContext);
+    writer.handleNamespace("", mainContext+"#");
     for(String prefix : prefixMap.keySet()) {
       writer.handleNamespace(prefix, prefixMap.get(prefix));
     }

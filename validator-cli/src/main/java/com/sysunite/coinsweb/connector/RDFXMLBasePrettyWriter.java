@@ -67,10 +67,6 @@ public class RDFXMLBasePrettyWriter extends RDFXMLWriter implements Closeable, F
 	 *---------*/
 
 	public void setBase(String base) {
-	  if(base!=null && base.contains("#")) {
-	    this.base = base.substring(0, base.indexOf("#"));
-	    return;
-    }
 	  this.base = base;
   }
   private String applyBase(String uri) {

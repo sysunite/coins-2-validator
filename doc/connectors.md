@@ -1,21 +1,33 @@
-package com.sysunite.coinsweb.connector;
+## Connectors
 
-import com.sysunite.coinsweb.graphset.GraphVar;
+Two connectors are build in. The GraphDB connector and an in-mem connector. More connectors can be made by implementing the ```Connector``` interface.
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
+The connector must return Rdf4j objects, so it is required the database being conntected has Rdf4j libraries.
 
-/**
- * Each graphSet needs a connector to connect to some graph database. A connector
- * gives access to the data of more than one graphSet.
- *
- * @author bastbijl, Sysunite 2017
- */
+The easiest way is to extend the `Rdf4jConnector` and read the `GraphDB` class as example.
+
+### Registering a custom Connector
+
+In order to make a custom Connector usable in a run these steps are required:
+* Register the custom Connector in the `ConnectorFactoryImpl`
+```java
+public class ConnectorFactoryImpl implements ConnectorFactory {
+
+  private static final Logger log = LoggerFactory.getLogger(ConnectorFactoryImpl.class);
+
+  private static final Map<String, Class<? extends Connector>> register;
+  static
+  {
+    register = new HashMap();
+    register.put(GraphDB.REFERENCE, GraphDB.class);
+    register.put(InMemRdf4j.REFERENCE, InMemRdf4j.class);
+```
+* Compile the cli with the custom Connector
+* Use the name set in `CustomConnector.REFERENCE` in a config.yml
+
+### Connector Inferface
+
+```java
 public interface Connector {
 
   void init();
@@ -55,3 +67,5 @@ public interface Connector {
 
   Map<String, String> getImports(String context) throws ConnectorException;
 }
+```
+

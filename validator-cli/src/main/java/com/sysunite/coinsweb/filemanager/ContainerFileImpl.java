@@ -134,6 +134,53 @@ public class ContainerFileImpl extends File implements ContainerFile {
     return new ArrayList<>();
   }
 
+  ArrayList<String> resolvable;
+  ArrayList<String> unmatched;
+  public void checkImports() {
+
+    resolvable = new ArrayList<>();
+    unmatched = new ArrayList<>();
+
+    ArrayList<String> availableGraphs = new ArrayList();
+    for (String repoFilePath : getRepositoryFiles()) {
+      availableGraphs.addAll(getRepositoryFileNamespaces(repoFilePath));
+    }
+
+    ArrayList<String> imports = new ArrayList<>();
+    for(ArrayList<String> importsPerFile : fileImports.values()) {
+      imports.addAll(importsPerFile);
+    }
+
+    for (String storeContext : imports) {
+      log.info("Found import in some triple file: "+storeContext);
+
+      boolean found = Utils.containsNamespace(storeContext, availableGraphs);
+
+      if (found) {
+        if(!Utils.containsNamespace(storeContext, resolvable)) {
+          resolvable.add(storeContext);
+        }
+      } else {
+        if(!Utils.containsNamespace(storeContext, unmatched)) {
+          log.info("Namespace to import " + storeContext + " was not found in " + String.join(", ", availableGraphs));
+          unmatched.add(storeContext);
+        }
+      }
+
+    }
+  }
+
+  public ArrayList<String> getResolvableImports() {
+    if(!scanned) scan();
+    return resolvable;
+  }
+  public ArrayList<String> getInvalidImports() {
+    if(!scanned) scan();
+    return unmatched;
+  }
+
+
+
   HashMap<String, ArrayList<String>> contentFileNamespaces = new HashMap();
   public ArrayList<String> getContentFileNamespaces(String filename) {
     if(!contentFileNamespaces.containsKey(filename)) {
@@ -298,12 +345,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
           throw new RuntimeException();
         }
 
-//        // Skip file names that start with a dot
-//        if(zipPath.getFileName().toString().startsWith(".")) {
-//          ze = zis.getNextEntry();
-//          continue;
-//        }
-
         Path normalizedPath = zipPath;
         if(leadingPath != null) {
           normalizedPath = leadingPath.relativize(normalizedPath);
@@ -383,6 +424,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
     }
 
     scanned = true;
+    checkImports();
   }
 
   private String pendingContentContext;
@@ -393,6 +435,11 @@ public class ContainerFileImpl extends File implements ContainerFile {
   private List<File> pendingAttachmentFiles = new ArrayList();
   public void addPendingAttachmentFile(File file) {
     pendingAttachmentFiles.add(file);
+  }
+
+  private List<File> pendingLibraryFiles = new ArrayList();
+  public void addPendingLibraryFile(File file) {
+    pendingLibraryFiles.add(file);
   }
 
   public ContainerFileImpl writeZip(Path containerFile, Connector connector) throws ConnectorException {
@@ -461,12 +508,34 @@ public class ContainerFileImpl extends File implements ContainerFile {
       // Adding rdf files finished
       pendingContentContext = null;
 
+      for(File libraryFile : pendingLibraryFiles) {
+        String zipPath = "bim/repository/"+libraryFile.getName();
+        log.info("Adding to zip "+zipPath);
+        log.info("Checking for existence");
+        if (!libraryFile.exists()){
+          log.warn("Could not find file " + libraryFile.getAbsolutePath());
+          continue;
+        }
+
+        ZipEntry ze = new ZipEntry(zipPath);
+        zout.putNextEntry(ze);
+        FileInputStream inputStream = new FileInputStream(libraryFile);
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1)
+          zout.write(buffer, 0, bytesRead);
+        zout.closeEntry();
+        inputStream.close();
+      }
+
+      // Adding attachments finished
+      pendingLibraryFiles = new ArrayList();
+
       for(File attachmentFile : pendingAttachmentFiles) {
         String zipPath = "doc/"+attachmentFile.getName();
         log.info("Adding to zip "+zipPath);
         log.info("Checking for existence");
-        if (!new File(zipPath).exists()){
-          log.warn("Could not find file " + zipPath);
+        if (!attachmentFile.exists()){
+          log.warn("Could not find file " + attachmentFile.getAbsolutePath());
           continue;
         }
 

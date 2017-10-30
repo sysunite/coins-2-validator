@@ -8,7 +8,6 @@ import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigPart;
 import com.sysunite.coinsweb.parser.config.pojo.GraphVarImpl;
-import com.sysunite.coinsweb.rdfutil.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -225,31 +224,9 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
     noCollidingNamespaces = container.getCollidingNamespaces().isEmpty();
 
     // Should be able to satisfy all ontology imports from repository folder
-    boolean allImportsImportable = true;
-    ArrayList<String> availableGraphs = new ArrayList();
-    for (String repoFilePath : container.getRepositoryFiles()) {
-      availableGraphs.addAll(container.getRepositoryFileNamespaces(repoFilePath));
-    }
+    allImportsImportable = container.getInvalidImports().isEmpty();
+    unmatchedImports = container.getInvalidImports();
 
-    List<String> imports = new ArrayList<>();
-    if(!container.getContentFiles().isEmpty()) {
-      String fileName = container.getContentFiles().iterator().next();
-      imports = container.getFileImports(container.getContentFilePath(fileName));
-    }
-
-
-    for (String storeContext : imports) {
-      log.info("Found import in content triple file: "+storeContext);
-
-      boolean found = Utils.containsNamespace(storeContext, availableGraphs);
-      this.imports.add(storeContext);
-      if (!found) {
-        log.info("Namespace to import " + storeContext + " was not found in " + String.join(", ", availableGraphs));
-        unmatchedImports.add(storeContext);
-      }
-      allImportsImportable &= found;
-    }
-    setAllImportsImportable(allImportsImportable);
 
 
     graphSet.load();

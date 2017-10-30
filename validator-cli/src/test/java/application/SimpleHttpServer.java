@@ -18,7 +18,6 @@ public class SimpleHttpServer {
   public static void serveFiles(ArrayList<File> files, String contentType, int port) {
     try {
       HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
-//    server.createContext("/info", new InfoHandler());
       for(File file : files) {
         server.createContext("/" + file.getName(), new GetHandler(file, contentType));
       }
@@ -29,15 +28,6 @@ public class SimpleHttpServer {
     }
   }
 
-//  static class InfoHandler implements HttpHandler {
-//    public void handle(HttpExchange t) throws IOException {
-//      String response = "Use /get to download a PDF";
-//      t.sendResponseHeaders(200, response.length());
-//      OutputStream os = t.getResponseBody();
-//      os.write(response.getBytes());
-//      os.close();
-//    }
-//  }
 
   static class GetHandler implements HttpHandler {
     private File file;

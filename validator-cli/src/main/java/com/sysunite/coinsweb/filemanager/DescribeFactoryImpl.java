@@ -137,14 +137,9 @@ public class DescribeFactoryImpl implements DescribeFactory {
    * Finding them is tried in this order:
    *
    * - If the file consists of contexts itself (e.g. nquad or trix files) these are returned
-   * - If no context is specified (subj) -rdf:type->  owl:Ontology definitions are collected and returned
+   * - If no context is specified (subj) -rdf:type-&gt;  owl:Ontology definitions are collected and returned
    * - Use the namespace with the empty prefix
    * - Fall back to the backup namespace that is composed of the fileName
-   *
-   * @param inputStream
-   * @param fileName
-   * @param resultContexts
-   * @param resultImports
    */
   public static void contextsInFile(InputStream inputStream, String fileName, ArrayList<String> resultContexts, ArrayList<String> resultImports) {
 

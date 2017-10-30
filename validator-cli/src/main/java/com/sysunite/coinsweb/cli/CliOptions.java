@@ -44,7 +44,7 @@ public class CliOptions {
   public static void printHeader() {
 
     // Print header
-    printOutput(")} \uD83D\uDC1A  COINS 2.0 validator\ncommand line interface (version " + getVersion() + ")\n");
+    printOutput("[)}] \uD83D\uDC1A COINS 2.0 validator\ncommand line interface (version " + getVersion() + ")\n");
   }
 
   public static void printOutput(String message) {

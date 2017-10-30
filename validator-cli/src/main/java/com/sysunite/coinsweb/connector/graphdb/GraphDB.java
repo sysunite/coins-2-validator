@@ -9,7 +9,6 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
 import org.eclipse.rdf4j.repository.manager.RemoteRepositoryManager;
-import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
@@ -32,8 +31,10 @@ public class GraphDB extends Rdf4jConnector {
   public static final String REFERENCE = "graphdb";
 
   private String url;
-  RepositoryManager manager;
+  RemoteRepositoryManager manager;
   String repositoryId;
+  String user;
+  String password;
 
 
   boolean createRepo;
@@ -50,6 +51,12 @@ public class GraphDB extends Rdf4jConnector {
 
     if(config.getStore().getConfig().containsKey("repositoryId")) {
       repositoryId = config.getStore().getConfig().get("repositoryId");
+    }
+    if(config.getStore().getConfig().containsKey("user")) {
+      user = config.getStore().getConfig().get("user");
+    }
+    if(config.getStore().getConfig().containsKey("password")) {
+      password = config.getStore().getConfig().get("password");
     }
 
 
@@ -72,6 +79,9 @@ public class GraphDB extends Rdf4jConnector {
     log.info("Initialize connector ("+REFERENCE+")");
 
     manager = new RemoteRepositoryManager(url);
+    if(user != null && password != null) {
+      manager.setUsernameAndPassword(user, password);
+    }
     manager.initialize();
 
     try {

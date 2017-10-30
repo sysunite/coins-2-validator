@@ -298,12 +298,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
           throw new RuntimeException();
         }
 
-//        // Skip file names that start with a dot
-//        if(zipPath.getFileName().toString().startsWith(".")) {
-//          ze = zis.getNextEntry();
-//          continue;
-//        }
-
         Path normalizedPath = zipPath;
         if(leadingPath != null) {
           normalizedPath = leadingPath.relativize(normalizedPath);

@@ -78,24 +78,14 @@ public class ContainerGraphSetFactory {
     List<Graph> loadList = containerConfig.getGraphs();
 
     // Load all files (φ - graphs)
-
-//    Map<String, String> originalContextToHashMap = new HashMap<>();
-//    ArrayList<Graph> loadList = loadList(originalGraphs, container);
     ArrayList<Graph> phiGraphs = new ArrayList<>();
     for (Graph graph : loadList) {
       if(Source.ONLINE.equals(graph.getSource().getType()) ||
       Source.CONTAINER.equals(graph.getSource().getType()) ||
       Source.FILE.equals(graph.getSource().getType())) {
         phiGraphs.add(graph);
-
-
-//        FileFactory.calculateAndSetHash(graph.getSource(), container);
-//        originalContextToHashMap.put(withoutHash(graph.getSource().getGraphname()), graph.getSource().getHash());
-
       }
     }
-
-
 
     HashMap<String, String> changeMap = new HashMap<>();
     HashSet<String> doneImports = new HashSet<>();
@@ -104,30 +94,10 @@ public class ContainerGraphSetFactory {
       boolean foundOne = false;
       for(Graph phiGraph : phiGraphs) {
         ArrayList<String> imports = FileFactory.getImports(phiGraph.getSource(), container);
+
         if (doneImports.containsAll(imports)) {
 
-//          HashMap<String, String> originalContextsWithHash = new HashMap<>();
-//          for(String context : imports) {
-//
-//
-//            // If one was already selected, use that
-//            if(doneImports.keySet().contains(context)) {
-//              originalContextsWithHash.put(doneImports.get(context), null);
-//
-//            } else {
-//              originalContextsWithHash.put(context, originalContextToHashMap.get(context));
-//            }
-//          }
-
-
-          // If there is already an identical file with identical uploads use that instead
-
-//          String register = null;
-
-
           executeLoad(phiGraph.getSource(), connector, container);
-//          register = withoutHash(phiGraph.getSource().getStoreContext());
-
           changeMap.put(withoutHash(phiGraph.getSource().getGraphname()), withoutHash(phiGraph.getSource().getStoreContext()));
 
           for(String originalContext : changeMap.keySet()) {
@@ -139,11 +109,7 @@ public class ContainerGraphSetFactory {
             }
           }
 
-
-
-
           doneImports.add(withoutHash(phiGraph.getSource().getGraphname()));
-
 
           foundOne = true;
           phiGraphs.remove(phiGraph);

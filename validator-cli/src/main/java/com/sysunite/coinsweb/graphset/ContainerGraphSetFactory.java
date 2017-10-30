@@ -89,6 +89,8 @@ public class ContainerGraphSetFactory {
 
     HashMap<String, String> changeMap = new HashMap<>();
     HashSet<String> doneImports = new HashSet<>();
+    // Consider unmatched imports as known missing graphs
+    doneImports.addAll(((ContainerFileImpl) container).getInvalidImports());
     while(!phiGraphs.isEmpty()) {
 
       boolean foundOne = false;

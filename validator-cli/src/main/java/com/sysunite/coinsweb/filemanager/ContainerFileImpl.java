@@ -134,6 +134,53 @@ public class ContainerFileImpl extends File implements ContainerFile {
     return new ArrayList<>();
   }
 
+  ArrayList<String> resolvable;
+  ArrayList<String> unmatched;
+  public void checkImports() {
+
+    resolvable = new ArrayList<>();
+    unmatched = new ArrayList<>();
+
+    ArrayList<String> availableGraphs = new ArrayList();
+    for (String repoFilePath : getRepositoryFiles()) {
+      availableGraphs.addAll(getRepositoryFileNamespaces(repoFilePath));
+    }
+
+    ArrayList<String> imports = new ArrayList<>();
+    for(ArrayList<String> importsPerFile : fileImports.values()) {
+      imports.addAll(importsPerFile);
+    }
+
+    for (String storeContext : imports) {
+      log.info("Found import in some triple file: "+storeContext);
+
+      boolean found = Utils.containsNamespace(storeContext, availableGraphs);
+
+      if (found) {
+        if(!Utils.containsNamespace(storeContext, resolvable)) {
+          resolvable.add(storeContext);
+        }
+      } else {
+        if(!Utils.containsNamespace(storeContext, unmatched)) {
+          log.info("Namespace to import " + storeContext + " was not found in " + String.join(", ", availableGraphs));
+          unmatched.add(storeContext);
+        }
+      }
+
+    }
+  }
+
+  public ArrayList<String> getResolvableImports() {
+    if(!scanned) scan();
+    return resolvable;
+  }
+  public ArrayList<String> getInvalidImports() {
+    if(!scanned) scan();
+    return unmatched;
+  }
+
+
+
   HashMap<String, ArrayList<String>> contentFileNamespaces = new HashMap();
   public ArrayList<String> getContentFileNamespaces(String filename) {
     if(!contentFileNamespaces.containsKey(filename)) {
@@ -377,6 +424,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
     }
 
     scanned = true;
+    checkImports();
   }
 
   private String pendingContentContext;

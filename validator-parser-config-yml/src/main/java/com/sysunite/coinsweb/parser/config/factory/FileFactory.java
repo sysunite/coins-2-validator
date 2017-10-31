@@ -18,7 +18,6 @@ import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -133,18 +132,24 @@ public class FileFactory {
     throw new RuntimeException("Source of type "+source.getType()+" could not be read as inputStream: "+triedReference);
   }
 
-  public static ArrayList<String> getImports(Source source, ContainerFile container) {
+  public static File toFile(Source source) {
     String triedReference = "error interpreting source";
     if (Source.FILE.equals(source.getType())) {
-      throw new RuntimeException("Not implemented");
-    } else if (Source.ONLINE.equals(source.getType())) {
-      throw new RuntimeException("Not implemented");
-    } else if (Source.CONTAINER.equals(source.getType())) {
-
-      triedReference = "in container: "+Paths.get(source.getPath());
-      return container.getFileImports(Paths.get(source.getPath()));
+      try {
+        File file;
+        if (source.getParent() != null) {
+          triedReference = source.getParent().resolve(source.getPath()).toString();
+          file = source.getParent().resolve(source.getPath()).toFile();
+        } else {
+          triedReference = source.getPath();
+          file = new File(source.getPath());
+        }
+        return file;
+      } catch (Exception e) {
+        throw new RuntimeException("Source of type "+source.getType()+" could not be read as file: "+triedReference);
+      }
     }
-    throw new RuntimeException("Source of type "+source.getType()+" could not be read as inputStream: "+triedReference);
+    throw new RuntimeException("Source of type "+source.getType()+" could not be read as file: "+triedReference);
   }
 
 

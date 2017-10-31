@@ -2,6 +2,7 @@ package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.connector.ConnectorException;
+import com.sysunite.coinsweb.connector.Rdf4jUtil;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
@@ -9,7 +10,6 @@ import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.parser.config.pojo.*;
 import com.sysunite.coinsweb.parser.profile.factory.ProfileFactory;
 import com.sysunite.coinsweb.parser.profile.pojo.ProfileFile;
-import com.sysunite.coinsweb.rdfutil.Utils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ import java.security.DigestInputStream;
 import java.util.*;
 
 import static com.sysunite.coinsweb.connector.Rdf4jConnector.asResource;
-import static com.sysunite.coinsweb.rdfutil.Utils.withoutHash;
+import static com.sysunite.coinsweb.rdfutil.Utils.*;
 import static java.util.Collections.sort;
 
 /**
@@ -89,15 +89,26 @@ public class ContainerGraphSetFactory {
 
     HashMap<String, String> changeMap = new HashMap<>();
     HashSet<String> doneImports = new HashSet<>();
-    // Consider unmatched imports as known missing graphs
-    doneImports.addAll(((ContainerFileImpl) container).getInvalidImports());
+    HashSet<String> invalidImports = new HashSet<>();
+    invalidImports.addAll(((ContainerFileImpl) container).getInvalidImports());
+
     while(!phiGraphs.isEmpty()) {
 
       boolean foundOne = false;
       for(Graph phiGraph : phiGraphs) {
-        ArrayList<String> imports = FileFactory.getImports(phiGraph.getSource(), container);
+        ArrayList<String> imports = Rdf4jUtil.getImports(phiGraph.getSource(), container);
 
-        if (doneImports.containsAll(imports)) {
+        boolean ready = true;
+        for(String importContext : imports) {
+          if(!containsNamespace(importContext, doneImports) &&
+             !containsNamespace(importContext, invalidImports) &&
+             !equalNamespace(importContext, phiGraph.getSource().getGraphname())) {
+            ready = false;
+            continue;
+          }
+        }
+
+        if (ready) {
 
           executeLoad(phiGraph.getSource(), connector, container);
           changeMap.put(withoutHash(phiGraph.getSource().getGraphname()), withoutHash(phiGraph.getSource().getStoreContext()));
@@ -246,7 +257,7 @@ public class ContainerGraphSetFactory {
 
       if(!graph.getSource().anyGraph()) {
         String graphName = graph.getSource().getGraphname();
-        if(Utils.containsNamespace(graphName, explicitGraphs)) {
+        if(containsNamespace(graphName, explicitGraphs)) {
           throw new RuntimeException("The namespace "+graphName+ " is being mentioned more than once, this is not allowed");
         }
         log.info("Reserve this namespace to load from explicitly mentioned source: "+graphName);
@@ -283,9 +294,9 @@ public class ContainerGraphSetFactory {
       for(Graph graph : contentGraphs) {
         String graphName = graph.getSource().getGraphname();
         log.info("Found graph in content file: "+graphName);
-        if(!Utils.containsNamespace(graphName, explicitGraphs)) {
+        if(!containsNamespace(graphName, explicitGraphs)) {
           log.info("Will load content file from wildcard definition");
-          if(Utils.containsNamespace(graphName, implicitGraphs)) {
+          if(containsNamespace(graphName, implicitGraphs)) {
             throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: "+graphName);
           }
           implicitGraphs.add(graphName);
@@ -299,9 +310,9 @@ public class ContainerGraphSetFactory {
       for(Graph graph : libraryGraphs) {
         String graphName = graph.getSource().getGraphname();
         log.info("Found graph in library file: "+graphName);
-        if(!Utils.containsNamespace(graphName, explicitGraphs)) {
+        if(!containsNamespace(graphName, explicitGraphs)) {
           log.info("Will load library file from wildcard definition");
-          if(Utils.containsNamespace(graphName, implicitGraphs)) {
+          if(containsNamespace(graphName, implicitGraphs)) {
             throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: "+graphName);
           }
           implicitGraphs.add(graphName);
@@ -322,9 +333,9 @@ public class ContainerGraphSetFactory {
           DescribeFactoryImpl.contextsInFile(new FileInputStream(file), file.getName(), namespaces, imports);
           for (String graphName : namespaces) {
             log.info("Found graph in file/online: "+graphName);
-            if (!Utils.containsNamespace(graphName, explicitGraphs)) {
+            if (!containsNamespace(graphName, explicitGraphs)) {
               log.info("Will load graph from file because of wildcard graph definition");
-              if (Utils.containsNamespace(graphName, implicitGraphs)) {
+              if (containsNamespace(graphName, implicitGraphs)) {
                 throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: " + graphName);
               }
               implicitGraphs.add(graphName);

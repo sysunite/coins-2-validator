@@ -1,8 +1,16 @@
 package com.sysunite.coinsweb.connector;
 
+import com.sysunite.coinsweb.filemanager.ContainerFile;
+import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
+import com.sysunite.coinsweb.parser.config.factory.FileFactory;
+import com.sysunite.coinsweb.parser.config.pojo.Source;
 import org.eclipse.rdf4j.rio.RDFFormat;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -68,5 +76,31 @@ public class Rdf4jUtil {
     }
 
     return null;
+  }
+
+
+
+  public static ArrayList<String> getImports(Source source, ContainerFile container) {
+    String triedReference = "error interpreting source";
+    if (Source.FILE.equals(source.getType())) {
+
+      File file = FileFactory.toFile(source);
+
+      ArrayList<String> namespaces = new ArrayList<>();
+      ArrayList<String> imports = new ArrayList<>();
+      try {
+        DescribeFactoryImpl.contextsInFile(new FileInputStream(file), file.getName(), namespaces, imports);
+        return imports;
+      } catch (FileNotFoundException e) {
+        e.printStackTrace();
+      }
+    } else if (Source.ONLINE.equals(source.getType())) {
+      throw new RuntimeException("Not implemented");
+    } else if (Source.CONTAINER.equals(source.getType())) {
+
+      triedReference = "in container: "+ Paths.get(source.getPath());
+      return container.getFileImports(Paths.get(source.getPath()));
+    }
+    throw new RuntimeException("Source of type "+source.getType()+" could not be read as inputStream: "+triedReference);
   }
 }

@@ -89,7 +89,7 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     log.info("Load stuff to connector");
     composePlan = ContainerGraphSetFactory.load(this, connector, containerToLazyLoad, inferencePreference);
 
-    log.trace("Will use this compose plan: " + ReportFactory.buildJson(mappings));
+    log.trace("Built this compose plan: " + ReportFactory.buildJson(mappings));
 
 
     containerToLazyLoad.getConfig().setVariables(mappings);

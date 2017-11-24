@@ -110,7 +110,13 @@ public class ContainerGraphSetFactory {
 
         if (ready) {
 
-          executeLoad(phiGraph.getSource(), connector, container);
+          try {
+            executeLoad(phiGraph.getSource(), connector, container);
+          } catch (ConnectorException e) {
+            log.error("Loading this graph to the connector failed: "+phiGraph.getSource().getGraphname());
+            graphSet.setFailed();
+            return null;
+          }
           changeMap.put(withoutHash(phiGraph.getSource().getGraphname()), withoutHash(phiGraph.getSource().getStoreContext()));
 
           for(String originalContext : changeMap.keySet()) {
@@ -198,7 +204,7 @@ public class ContainerGraphSetFactory {
   }
 
   // Returns true if loading was successful
-  private static boolean executeLoad(Source source, Connector connector, ContainerFile container) {
+  private static void executeLoad(Source source, Connector connector, ContainerFile container) throws ConnectorException {
 
     String fileName;
     String filePath = source.getPath();
@@ -216,21 +222,10 @@ public class ContainerGraphSetFactory {
 
     log.info("Upload rdf-file to connector: " + filePath);
     DigestInputStream inputStream = FileFactory.toInputStream(source, container);
-    try {
-      connector.uploadFile(inputStream, fileName, source.getGraphname(), contexts);
-    } catch (ConnectorException e) {
-      log.error("Error uploading file", e);
-      return false;
-    }
+    connector.uploadFile(inputStream, fileName, source.getGraphname(), contexts);
 
     log.info("Uploaded, store phi graph header");
-    try {
-      connector.storePhiGraphExists(source, context, fileName, source.getHash());
-    } catch (ConnectorException e) {
-      log.error("Failed saving phi graph header", e);
-      return false;
-    }
-    return true;
+    connector.storePhiGraphExists(source, context, fileName, source.getHash());
   }
 
 

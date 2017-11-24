@@ -330,7 +330,8 @@ public class ContainerGraphSetFactory {
         try {
           ArrayList<String> namespaces = new ArrayList<>();
           ArrayList<String> imports = new ArrayList<>();
-          DescribeFactoryImpl.contextsInFile(new FileInputStream(file), file.getName(), namespaces, imports);
+          ArrayList<String> ontologies = new ArrayList<>();
+          DescribeFactoryImpl.contextsInFile(new FileInputStream(file), file.getName(), namespaces, imports, ontologies);
           for (String graphName : namespaces) {
             log.info("Found graph in file/online: "+graphName);
             if (!containsNamespace(graphName, explicitGraphs)) {

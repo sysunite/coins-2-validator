@@ -2,12 +2,14 @@ package com.sysunite.coinsweb.filemanager;
 
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.connector.ConnectorException;
+import com.sysunite.coinsweb.connector.Rdf4jUtil;
 import com.sysunite.coinsweb.parser.config.factory.FileFactory;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
 import com.sysunite.coinsweb.parser.config.pojo.Source;
 import com.sysunite.coinsweb.rdfutil.Utils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.eclipse.rdf4j.rio.RDFFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,8 +57,10 @@ public class ContainerFileImpl extends File implements ContainerFile {
 
   private HashMap<String, Path> contentFiles = new HashMap();
   private HashMap<String, Path> invalidContentFiles = new HashMap();
+  private HashMap<String, Path> corruptContentFiles = new HashMap();
   private HashMap<String, Path> repositoryFiles = new HashMap();
   private HashMap<String, Path> invalidRepositoryFiles = new HashMap();
+  private HashMap<String, Path> corruptRepositoryFiles = new HashMap();
   private HashMap<String, Path> woaFiles = new HashMap();
   private HashMap<String, Path> attachmentFiles = new HashMap();
   private HashMap<String, Path> orphanFiles = new HashMap();
@@ -82,6 +86,10 @@ public class ContainerFileImpl extends File implements ContainerFile {
     if(!scanned) scan();
     return invalidContentFiles.keySet();
   }
+  public Set<String> getCorruptContentFiles() {
+    if(!scanned) scan();
+    return corruptContentFiles.keySet();
+  }
   public Set<String> getRepositoryFiles() {
     if(!scanned) scan();
     return repositoryFiles.keySet();
@@ -89,6 +97,10 @@ public class ContainerFileImpl extends File implements ContainerFile {
   public Set<String> getInvalidRepositoryFiles() {
     if(!scanned) scan();
     return invalidRepositoryFiles.keySet();
+  }
+  public Set<String> getCorruptRepositoryFiles() {
+    if(!scanned) scan();
+    return corruptRepositoryFiles.keySet();
   }
   public Set<String> getWoaFiles() {
     if(!scanned) scan();
@@ -109,11 +121,17 @@ public class ContainerFileImpl extends File implements ContainerFile {
   public DigestInputStream getInvalidContentFile(String filename) {
     return getFile(invalidContentFiles.get(filename));
   }
+  public DigestInputStream getCorruptContentFile(String filename) {
+    return getFile(corruptContentFiles.get(filename));
+  }
   public DigestInputStream getRepositoryFile(String filename) {
     return getFile(repositoryFiles.get(filename));
   }
   public DigestInputStream getInvalidRepositoryFile(String filename) {
     return getFile(invalidRepositoryFiles.get(filename));
+  }
+  public DigestInputStream getCorruptRepositoryFile(String filename) {
+    return getFile(corruptRepositoryFiles.get(filename));
   }
   public DigestInputStream getWoaFile(String filename) {
     return getFile(woaFiles.get(filename));
@@ -125,6 +143,8 @@ public class ContainerFileImpl extends File implements ContainerFile {
     return getFile(orphanFiles.get(filename));
   }
 
+
+  HashMap<String, ArrayList<String>> fileOntologies = new HashMap();
 
   HashMap<String, ArrayList<String>> fileImports = new HashMap();
   public ArrayList<String> getFileImports(Path zipPath) {
@@ -170,6 +190,14 @@ public class ContainerFileImpl extends File implements ContainerFile {
     }
   }
 
+  public int getContentOntologiesCount() {
+    if(!scanned) scan();
+    if(getContentFiles().size()!=1) {
+      return -1;
+    }
+    return fileOntologies.get(getContentFiles().iterator().next()).size();
+  }
+
   public ArrayList<String> getResolvableImports() {
     if(!scanned) scan();
     return resolvable;
@@ -184,7 +212,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
   HashMap<String, ArrayList<String>> contentFileNamespaces = new HashMap();
   public ArrayList<String> getContentFileNamespaces(String filename) {
     if(!contentFileNamespaces.containsKey(filename)) {
-      DescribeFactoryImpl.contextsInFile(getContentFile(filename), filename, contentFileNamespaces, fileImports);
+      DescribeFactoryImpl.contextsInFile(getContentFile(filename), filename, contentFileNamespaces, fileImports, fileOntologies);
     }
     return contentFileNamespaces.get(filename);
   }
@@ -192,7 +220,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
   HashMap<String, ArrayList<String>> repositoryFileNamespaces = new HashMap();
   public ArrayList<String> getRepositoryFileNamespaces(String filename) {
     if(!repositoryFileNamespaces.containsKey(filename)) {
-      DescribeFactoryImpl.contextsInFile(getRepositoryFile(filename), filename, repositoryFileNamespaces, fileImports);
+      DescribeFactoryImpl.contextsInFile(getRepositoryFile(filename), filename, repositoryFileNamespaces, fileImports, fileOntologies);
     }
     return repositoryFileNamespaces.get(filename);
   }
@@ -243,11 +271,17 @@ public class ContainerFileImpl extends File implements ContainerFile {
   public Path getInvalidContentFilePath(String filename) {
     return invalidContentFiles.get(filename);
   }
+  public Path getCorruptContentFilePath(String filename) {
+    return corruptContentFiles.get(filename);
+  }
   public Path getRepositoryFilePath(String filename) {
     return repositoryFiles.get(filename);
   }
   public Path getInvalidRepositoryFilePath(String filename) {
     return invalidRepositoryFiles.get(filename);
+  }
+  public Path getCorruptRepositoryFilePath(String filename) {
+    return corruptRepositoryFiles.get(filename);
   }
   public Path getWoaFilePath(String filename) {
     return woaFiles.get(filename);
@@ -361,11 +395,16 @@ public class ContainerFileImpl extends File implements ContainerFile {
           Path inside = bimPath.relativize(normalizedPath);
           if(!inside.startsWith(repositoryPath)) {
 
-            try {
+
+            if(isRdfFile(inside.toString())) {
               contentFiles.put(inside.toString(), zipPath);
-              getContentFileNamespaces(inside.toString());
-            } catch (Exception e) {
-              contentFiles.remove(inside.toString());
+              try {
+                getContentFileNamespaces(inside.toString());
+              } catch (Exception e) {
+                contentFiles.remove(inside.toString());
+                corruptContentFiles.put(inside.toString(), zipPath);
+              }
+            } else {
               invalidContentFiles.put(inside.toString(), zipPath);
             }
 
@@ -375,11 +414,15 @@ public class ContainerFileImpl extends File implements ContainerFile {
 
 
             // Do this to detect errors upfront
-            try {
+            if(isRdfFile(inside.toString())) {
               repositoryFiles.put(inside.toString(), zipPath);
-              getRepositoryFileNamespaces(inside.toString());
-            } catch (Exception e) {
-              repositoryFiles.remove(inside.toString());
+              try {
+                getRepositoryFileNamespaces(inside.toString());
+              } catch (Exception e) {
+                repositoryFiles.remove(inside.toString());
+                corruptRepositoryFiles.put(inside.toString(), zipPath);
+              }
+            } else {
               invalidRepositoryFiles.put(inside.toString(), zipPath);
             }
 
@@ -560,6 +603,14 @@ public class ContainerFileImpl extends File implements ContainerFile {
     }
 
     return new ContainerFileImpl(containerFile.toString());
+  }
+
+  private boolean isRdfFile(String fileName) {
+    RDFFormat format = Rdf4jUtil.interpretFormat(fileName);
+    if(format == null) {
+      return false;
+    }
+    return true;
   }
 
   public Container getConfig() {

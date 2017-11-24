@@ -88,8 +88,9 @@ public class Rdf4jUtil {
 
       ArrayList<String> namespaces = new ArrayList<>();
       ArrayList<String> imports = new ArrayList<>();
+      ArrayList<String> ontologies = new ArrayList<>();
       try {
-        DescribeFactoryImpl.contextsInFile(new FileInputStream(file), file.getName(), namespaces, imports);
+        DescribeFactoryImpl.contextsInFile(new FileInputStream(file), file.getName(), namespaces, imports, ontologies);
         return imports;
       } catch (FileNotFoundException e) {
         e.printStackTrace();

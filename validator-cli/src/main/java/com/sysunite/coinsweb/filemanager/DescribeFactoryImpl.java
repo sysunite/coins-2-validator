@@ -141,7 +141,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
    * - Use the namespace with the empty prefix
    * - Fall back to the backup namespace that is composed of the fileName
    */
-  public static void contextsInFile(InputStream inputStream, String fileName, ArrayList<String> resultContexts, ArrayList<String> resultImports) {
+  public static void contextsInFile(InputStream inputStream, String fileName, ArrayList<String> resultContexts, ArrayList<String> resultImports, ArrayList<String> resultOntologies) {
 
     String backupNamespace = QueryFactory.VALIDATOR_HOST + fileName;
 
@@ -160,6 +160,10 @@ public class DescribeFactoryImpl implements DescribeFactory {
       rdfParser.parse(inputStream, backupNamespace);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage());
+    }
+
+    for(Resource resource : model.getOntologies()) {
+      resultOntologies.add(resource.stringValue());
     }
 
     // Store imports
@@ -211,15 +215,17 @@ public class DescribeFactoryImpl implements DescribeFactory {
     resultContexts.add(backupNamespace);
   }
 
-  public static void contextsInFile(InputStream inputStream, String fileName, HashMap<String, ArrayList<String>> namespacesMap, HashMap<String, ArrayList<String>> importsMap) {
+  public static void contextsInFile(InputStream inputStream, String fileName, HashMap<String, ArrayList<String>> namespacesMap, HashMap<String, ArrayList<String>> importsMap, HashMap<String, ArrayList<String>> ontologiesMap) {
 
     ArrayList<String> contexts = new ArrayList<>();
     ArrayList<String> imports = new ArrayList<>();
+    ArrayList<String> ontologies = new ArrayList<>();
 
-    contextsInFile(inputStream, fileName, contexts, imports);
+    contextsInFile(inputStream, fileName, contexts, imports, ontologies);
 
     namespacesMap.put(fileName, contexts);
     importsMap.put(fileName, imports);
+    ontologiesMap.put(fileName, ontologies);
   }
 
 }

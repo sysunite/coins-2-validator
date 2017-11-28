@@ -26,14 +26,14 @@
     <th colspan="3">triple files</th>
   </tr>
   <tr>
-    <td>${printBoolean(step.oneRepoFile, 'skipped','&#x2705;','&#x26D4;')}</td>
-    <th>oneRepoFile</th>
+    <td>${printBoolean(step.oneBimFile, 'skipped','&#x2705;','&#x26D4;')}</td>
+    <th>oneBimFile</th>
     <td>There should be precisely one file in the <i>bim</i> folder.</td>
   </tr>
   <tr>
     <td>${printBoolean(step.noWrongContentFile, 'skipped','&#x2705;','&#x26D4;')}</td>
     <th>noWrongContentFile</th>
-    <td>All files in the <i>bim</i> folder should be valid triple files.
+    <td>All files in the <i>bim</i> folder should be triple files.
       <#if invalidContentFiles?has_content>
       Listing invalid files:
       <ul>
@@ -45,14 +45,42 @@
     </td>
   </tr>
   <tr>
+    <td>${printBoolean(step.noCorruptContentFile, 'skipped','&#x2705;','&#x26D4;')}</td>
+    <th>noCorruptContentFile</th>
+    <td>All files in the <i>bim</i> folder should be valid triple files.
+      <#if corruptContentFiles?has_content>
+      Listing corrupt files:
+      <ul>
+        <#list 0..corruptContentFiles?size-1 as i>
+          <li>${corruptContentFiles[i]}</li>
+        </#list>
+      </ul>
+      </#if>
+    </td>
+  </tr>
+  <tr>
     <td>${printBoolean(step.noWrongRepositoryFile, 'skipped','&#x2705;','&#x26D4;')}</td>
     <th>noWrongRepositoryFile</th>
-    <td>All files in the <i>bim/repository</i> folder should be valid triple files.
+    <td>All files in the <i>bim/repository</i> folder should be triple files.
       <#if invalidLibraries?has_content>
       Listing invalid files:
       <ul>
         <#list 0..invalidLibraries?size-1 as i>
           <li>${invalidLibraries[i]}</li>
+        </#list>
+      </ul>
+      </#if>
+    </td>
+  </tr>
+  <tr>
+    <td>${printBoolean(step.noCorruptRepositoryFile, 'skipped','&#x2705;','&#x26D4;')}</td>
+    <th>noCorruptRepositoryFile</th>
+    <td>All files in the <i>bim/repository</i> folder should be valid triple files.
+      <#if corruptLibraries?has_content>
+      Listing corrupt files:
+      <ul>
+        <#list 0..corruptLibraries?size-1 as i>
+          <li>${corruptLibraries[i]}</li>
         </#list>
       </ul>
       </#if>
@@ -85,6 +113,16 @@
       </ul>
       </#if>
     </td>
+  </tr>
+  <tr>
+    <td>${printBoolean(step.coreModelImported, 'skipped','&#x2705;','&#x26D4;')}</td>
+    <th>coreModelImported</th>
+    <td>One of the imports should be the core model.</td>
+  </tr>
+  <tr>
+    <td>${printBoolean(step.oneOntologyIndividual, 'skipped','&#x2705;','&#x26D4;')}</td>
+    <th>oneOntologyIndividual</th>
+    <td>The main bim file should have one ontology individual.</td>
   </tr>
   <tr>
     <th colspan="3">other files</th>

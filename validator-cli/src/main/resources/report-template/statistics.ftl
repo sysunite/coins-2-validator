@@ -2,8 +2,10 @@
 
 <#assign contentFiles         = containerFile.getContentFiles()>
 <#assign invalidContentFiles  = containerFile.getInvalidContentFiles()>
+<#assign corruptContentFiles  = containerFile.getCorruptContentFiles()>
 <#assign libraries            = containerFile.getRepositoryFiles()>
 <#assign invalidLibraries     = containerFile.getInvalidRepositoryFiles()>
+<#assign corruptLibraries     = containerFile.getCorruptRepositoryFiles()>
 <#assign collidingNamespaces  = containerFile.getCollidingNamespaces()>
 <#assign orphanFiles          = containerFile.getOrphanFiles()>
 <#assign attachments          = containerFile.getAttachmentFiles()>

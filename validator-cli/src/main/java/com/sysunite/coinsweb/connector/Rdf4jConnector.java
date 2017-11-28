@@ -231,21 +231,45 @@ public abstract class Rdf4jConnector implements Connector {
       init();
     }
 
-    try (RepositoryConnection con = repository.getConnection()) {
-      RDFFormat format = Rdf4jUtil.interpretFormat(fileName);
-      if(format == null) {
-        throw new RuntimeException("Could not determine the type of file this is: " + fileName);
+
+    RDFFormat format = Rdf4jUtil.interpretFormat(fileName);
+    if(format == null) {
+      throw new RuntimeException("Could not determine the type of file this is: " + fileName);
+    }
+
+
+    log.debug("Start uploading "+fileName);
+
+    RepositoryConnection connection;
+    try {
+      connection = repository.getConnection();
+      try {
+        executeLoadStream(connection, inputStream, baseUri, format, asResource(contexts), 4);
+      } catch (RepositoryException | IOException e) {
+        throw new ConnectorException(e);
+      } finally {
+        connection.close();
       }
-
-//      con.begin(IsolationLevels.NONE);
-      con.add(inputStream, baseUri, format, asResource(contexts));
-
     } catch (RepositoryException e) {
-      throw new ConnectorException(e);
-    } catch (IOException e) {
       throw new ConnectorException(e);
     }
   }
+
+  private void executeLoadStream(RepositoryConnection connection, InputStream inputStream, String baseUri, RDFFormat format, Resource[] resources, int retries) throws ConnectorException, IOException {
+
+    try {
+      log.debug("Upload ("+retries+" retries)");
+      connection.add(inputStream, baseUri, format, resources);
+    } catch (RepositoryException e) {
+      if(retries > 0) {
+        executeLoadStream(connection, inputStream, baseUri, format, resources, retries--);
+      } else {
+        throw new ConnectorException(e);
+      }
+    }
+  }
+
+
 
 
   public List<Object> listPhiGraphs() throws ConnectorException {

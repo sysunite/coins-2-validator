@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
+import static com.sysunite.coinsweb.rdfutil.Utils.containsNamespace;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -87,12 +88,20 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
     this.forwardSlashes = forwardSlashes;
   }
 
-  private Boolean oneRepoFile;
-  public Boolean getOneRepoFile() {
-    return oneRepoFile;
+  private Boolean oneBimFile;
+  public Boolean getOneBimFile() {
+    return oneBimFile;
   }
-  public void setOneRepoFile(Boolean oneRepoFile) {
-    this.oneRepoFile = oneRepoFile;
+  public void setOneBimFile(Boolean oneBimFile) {
+    this.oneBimFile = oneBimFile;
+  }
+
+  private Boolean noCorruptContentFile;
+  public Boolean getNoCorruptContentFile() {
+    return noCorruptContentFile;
+  }
+  public void setNoCorruptContentFile(Boolean noCorruptContentFile) {
+    this.noCorruptContentFile = noCorruptContentFile;
   }
 
   private Boolean noWrongContentFile;
@@ -101,6 +110,14 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
   }
   public void setNoWrongContentFile(Boolean noWrongContentFile) {
     this.noWrongContentFile = noWrongContentFile;
+  }
+
+  private Boolean noCorruptRepositoryFile;
+  public Boolean getNoCorruptRepositoryFile() {
+    return noCorruptRepositoryFile;
+  }
+  public void setNoCorruptRepositoryFile(Boolean noCorruptRepositoryFile) {
+    this.noCorruptRepositoryFile = noCorruptRepositoryFile;
   }
 
   private Boolean noWrongRepositoryFile;
@@ -149,6 +166,22 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
   }
   public void setAllImportsImportable(Boolean allImportsImportable) {
     this.allImportsImportable = allImportsImportable;
+  }
+
+  private Boolean coreModelImported;
+  public Boolean getCoreModelImported() {
+    return coreModelImported;
+  }
+  public void setCoreModelImported(Boolean coreModelImported) {
+    this.coreModelImported = coreModelImported;
+  }
+
+  private Boolean oneOntologyIndividual;
+  public Boolean getOneOntologyIndividual() {
+    return oneOntologyIndividual;
+  }
+  public void setOneOntologyIndividual(Boolean oneOntologyIndividual) {
+    this.oneOntologyIndividual = oneOntologyIndividual;
   }
 
   @JsonInclude(Include.NON_EMPTY)
@@ -208,9 +241,12 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
     }
     forwardSlashes = true;
 
-    oneRepoFile = container.getContentFiles().size() == 1;
+    oneBimFile = container.getContentFiles().size() == 1;
     noWrongContentFile = container.getInvalidContentFiles().size() < 1;
+    noCorruptContentFile = container.getCorruptContentFiles().size() < 1;
     noWrongRepositoryFile = container.getInvalidRepositoryFiles().size() < 1;
+    noCorruptRepositoryFile = container.getCorruptRepositoryFiles().size() < 1;
+    oneOntologyIndividual = container.getContentOntologiesCount() == 1;
 
     // Should be no sub folders in bim
     noSubsInBim = true;
@@ -225,6 +261,7 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
 
     // Should be able to satisfy all ontology imports from repository folder
     allImportsImportable = container.getInvalidImports().isEmpty();
+    coreModelImported = containsNamespace("http://www.coinsweb.nl/cbim-2.0.rdf", container.getInvalidImports());
     unmatchedImports = container.getInvalidImports();
 
 
@@ -232,7 +269,7 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
     graphSet.load();
     isLoadableAsGraphSet = !graphSet.loadingFailed();
 
-    valid = fileFound && nonCorruptZip && forwardSlashes && oneRepoFile && noWrongContentFile && noWrongRepositoryFile && noSubsInBim && noOrphans && noCollidingNamespaces && allImportsImportable && isLoadableAsGraphSet;
+    valid = fileFound && nonCorruptZip && forwardSlashes && oneBimFile && noWrongContentFile && noWrongRepositoryFile && noSubsInBim && noOrphans && noCollidingNamespaces && allImportsImportable && coreModelImported && isLoadableAsGraphSet;
     failed = !isLoadableAsGraphSet;
 
 
@@ -258,18 +295,6 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
     clone.setLookIn(this.getLookIn());
     clone.setParent(this.getParent());
 
-    // Results
-//    clone.setFileFound(this.getFileFound());
-//    clone.setNonCorruptZip(this.getNonCorruptZip());
-//    clone.setForwardSlashes(this.getForwardSlashes());
-//    clone.setNoWrongContentFile(this.getNoWrongContentFile());
-//    clone.setNoWrongRepositoryFile(this.getNoWrongRepositoryFile());
-//    clone.setOneRepoFile(this.getOneRepoFile());
-//    clone.setNoSubsInBim(this.getNoSubsInBim());
-//    clone.setNoOrphans(this.getNoOrphans());
-//    clone.setAllImportsImportable(this.getAllImportsImportable());
-//    clone.setValid(this.getValid());
-//    clone.setFailed(this.getFailed());
     return clone;
   }
 

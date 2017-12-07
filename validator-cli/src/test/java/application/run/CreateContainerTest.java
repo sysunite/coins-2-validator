@@ -10,7 +10,7 @@ import java.io.File;
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class CreateContainerTest {
+public class CreateContainerTest extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(CreateContainerTest.class);
 

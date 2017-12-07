@@ -35,6 +35,11 @@ public class ProfileFileTest {
     testTemplate("profile.lite-9.79.xml");
   }
   @Test
+  public void test101() throws IOException {
+    testTemplate("profile.lite-1.01.xml");
+    reSave("profile.lite-1.01.xml", "profile.lite-1.01-generated.xml");
+  }
+  @Test
   public void test982() throws IOException {
     testTemplate("profile.lite-9.82.xml");
     reSave("profile.lite-9.82.xml", "profile.lite-9.82-generated.xml");

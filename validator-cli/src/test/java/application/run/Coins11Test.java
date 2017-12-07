@@ -10,7 +10,7 @@ import java.io.File;
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class Coins11Test {
+public class Coins11Test extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(Coins11Test.class);
 

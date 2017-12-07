@@ -10,7 +10,7 @@ import java.io.File;
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class Otl210Test extends HostFiles{
+public class Otl210Test extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(Otl210Test.class);
 

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class FileStructureTest {
+public class FileStructureTest extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(FileStructureTest.class);
 

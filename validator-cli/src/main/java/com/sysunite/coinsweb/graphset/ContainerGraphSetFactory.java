@@ -113,7 +113,7 @@ public class ContainerGraphSetFactory {
           try {
             executeLoad(phiGraph.getSource(), connector, container);
           } catch (ConnectorException e) {
-            log.error("Loading this graph to the connector failed: "+phiGraph.getSource().getGraphname());
+            log.error("Loading this graph to the connector failed: "+phiGraph.getSource().getGraphname(), e);
             graphSet.setFailed();
             return null;
           }

@@ -261,7 +261,7 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
 
     // Should be able to satisfy all ontology imports from repository folder
     allImportsImportable = container.getInvalidImports().isEmpty();
-    coreModelImported = containsNamespace("http://www.coinsweb.nl/cbim-2.0.rdf", container.getInvalidImports());
+    coreModelImported = containsNamespace("http://www.coinsweb.nl/cbim-2.0.rdf", container.getResolvableImports());
     unmatchedImports = container.getInvalidImports();
 
 

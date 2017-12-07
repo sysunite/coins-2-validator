@@ -44,6 +44,8 @@ public abstract class Rdf4jConnector implements Connector {
   protected boolean cleanUp = false;
   protected boolean deleteRepo = false;
 
+  private int RETRIES = 4;
+
 
 
 
@@ -66,15 +68,10 @@ public abstract class Rdf4jConnector implements Connector {
       init();
     }
 
-    try (RepositoryConnection con = repository.getConnection()) {
-
+    try (RepositoryConnection connection = repository.getConnection()) {
       log.trace(queryString.replace("\n", " "));
-
-      TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
-      tupleQuery.setIncludeInferred(false);
-
       List<Object> resultList;
-      try (TupleQueryResult result = tupleQuery.evaluate()) {
+      try (TupleQueryResult result = executeSelect(connection, queryString, RETRIES)) {
         resultList = QueryResults.asList(result);
       }
       return resultList;
@@ -89,15 +86,10 @@ public abstract class Rdf4jConnector implements Connector {
       init();
     }
 
-    try (RepositoryConnection con = repository.getConnection()) {
-
+    try (RepositoryConnection connection = repository.getConnection()) {
       log.trace(queryString.replace("\n", " "));
-
-      TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
-      tupleQuery.setIncludeInferred(false);
-
       List<Object> resultList = new ArrayList<>();
-      try (TupleQueryResult result = tupleQuery.evaluate()) {
+      try (TupleQueryResult result = executeSelect(connection, queryString, RETRIES)) {
         int count = 0;
         while((count++<limit) && result.hasNext()) {
           resultList.add(result.next());
@@ -109,25 +101,49 @@ public abstract class Rdf4jConnector implements Connector {
     }
   }
 
+  private TupleQueryResult executeSelect(RepositoryConnection connection, String queryString, int retries) throws ConnectorException, IOException {
+
+    try {
+      log.debug("Select ("+retries+" retries)");
+      TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+      tupleQuery.setIncludeInferred(false);
+
+      return tupleQuery.evaluate();
+    } catch (RepositoryException e) {
+      if(retries > 0) {
+        return executeSelect(connection, queryString, retries--);
+      }
+      throw new ConnectorException(e);
+    }
+  }
+
   @Override
   public void update(String queryString) throws ConnectorException {
     if(!initialized) {
       init();
     }
 
-    try (RepositoryConnection con = repository.getConnection()) {
-
+    try (RepositoryConnection connection = repository.getConnection()) {
       log.trace(queryString.replace("\n", " "));
-
-//      con.begin(IsolationLevels.NONE);
-
-      Update updateQuery = con.prepareUpdate(QueryLanguage.SPARQL, queryString);
-      updateQuery.setIncludeInferred(false);
-      updateQuery.execute();
-
-
+      executeUpdate(connection, queryString, RETRIES);
     } catch (Exception e) {
       throw new ConnectorException("A problem with this update query", e);
+    }
+  }
+
+  private void executeUpdate(RepositoryConnection connection, String queryString, int retries) throws ConnectorException, IOException {
+
+    try {
+      log.debug("Select ("+retries+" retries)");
+      Update updateQuery = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
+      updateQuery.setIncludeInferred(false);
+      updateQuery.execute();
+    } catch (RepositoryException e) {
+      if(retries > 0) {
+        executeUpdate(connection, queryString, retries--);
+      } else {
+        throw new ConnectorException(e);
+      }
     }
   }
 
@@ -231,12 +247,10 @@ public abstract class Rdf4jConnector implements Connector {
       init();
     }
 
-
     RDFFormat format = Rdf4jUtil.interpretFormat(fileName);
     if(format == null) {
       throw new RuntimeException("Could not determine the type of file this is: " + fileName);
     }
-
 
     log.debug("Start uploading "+fileName);
 
@@ -244,7 +258,7 @@ public abstract class Rdf4jConnector implements Connector {
     try {
       connection = repository.getConnection();
       try {
-        executeLoadStream(connection, inputStream, baseUri, format, asResource(contexts), 4);
+        executeLoadStream(connection, inputStream, baseUri, format, asResource(contexts), RETRIES);
       } catch (RepositoryException | IOException e) {
         throw new ConnectorException(e);
       } finally {

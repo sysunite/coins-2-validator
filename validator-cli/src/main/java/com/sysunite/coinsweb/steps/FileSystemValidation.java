@@ -241,7 +241,7 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
     }
     forwardSlashes = true;
 
-    oneBimFile = container.getContentFiles().size() == 1;
+    oneBimFile = (container.getContentFiles().size() + container.getCorruptContentFiles().size() + container.getInvalidContentFiles().size()) == 1;
     noWrongContentFile = container.getInvalidContentFiles().size() < 1;
     noCorruptContentFile = container.getCorruptContentFiles().size() < 1;
     noWrongRepositoryFile = container.getInvalidRepositoryFiles().size() < 1;

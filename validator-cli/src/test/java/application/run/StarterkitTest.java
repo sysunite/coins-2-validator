@@ -13,7 +13,7 @@ import java.util.ArrayList;
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class StarterkitTest {
+public class StarterkitTest extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(StarterkitTest.class);
 

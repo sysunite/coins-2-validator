@@ -241,7 +241,7 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
     }
     forwardSlashes = true;
 
-    oneBimFile = container.getContentFiles().size() == 1;
+    oneBimFile = (container.getContentFiles().size() + container.getCorruptContentFiles().size() + container.getInvalidContentFiles().size()) == 1;
     noWrongContentFile = container.getInvalidContentFiles().size() < 1;
     noCorruptContentFile = container.getCorruptContentFiles().size() < 1;
     noWrongRepositoryFile = container.getInvalidRepositoryFiles().size() < 1;
@@ -261,7 +261,7 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
 
     // Should be able to satisfy all ontology imports from repository folder
     allImportsImportable = container.getInvalidImports().isEmpty();
-    coreModelImported = containsNamespace("http://www.coinsweb.nl/cbim-2.0.rdf", container.getInvalidImports());
+    coreModelImported = containsNamespace("http://www.coinsweb.nl/cbim-2.0.rdf", container.getResolvableImports());
     unmatchedImports = container.getInvalidImports();
 
 

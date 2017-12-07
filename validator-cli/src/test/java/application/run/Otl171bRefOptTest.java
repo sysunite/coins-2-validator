@@ -13,11 +13,11 @@ import java.util.ArrayList;
 /**
  * @author bastbijl, Sysunite 2017
  */
-public class Otl171bRefOptTest {
+public class Otl171bRefOptTest extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(Otl171bRefOptTest.class);
 
-  File config = new File(getClass().getClassLoader().getResource("general-9.84.yml").getFile());
+  File config = new File(getClass().getClassLoader().getResource("general-9.85.yml").getFile());
 //  File config = new File(getClass().getClassLoader().getResource("general-9.84-inmem.yml").getFile());
 //  File config = new File(getClass().getClassLoader().getResource("general-9.83.yml").getFile());
 

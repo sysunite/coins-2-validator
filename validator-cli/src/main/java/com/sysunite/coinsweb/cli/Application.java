@@ -3,6 +3,7 @@ package com.sysunite.coinsweb.cli;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.net.server.ServerSocketAppender;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -308,6 +309,16 @@ public class Application {
       fileAppender.setContext(lc);
       fileAppender.start();
       fileAppender.setAppend(false);
+
+      int port = options.writeLogToPort();
+
+      if (port > -1) {
+        log.info("Adding server appender to port "+port);
+        ServerSocketAppender serverAppender = new ServerSocketAppender();
+        serverAppender.setPort(port);
+        serverAppender.setIncludeCallerData(false);
+        root.addAppender(serverAppender);
+      }
 
 
       ch.qos.logback.classic.Logger loggers = lc.getLogger("com.sysunite");

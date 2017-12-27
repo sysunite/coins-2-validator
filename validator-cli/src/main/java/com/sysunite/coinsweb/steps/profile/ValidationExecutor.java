@@ -123,8 +123,7 @@ public class ValidationExecutor {
         }
       }
     } catch (ConnectorException e) {
-      log.error("Executing bundle failed", e);
-
+      log.error("Executing bundle failed, because connection to the database was lost", e);
       validationConfig.setFailed(true);
       return;
     }

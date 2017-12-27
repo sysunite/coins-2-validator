@@ -109,7 +109,7 @@ public abstract class Rdf4jConnector implements Connector {
       tupleQuery.setIncludeInferred(false);
 
       return tupleQuery.evaluate();
-    } catch (RepositoryException e) {
+    } catch (Exception e) {
       if(retries > 0) {
         return executeSelect(connection, queryString, retries--);
       }
@@ -138,7 +138,7 @@ public abstract class Rdf4jConnector implements Connector {
       Update updateQuery = connection.prepareUpdate(QueryLanguage.SPARQL, queryString);
       updateQuery.setIncludeInferred(false);
       updateQuery.execute();
-    } catch (RepositoryException e) {
+    } catch (Exception e) {
       if(retries > 0) {
         executeUpdate(connection, queryString, retries--);
       } else {
@@ -274,7 +274,7 @@ public abstract class Rdf4jConnector implements Connector {
     try {
       log.debug("Upload ("+retries+" retries)");
       connection.add(inputStream, baseUri, format, resources);
-    } catch (RepositoryException e) {
+    } catch (Exception e) {
       if(retries > 0) {
         executeLoadStream(connection, inputStream, baseUri, format, resources, retries--);
       } else {

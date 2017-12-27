@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import com.sysunite.coinsweb.Version;
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.connector.ConnectorException;
 import com.sysunite.coinsweb.connector.ConnectorFactory;
@@ -64,6 +65,7 @@ public class Application {
     if (options.writeLog()) {
       setLoggers("validator.log");
       log.info(")} COINS 2.0 validator - version " + CliOptions.getVersion());
+      log.info("(accepting configuration yml files version "+ Version.VERSION+")");
 
       try {
         File temp = File.createTempFile("temp-file-name", ".tmp");

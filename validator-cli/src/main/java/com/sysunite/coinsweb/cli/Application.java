@@ -317,8 +317,10 @@ public class Application {
       if (port > -1) {
         log.info("Adding server appender to port "+port);
         ServerSocketAppender serverAppender = new ServerSocketAppender();
+        serverAppender.setContext(lc);
         serverAppender.setPort(port);
         serverAppender.setIncludeCallerData(false);
+        serverAppender.start();
         root.addAppender(serverAppender);
       }
 

@@ -3,6 +3,7 @@ package com.sysunite.coinsweb.cli;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.net.server.ServerSocketAppender;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import com.sysunite.coinsweb.Version;
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.connector.ConnectorException;
 import com.sysunite.coinsweb.connector.ConnectorFactory;
@@ -63,6 +65,7 @@ public class Application {
     if (options.writeLog()) {
       setLoggers("validator.log");
       log.info(")} COINS 2.0 validator - version " + CliOptions.getVersion());
+      log.info("(accepting configuration yml files version "+ Version.VERSION+")");
 
       try {
         File temp = File.createTempFile("temp-file-name", ".tmp");
@@ -308,6 +311,18 @@ public class Application {
       fileAppender.setContext(lc);
       fileAppender.start();
       fileAppender.setAppend(false);
+
+      int port = options.writeLogToPort();
+
+      if (port > -1) {
+        log.info("Adding server appender to port "+port);
+        ServerSocketAppender serverAppender = new ServerSocketAppender();
+        serverAppender.setContext(lc);
+        serverAppender.setPort(port);
+        serverAppender.setIncludeCallerData(false);
+        serverAppender.start();
+        root.addAppender(serverAppender);
+      }
 
 
       ch.qos.logback.classic.Logger loggers = lc.getLogger("com.sysunite");

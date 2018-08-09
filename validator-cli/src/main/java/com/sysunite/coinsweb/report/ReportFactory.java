@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import com.sysunite.coinsweb.cli.CliOptions;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.profile.util.IndentedCDATAPrettyPrinter;
 import freemarker.cache.FileTemplateLoader;
@@ -50,6 +51,7 @@ public class ReportFactory {
   private static String build(ConfigFile configFile, String templatePath) {
 
     Map<String, Object> reportItems = new HashMap();
+    reportItems.put("validatorVersion", CliOptions.getVersion());
     reportItems.put("runConfig", configFile);
     reportItems.put("instanceOf", new InstanceOfMethod());
     reportItems.put("printBoolean", new NullTrueFalseMethod());

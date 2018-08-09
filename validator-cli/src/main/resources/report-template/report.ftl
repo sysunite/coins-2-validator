@@ -44,6 +44,7 @@
 
 
     <h1>COINS validation report</h1>
+    <p>validator version ${validatorVersion}</p>
 
 
 

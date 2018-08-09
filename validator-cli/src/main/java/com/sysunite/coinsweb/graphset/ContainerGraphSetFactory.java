@@ -2,7 +2,6 @@ package com.sysunite.coinsweb.graphset;
 
 import com.sysunite.coinsweb.connector.Connector;
 import com.sysunite.coinsweb.connector.ConnectorException;
-import com.sysunite.coinsweb.connector.Rdf4jUtil;
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.filemanager.ContainerFileImpl;
 import com.sysunite.coinsweb.filemanager.DescribeFactoryImpl;
@@ -22,7 +21,8 @@ import java.security.DigestInputStream;
 import java.util.*;
 
 import static com.sysunite.coinsweb.connector.Rdf4jConnector.asResource;
-import static com.sysunite.coinsweb.rdfutil.Utils.*;
+import static com.sysunite.coinsweb.rdfutil.Utils.containsNamespace;
+import static com.sysunite.coinsweb.rdfutil.Utils.withoutHash;
 import static java.util.Collections.sort;
 
 /**
@@ -88,74 +88,33 @@ public class ContainerGraphSetFactory {
     }
 
     HashMap<String, String> changeMap = new HashMap<>();
-    HashSet<String> doneImports = new HashSet<>();
-    HashSet<String> invalidImports = new HashSet<>();
-    invalidImports.addAll(((ContainerFileImpl) container).getInvalidImports());
+    for(Graph phiGraph : phiGraphs) {
 
-    while(!phiGraphs.isEmpty()) {
-
-      boolean foundOne = false;
-      for(Graph phiGraph : phiGraphs) {
-        ArrayList<String> imports = Rdf4jUtil.getImports(phiGraph.getSource(), container);
-
-        boolean ready = true;
-        for(String importContext : imports) {
-          if(!containsNamespace(importContext, doneImports) &&
-             !containsNamespace(importContext, invalidImports) &&
-             !equalNamespace(importContext, phiGraph.getSource().getGraphname())) {
-            ready = false;
-            continue;
-          }
-        }
-
-        if (ready) {
-
-          try {
-            executeLoad(phiGraph.getSource(), connector, container);
-          } catch (ConnectorException e) {
-            log.error("Loading this graph to the connector failed: "+phiGraph.getSource().getGraphname(), e);
-            graphSet.setFailed();
-            return null;
-          }
-          changeMap.put(withoutHash(phiGraph.getSource().getGraphname()), withoutHash(phiGraph.getSource().getStoreContext()));
-
-          for(String originalContext : changeMap.keySet()) {
-            try {
-              connector.replaceResource(phiGraph.getSource().getStoreContext(), originalContext, changeMap.get(originalContext));
-            } catch (ConnectorException e) {
-              log.error("Failed replacing resource", e);
-              graphSet.setFailed();
-            }
-          }
-
-          doneImports.add(withoutHash(phiGraph.getSource().getGraphname()));
-
-          foundOne = true;
-          phiGraphs.remove(phiGraph);
-          break;
-        }
-      }
-      if(!foundOne) {
-        log.error("For these graphs no source can be found: ");
-        for(Graph graph : phiGraphs) {
-          log.error("- " + graph.getSource().getGraphname());
-        }
+      try {
+        executeLoad(phiGraph.getSource(), connector, container);
+      } catch (ConnectorException e) {
+        log.error("Loading this graph to the connector failed: "+phiGraph.getSource().getGraphname(), e);
         graphSet.setFailed();
         return null;
       }
+      changeMap.put(withoutHash(phiGraph.getSource().getGraphname()), withoutHash(phiGraph.getSource().getStoreContext()));
 
-
+      for(String originalContext : changeMap.keySet()) {
+        try {
+          connector.replaceResource(phiGraph.getSource().getStoreContext(), originalContext, changeMap.get(originalContext));
+        } catch (ConnectorException e) {
+          log.error("Failed replacing resource", e);
+          graphSet.setFailed();
+        }
+      }
     }
-
 
     // Create all composition graphs (σ - graphs)
     Container containerConfig2 = ((ContainerFileImpl) container).getConfig();  // todo check if this is a duplicate
     List<Mapping> variables = containerConfig2.getVariables();
     ComposePlan composePlan = composeSigmaList(graphSet, connector, variables, loadList, inferencePreference);
 
-
     executeCompose(graphSet, composePlan, connector, false);
-
 
     return composePlan;
   }

@@ -111,7 +111,7 @@ public abstract class Rdf4jConnector implements Connector {
       return tupleQuery.evaluate();
     } catch (Exception e) {
       if(retries > 0) {
-        return executeSelect(connection, queryString, retries--);
+        return executeSelect(connection, queryString, --retries);
       }
       throw new ConnectorException(e);
     }
@@ -140,7 +140,7 @@ public abstract class Rdf4jConnector implements Connector {
       updateQuery.execute();
     } catch (Exception e) {
       if(retries > 0) {
-        executeUpdate(connection, queryString, retries--);
+        executeUpdate(connection, queryString, --retries);
       } else {
         throw new ConnectorException(e);
       }
@@ -276,7 +276,7 @@ public abstract class Rdf4jConnector implements Connector {
       connection.add(inputStream, baseUri, format, resources);
     } catch (Exception e) {
       if(retries > 0) {
-        executeLoadStream(connection, inputStream, baseUri, format, resources, retries--);
+        executeLoadStream(connection, inputStream, baseUri, format, resources, --retries);
       } else {
         throw new ConnectorException(e);
       }

@@ -1,17 +1,12 @@
 version: '2'
 services:
   graphdb:
-#    image: "sysunite/graphdb:8.1.1"
-#    image: "sysunite/graphdb:8.2.0"
-#    image: "sysunite/graphdb:8.3.0"
-    image: "sysunite/graphdb:8.4.1"
-#    command:  ["/opt/graphdb-free-8.2.0/bin/graphdb", "-s"]
+    image: "sysunite/graphdb:8.8.1"
+#    command:  ["/opt/graphdb-free-8.8.1/bin/graphdb", "-s"]
     ports:
     - "7200:7200"
 #    volumes:
-#    - ./data:/opt/graphdb-free-8.1.1/data
-#    - ./data:/opt/graphdb-free-8.2.0/data
-#    - ./data:/opt/graphdb-free-8.3.0/data
+#    - ./data:/opt/graphdb-free-8.8.1/data
     mem_limit: 10g
     environment:
 #    - GDB_JAVA_OPTS=d      #- Sets additional Java options (-D or -X)

@@ -34,10 +34,10 @@ public class CliOptions {
     Properties props = new Properties();
     String version = "";
     try {
-      props.load(Application.class.getResourceAsStream("/src/main/resources/coins-cli.properties"));
+      props.load(Application.class.getResourceAsStream("coins-validator.properties"));
       version = props.get("version").toString();
     } catch (IOException e) {
-      printOutput("(!) unable to read coins-cli.properties from jar");
+      printOutput("(!) unable to read coins-validator.properties from jar");
     }
     return version;
   }

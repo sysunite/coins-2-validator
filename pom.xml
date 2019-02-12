@@ -6,8 +6,8 @@
 
   <groupId>com.sysunite.coinsweb</groupId>
   <artifactId>coins-validator</artifactId>
-  <version>2.1.0</version>
-  <packaging>pom</packaging>
+  <version>2.2.0</version>
+  <!--<packaging>jar</packaging>-->
 
   <!-- Required metadata for Central -->
   <name>coins-validator</name>
@@ -38,7 +38,6 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <validator.version>2.1.0</validator.version>
     <jackson.version>2.9.8</jackson.version>
   </properties>
 
@@ -156,17 +155,17 @@
   <build>
     <resources>
       <resource>
-        <directory>../src/main/resources</directory>
+        <directory>src/main/resources</directory>
         <filtering>true</filtering>
         <includes>
-          <include>coins-cli.properties</include>
+          <include>coins-validator.properties</include>
         </includes>
       </resource>
       <resource>
-        <directory>../src/main/resources</directory>
+        <directory>src/main/resources</directory>
         <filtering>false</filtering>
         <excludes>
-          <exclude>coins-cli.properties</exclude>
+          <exclude>coins-validator.properties</exclude>
         </excludes>
       </resource>
     </resources>
@@ -219,23 +218,9 @@
           </execution>
         </executions>
       </plugin>
-
-
-
-
-
-
-
-
-
-
-
-
     </plugins>
   </build>
-
   <profiles>
-
     <profile>
       <id>deploy to sonatype</id>
       <build>

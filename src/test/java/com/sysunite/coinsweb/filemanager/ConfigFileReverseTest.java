@@ -20,15 +20,11 @@ public class ConfigFileReverseTest {
 
   @Test
   public void test() {
-
     Path projectPath = Paths.get(getClass().getClassLoader().getResource("mix.ccr").getPath()).getParent().getParent().getParent();
 
-
     ArrayList<File> containers = new ArrayList();
-//    containers.add(new ContainerFileImpl("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-sdk/testsuite/target/test-classes/A2/sample.ccr"));
-    containers.add(new File(getClass().getClassLoader().getResource("src/test/resources/otl-2.1/01_NetwerkRuimteVoorbeeld_OTL21.ccr").getFile()));
+    containers.add(new File(getClass().getClassLoader().getResource("otl-2.1/01_NetwerkRuimteVoorbeeld_OTL21.ccr").getFile()));
     containers.add(new File(getClass().getClassLoader().getResource("mix.ccr").getFile()));
-
 
     log.warn("\n"+ ConfigFactory.getDefaultConfig(containers, projectPath));
   }

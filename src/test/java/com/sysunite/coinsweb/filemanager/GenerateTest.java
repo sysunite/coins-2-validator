@@ -34,12 +34,11 @@ public class GenerateTest {
   public void testMinimalContainer() {
 
     ArrayList<File> containers = new ArrayList();
-    containers.add(new ContainerFileImpl(getClass().getClassLoader().getResource("src/test/resources/some.ccr").getFile()));
+    containers.add(new ContainerFileImpl(getClass().getClassLoader().getResource("some.ccr").getFile()));
 
     ConfigFile configFile = ConfigFactory.getDefaultConfig(containers);
     String yml = ConfigFactory.toYml(configFile);
     System.out.println(yml);
-
   }
 
 

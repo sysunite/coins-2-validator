@@ -15,12 +15,10 @@ public class LoadingStrategyTest extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(LoadingStrategyTest.class);
 
-  File file = new File(getClass().getClassLoader().getResource("loading-strategy/config-9.85.yml").getFile());
-
+  File file = new File(getClass().getClassLoader().getResource("loading-strategy/config-9.85-virtuoso.yml").getFile());
 
   @Test
   public void run() {
-
     log.info("Read "+file.getPath());
 
     System.setProperty("user.dir", file.getParent());

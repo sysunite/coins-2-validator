@@ -14,13 +14,10 @@ public class ApplicationTest {
 
   Logger log = LoggerFactory.getLogger(ApplicationTest.class);
 
-  File container1 = new File(getClass().getClassLoader().getResource("src/test/resources/VC_CodelistV2.ccr").getFile());
-  File container2 = new File(getClass().getClassLoader().getResource("otl-1.7.1b-ref-opt/VC_P2.ccr").getFile());
+  File container1 = new File(getClass().getClassLoader().getResource("VC_CodelistV2.ccr").getFile());
+  File container2 = new File(getClass().getClassLoader().getResource("coins-1.1/VC5.ccr").getFile());
 
-  File config = new File(getClass().getClassLoader().getResource("src/test/resources/general-9.85.yml").getFile());
-
-
-
+  File config = new File(getClass().getClassLoader().getResource("general-9.85.yml").getFile());
 
   @Test
   public void describeFile() {

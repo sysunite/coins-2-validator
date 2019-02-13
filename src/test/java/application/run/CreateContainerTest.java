@@ -14,9 +14,7 @@ public class CreateContainerTest extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(CreateContainerTest.class);
 
-  File config = new File(getClass().getClassLoader().getResource("src/test/resources/create-container/config.yml").getFile());
-
-
+  File config = new File(getClass().getClassLoader().getResource("create-container/config.yml").getFile());
 
   @Test
   public void test() {
@@ -33,6 +31,4 @@ public class CreateContainerTest extends HostFiles {
     };
     Application.main(args);
   }
-
-
 }

@@ -17,10 +17,7 @@ public class FileStructureTest extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(FileStructureTest.class);
 
-//  File config = new File(getClass().getClassLoader().getResource("general-9.81.yml").getFile());
-//  File config = new File(getClass().getClassLoader().getResource("general-9.83.yml").getFile());
-  File config = new File(getClass().getClassLoader().getResource("src/test/resources/general-9.85.yml").getFile());
-
+  File config = new File(getClass().getClassLoader().getResource("general-9.85.yml").getFile());
 
   @Test
   public void runConfigSingle() {
@@ -44,30 +41,5 @@ public class FileStructureTest extends HostFiles {
       "VC_units.ccr"
     };
     Application.main(args);
-  }
-
-
-
-  @Test
-  public void testGenerate() {
-
-    ArrayList<File> containers = new ArrayList();
-    containers.add(new File(getClass().getClassLoader().getResource("otl-1.7.1/VC_CardinalityCheck.ccr").getPath()));
-    containers.add(new File(getClass().getClassLoader().getResource("otl-1.7.1/VC_Codelist.ccr").getPath()));
-    containers.add(new File(getClass().getClassLoader().getResource("otl-1.7.1/VC_COINS.CCR").getPath()));
-    containers.add(new File(getClass().getClassLoader().getResource("otl-1.7.1/VC_datatypeCheck.ccr").getPath()));
-    containers.add(new File(getClass().getClassLoader().getResource("otl-1.7.1/VC_Disjoint.ccr").getPath()));
-    containers.add(new File(getClass().getClassLoader().getResource("otl-1.7.1/VC_Expired.ccr").getPath()));
-    containers.add(new File(getClass().getClassLoader().getResource("otl-1.7.1/VC_P2.ccr").getPath()));
-    containers.add(new File(getClass().getClassLoader().getResource("otl-1.7.1/VC_PropertyCheck.CCR").getPath()));
-    containers.add(new File(getClass().getClassLoader().getResource("otl-1.7.1/VC_Restricties.ccr").getPath()));
-    containers.add(new File(getClass().getClassLoader().getResource("otl-1.7.1/VC_RWSOTL.CCR").getPath()));
-    containers.add(new File(getClass().getClassLoader().getResource("otl-1.7.1/VC_Transitief.ccr").getPath()));
-    containers.add(new File(getClass().getClassLoader().getResource("otl-1.7.1/VC_units.ccr").getPath()));
-
-    ConfigFile configFile = ConfigFactory.getDefaultConfig(containers);
-    String yml = ConfigFactory.toYml(configFile);
-    System.out.println(yml);
-
   }
 }

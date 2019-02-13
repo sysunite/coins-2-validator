@@ -14,8 +14,7 @@ public class Otl210Test extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(Otl210Test.class);
 
-  File config = new File(getClass().getClassLoader().getResource("src/test/resources/general-9.85.yml").getFile());
-
+  File config = new File(getClass().getClassLoader().getResource("general-9.85.yml").getFile());
 
   @Test
   public void test() {

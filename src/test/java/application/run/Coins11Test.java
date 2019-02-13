@@ -14,14 +14,7 @@ public class Coins11Test extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(Coins11Test.class);
 
-
-
-
   File file = new File(getClass().getClassLoader().getResource("coins-1.1/coins11-9.85-generated.yml").getFile());
-
-
-//  File file = new File(getClass().getClassLoader().getResource("general-9.83.yml").getFile());
-//  String userDir = file.getParent() + "/otl-1.7.1b/";
 
   @Test
   public void run() {
@@ -50,7 +43,4 @@ public class Coins11Test extends HostFiles {
 
     Application.main(args);
   }
-
-
-
 }

@@ -29,15 +29,13 @@ public class ConfigFileTest {
 
   @Test
   public void test981Container() {
-
-    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("general-9.81.yml").getFile()));
+    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("general-9.85.yml").getFile()));
     String yml = ConfigFactory.toYml(configFile);
     System.out.println(yml);
   }
 
   @Test
   public void testMinimalContainer() {
-
     ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("minimal-container.yml").getFile()));
     String yml = ConfigFactory.toYml(configFile);
     System.out.println(yml);
@@ -45,7 +43,6 @@ public class ConfigFileTest {
 
   @Test
   public void testMinimalVirtual() {
-
     ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("minimal-virtual.yml").getFile()));
     String yml = ConfigFactory.toYml(configFile);
     System.out.println(yml);

@@ -1,14 +1,8 @@
+version: '2.0.8'
+
 environment:
   store:
     type: rdf4j-sail-memory
-  graphs:
-  - graphname: http://full/union
-    variable: FULL_UNION_GRAPH
-  - graphname: http://instances/union
-    variable: INSTANCE_UNION_GRAPH
-  - graphname: http://library/union
-    variable: SCHEMA_UNION_GRAPH
-
 
 run:
 
@@ -18,6 +12,14 @@ run:
     location:
       type: file
       path: some.ccr
+
+    variables:
+      - graphname: http://full/union
+        variable: FULL_UNION_GRAPH
+      - graphname: http://instances/union
+        variable: INSTANCE_UNION_GRAPH
+      - graphname: http://library/union
+        variable: SCHEMA_UNION_GRAPH
 
     graphs:
 

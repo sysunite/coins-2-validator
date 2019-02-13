@@ -34,8 +34,8 @@ public class DescribeFactoryImplTest {
     } catch (FileNotFoundException e) {
       log.error(e.getMessage(), e);
     }
-    
-    File nquad = new File(getClass().getClassLoader().getResource("src/test/resources/nquad.nq").getFile());
+
+    File nquad = new File(getClass().getClassLoader().getResource("nquad.nq").getFile());
     try {
       ArrayList<String> namespaces = new ArrayList<>();
       ArrayList<String> imports = new ArrayList<>();

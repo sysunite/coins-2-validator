@@ -42,7 +42,7 @@ public class OutlineModelTest {
 
 
 //    File nquad = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/nquad.nq").getFile());
-    File content = new File(getClass().getClassLoader().getResource("src/test/resources/com.sysunite.coinsweb/connector/content.rdf").getFile());
+    File content = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/content.rdf").getFile());
 
 //    read(a);
 //    read(b);

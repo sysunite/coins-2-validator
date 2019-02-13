@@ -19,15 +19,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
 /**
  * @author bastbijl, Sysunite 2017
  */
 public class ConnectorTest extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(ConnectorTest.class);
-
-
 
   @Test
   public void listMapping() {
@@ -37,24 +34,18 @@ public class ConnectorTest extends HostFiles {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     try {
 
-      File configYml = new File(getClass().getClassLoader().getResource("src/test/resources/general-9.85.yml").getFile());
+      File configYml = new File(getClass().getClassLoader().getResource("general-9.85.yml").getFile());
       ConfigFile configFile = mapper.readValue(configYml, ConfigFile.class);
 
       Connector connector = new GraphDB(configFile.getEnvironment());
       assert(connector.testConnection());
 
-
-
       List list = connector.listMappings();
 
       log.info(ReportFactory.buildJson(list));
-
-
-
     } catch (Exception e) {
       log.error(e.getMessage(), e);
     }
-
   }
 
   @Test
@@ -65,24 +56,18 @@ public class ConnectorTest extends HostFiles {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     try {
 
-      File configYml = new File(getClass().getClassLoader().getResource("src/test/resources/general-9.85.yml").getFile());
+      File configYml = new File(getClass().getClassLoader().getResource("general-9.85.yml").getFile());
       ConfigFile configFile = mapper.readValue(configYml, ConfigFile.class);
 
       Connector connector = new GraphDB(configFile.getEnvironment());
       log.info(""+connector.testConnection());
 
-
-
       List list = connector.listPhiGraphs();
 
       log.info(ReportFactory.buildJson(list));
-
-
-
     } catch (Exception e) {
       log.error(e.getMessage(), e);
     }
-
   }
 
   @Test
@@ -93,12 +78,11 @@ public class ConnectorTest extends HostFiles {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     try {
 
-      File configYml = new File(getClass().getClassLoader().getResource("src/test/resources/general-9.85.yml").getFile());
+      File configYml = new File(getClass().getClassLoader().getResource("general-9.85.yml").getFile());
       ConfigFile configFile = mapper.readValue(configYml, ConfigFile.class);
 
       Connector connector = new GraphDB(configFile.getEnvironment());
       log.info(""+connector.testConnection());
-
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       HashMap<String, String> namespaceMap = new HashMap<>();
@@ -110,12 +94,8 @@ public class ConnectorTest extends HostFiles {
       connector.writeContextsToFile(contexts, baos, namespaceMap, "http://coins-commander.com/container-main-graph#");
 
       log.info(baos.toString("UTF-8"));
-
-
-
     } catch (Exception e) {
       log.error(e.getMessage(), e);
     }
-
   }
 }

@@ -31,8 +31,7 @@ public class ConfigFileTest {
 
   @Test
   public void testMinimalContainer() {
-
-    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("config/minimal-container.yml").getFile()));
+    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("minimal-container.yml").getFile()));
     String yml = ConfigFactory.toYml(configFile);
     System.out.println(yml);
 
@@ -43,8 +42,7 @@ public class ConfigFileTest {
 
   @Test
   public void testMinimalVirtual() {
-
-    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("config/minimal-virtual.yml").getFile()));
+    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("minimal-virtual.yml").getFile()));
     String yml = ConfigFactory.toYml(configFile);
     System.out.println(yml);
 
@@ -55,8 +53,7 @@ public class ConfigFileTest {
 
   @Test
   public void testVirtualExpandingWildcards() {
-
-    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("config/virtual-expanding-wildcards.yml").getFile()));
+    ConfigFile configFile = ConfigFile.parse(new File(getClass().getClassLoader().getResource("virtual-expanding-wildcards.yml").getFile()));
     String yml = ConfigFactory.toYml(configFile);
     System.out.println(yml);
 

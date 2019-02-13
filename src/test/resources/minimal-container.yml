@@ -1,7 +1,6 @@
 environment:
   store:
     type: rdf4j-sail-memory
-  loadingStrategy: permanent
   graphs:
   - graphname: http://full/union
     variable: FULL_UNION_GRAPH

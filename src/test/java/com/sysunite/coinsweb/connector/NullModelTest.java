@@ -29,21 +29,21 @@ public class NullModelTest {
 
 
 
-    File a = new File(getClass().getClassLoader().getResource("src/test/resources/com.sysunite.coinsweb/connector/a.ttl").getFile());
-    File b = new File(getClass().getClassLoader().getResource("src/test/resources/com.sysunite.coinsweb/connector/b.ttl").getFile());
-    File c = new File(getClass().getClassLoader().getResource("src/test/resources/com.sysunite.coinsweb/connector/c.ttl").getFile());
-    File d = new File(getClass().getClassLoader().getResource("src/test/resources/com.sysunite.coinsweb/connector/d.ttl").getFile());
-    File e = new File(getClass().getClassLoader().getResource("src/test/resources/com.sysunite.coinsweb/connector/e.ttl").getFile());
-    File f = new File(getClass().getClassLoader().getResource("src/test/resources/com.sysunite.coinsweb/connector/f.ttl").getFile());
-    File schema = new File(getClass().getClassLoader().getResource("src/test/resources/com.sysunite.coinsweb/connector/schema.ttl").getFile());
-    File shacl = new File(getClass().getClassLoader().getResource("src/test/resources/com.sysunite.coinsweb/connector/shacl.ttl").getFile());
-    File sparql = new File(getClass().getClassLoader().getResource("src/test/resources/com.sysunite.coinsweb/connector/sparql.ttl").getFile());
-    File voiv = new File(getClass().getClassLoader().getResource("src/test/resources/com.sysunite.coinsweb/connector/void.ttl").getFile());
-    File otl = new File(getClass().getClassLoader().getResource("src/test/resources/otl-2.1/otl-2.1.ttl").getFile());
+    File a = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/a.ttl").getFile());
+    File b = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/b.ttl").getFile());
+    File c = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/c.ttl").getFile());
+    File d = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/d.ttl").getFile());
+    File e = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/e.ttl").getFile());
+    File f = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/f.ttl").getFile());
+    File schema = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/schema.ttl").getFile());
+    File shacl = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/shacl.ttl").getFile());
+    File sparql = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/sparql.ttl").getFile());
+    File voiv = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/void.ttl").getFile());
+    File otl = new File(getClass().getClassLoader().getResource("otl-2.1/otl-2.1.ttl").getFile());
 
 
-    File nquad = new File(getClass().getClassLoader().getResource("src/test/resources/com.sysunite.coinsweb/connector/nquad.nq").getFile());
-    File content = new File(getClass().getClassLoader().getResource("src/test/resources/com.sysunite.coinsweb/connector/content.rdf").getFile());
+    File nquad = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/nquad.nq").getFile());
+    File content = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/content.rdf").getFile());
 
     read(a);
     read(b);

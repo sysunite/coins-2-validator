@@ -19,7 +19,7 @@ public class Otl171bTest extends HostFiles {
 
   Logger log = LoggerFactory.getLogger(Otl171bTest.class);
 
-  File file = new File(getClass().getClassLoader().getResource("src/test/resources/general-9.85.yml").getFile());
+  File file = new File(getClass().getClassLoader().getResource("general-9.85.yml").getFile());
   String userDir = file.getParent() + "/otl-1.7.1b/";
 
 

@@ -135,6 +135,11 @@
   <build>
     <resources>
       <resource>
+        <directory>src/main/resources/report-template</directory>
+        <targetPath>report-template</targetPath>
+        <filtering>false</filtering>
+      </resource>
+      <resource>
         <directory>src/main/resources/com/sysunite/coinsweb/cli</directory>
         <targetPath>com/sysunite/coinsweb/cli</targetPath>
         <filtering>true</filtering>

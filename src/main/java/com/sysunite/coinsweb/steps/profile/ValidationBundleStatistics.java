@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 
 /**
- * @author Bastiaan Bijl, Sysunite 2016
+ * @author bastbijl, Sysunite 2016
  */
 @JsonInclude(Include.NON_NULL)
 public class ValidationBundleStatistics extends Bundle {

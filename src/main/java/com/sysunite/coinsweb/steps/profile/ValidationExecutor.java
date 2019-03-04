@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 /**
- * @author Bastiaan Bijl
+ * @author bastbijl
  */
 public class ValidationExecutor {
   private static final Logger log = LoggerFactory.getLogger(ValidationExecutor.class);

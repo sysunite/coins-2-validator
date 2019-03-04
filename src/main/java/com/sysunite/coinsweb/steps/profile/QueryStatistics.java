@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Bastiaan Bijl, Sysunite 2016
+ * @author bastbijl, Sysunite 2016
  */
 @JsonInclude(Include.NON_NULL)
 public class QueryStatistics extends Query {

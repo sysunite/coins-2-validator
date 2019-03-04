@@ -50,7 +50,7 @@ public class ProfileFile {
     try {
       return objectMapper.readValue(new BufferedReader(new InputStreamReader(input)), ProfileFile.class);
     } catch (IOException e) {
-      log.error(e.getMessage(), e);;
+      log.error(e.getMessage(), e);
     }
     throw new RuntimeException("Profile file could not be loaded.");
   }
@@ -119,5 +119,4 @@ public class ProfileFile {
 
     return clone;
   }
-
 }

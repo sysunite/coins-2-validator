@@ -168,7 +168,6 @@ public class ReportFactory {
     }
 
     try {
-
       Writer writer = new StringWriter();
       template.process(data, writer);
       return writer.toString();

@@ -255,13 +255,15 @@ public class ValidationExecutor {
         if (formatTemplate != null) {
           for (Object bindingSet : result) {
             BindingSet resultRow = (BindingSet) bindingSet;
-            HashMap<String, String> row = new HashMap<>();
-            for (String binding : resultRow.getBindingNames()) {
-              Value value = resultRow.getValue(binding);
-              if (value == null) {
-                row.put(binding, "NULL");
-              } else {
-                row.put(binding, value.stringValue());
+            HashMap<String, String> row = new LinkedHashMap<>();
+            for (String binding : query.getBindingsOrder()) {
+              if (resultRow.getBindingNames().contains(binding)) {
+                Value value = resultRow.getValue(binding);
+                if (value == null) {
+                  row.put(binding, "NULL");
+                } else {
+                  row.put(binding, value.stringValue());
+                }
               }
             }
             results.add(row);
@@ -271,7 +273,6 @@ public class ValidationExecutor {
       }
 
       long executionTime = new Date().getTime() - start;
-
       queryStats.addExecutionTimeMs(executionTime);
       queryStats.setResultSet(results);
       queryStats.addFormattedResults(formattedResults);

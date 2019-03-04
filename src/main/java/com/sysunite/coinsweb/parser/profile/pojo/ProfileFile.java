@@ -22,7 +22,6 @@ import java.util.ArrayList;
  */
 @JacksonXmlRootElement(localName = "profile")
 public class ProfileFile {
-
   private static final Logger log = LoggerFactory.getLogger(ProfileFile.class);
 
   @JacksonXmlProperty(localName = "name")
@@ -55,8 +54,6 @@ public class ProfileFile {
     }
     throw new RuntimeException("Profile file could not be loaded.");
   }
-
-
 
   public String getName() {
     return name;

@@ -11,7 +11,6 @@ import java.io.File;
  * @author bastbijl, Sysunite 2017
  */
 public class ApplicationTest {
-
   Logger log = LoggerFactory.getLogger(ApplicationTest.class);
 
   File container1 = new File(getClass().getClassLoader().getResource("VC_CodelistV2.ccr").getFile());

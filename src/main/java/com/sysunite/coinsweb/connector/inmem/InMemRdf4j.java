@@ -15,7 +15,6 @@ import java.io.IOException;
  * @author bastbijl, Sysunite 2017
  */
 public class InMemRdf4j extends Rdf4jConnector {
-
   private static final Logger log = LoggerFactory.getLogger(InMemRdf4j.class);
 
   public static final String REFERENCE = "rdf4j-sail-memory";
@@ -67,7 +66,4 @@ public class InMemRdf4j extends Rdf4jConnector {
       }
     }
   }
-
-
-
 }

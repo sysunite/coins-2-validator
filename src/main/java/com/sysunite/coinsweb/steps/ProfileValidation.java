@@ -33,11 +33,9 @@ import java.util.Set;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProfileValidation extends ConfigPart implements ValidationStep {
-
   private static final Logger log = LoggerFactory.getLogger(ProfileValidation.class);
 
   public static final String REFERENCE = "ProfileValidation";
-
 
   // Configuration items
   private String type = REFERENCE;
@@ -87,7 +85,6 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     }
   }
 
-
   // Result items
   private boolean failed = true;
   public boolean getFailed() {
@@ -117,7 +114,6 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
   public void setBundleNames(List<String> bundleNames) {
     this.bundleNames = bundleNames;
   }
-
 
   @JsonSerialize(keyUsing = BundleKeySerializer.class)
   private HashMap<String, Bundle> bundles = new HashMap();
@@ -168,7 +164,6 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
       // Execute the validation
       executor.validate();
 
-
     } catch (RuntimeException e) {
       log.warn("Executing failed validationStep of type "+getType());
       log.warn(e.getMessage(), e);
@@ -186,7 +181,6 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
       }
     }
   }
-
 
   @JsonIgnore
   public ProfileValidation clone() {
@@ -209,8 +203,6 @@ public class ProfileValidation extends ConfigPart implements ValidationStep {
     clone.setParent(this.getParent());
     return clone;
   }
-
-
 }
 class BundleKeySerializer extends JsonSerializer<String> {
   @Override

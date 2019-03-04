@@ -15,7 +15,6 @@ import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 @JsonInclude(Include.NON_NULL)
 @JsonDeserialize(converter=AttachmentSanitizer.class)
 public class Attachment extends ConfigPart {
-
   private static final Logger log = LoggerFactory.getLogger(Graph.class);
 
   private Locator location;
@@ -35,7 +34,6 @@ public class Attachment extends ConfigPart {
     this.as = as;
   }
 
-
   @Override
   public void setParent(Object parent) {
     super.setParent(parent);
@@ -44,7 +42,6 @@ public class Attachment extends ConfigPart {
 }
 
 class AttachmentSanitizer extends StdConverter<Attachment, Attachment> {
-
   private static final Logger log = LoggerFactory.getLogger(GraphSanitizer.class);
 
   @Override
@@ -52,8 +49,6 @@ class AttachmentSanitizer extends StdConverter<Attachment, Attachment> {
 
     isNotNull(obj.getLocation());
     isNotNull(obj.getAs());
-
-
     return obj;
   }
 }

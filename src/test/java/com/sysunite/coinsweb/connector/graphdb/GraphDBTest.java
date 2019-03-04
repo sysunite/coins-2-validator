@@ -9,12 +9,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
-
 /**
  * @author bastbijl, Sysunite 2017
  */
 public class GraphDBTest {
-
   Logger log = LoggerFactory.getLogger(GraphDBTest.class);
 
   @Test
@@ -31,12 +29,10 @@ public class GraphDBTest {
 
       File otl = new File(getClass().getClassLoader().getResource("otl-2.1/otl-2.1.ttl").getFile());
 //      log.info(""+connector.uploadFile(otl, new String[]{"http://ns"}));
-
 //      log.info(connector.cleanup());
 
     } catch (Exception e) {
       System.out.println(e.getLocalizedMessage());
     }
-
   }
 }

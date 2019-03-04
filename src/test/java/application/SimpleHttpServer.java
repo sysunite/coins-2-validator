@@ -28,7 +28,6 @@ public class SimpleHttpServer {
     }
   }
 
-
   static class GetHandler implements HttpHandler {
     private File file;
     private String contentType;

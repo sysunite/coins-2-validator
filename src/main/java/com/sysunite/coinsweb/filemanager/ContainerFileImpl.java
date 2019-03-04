@@ -28,7 +28,6 @@ import java.util.zip.*;
  * @author bastbijl, Sysunite 2017
  */
 public class ContainerFileImpl extends File implements ContainerFile {
-
   private static final Logger log = LoggerFactory.getLogger(ContainerFileImpl.class);
 
   private boolean scanned = false;
@@ -143,7 +142,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
     return getFile(orphanFiles.get(filename));
   }
 
-
   HashMap<String, ArrayList<String>> fileOntologies = new HashMap();
 
   HashMap<String, ArrayList<String>> fileImports = new HashMap();
@@ -207,8 +205,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
     return unmatched;
   }
 
-
-
   HashMap<String, ArrayList<String>> contentFileNamespaces = new HashMap();
   public ArrayList<String> getContentFileNamespaces(String filename) {
     if(!contentFileNamespaces.containsKey(filename)) {
@@ -263,8 +259,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
     return namespaceToFileMap;
   }
 
-
-
   public Path getContentFilePath(String filename) {
     return contentFiles.get(filename);
   }
@@ -292,8 +286,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
   public Path getOrphanFilePath(String filename) {
     return orphanFiles.get(filename);
   }
-
-
 
   public DigestInputStream getFile(Path zipPath) {
 
@@ -355,7 +347,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
       // See if this finds parsing problems
       new ZipFile(this);
 
-
       // Get the zip file content
       ZipInputStream zis = new ZipInputStream(new FileInputStream(this));
       ZipEntry ze = zis.getNextEntry();
@@ -389,12 +380,10 @@ public class ContainerFileImpl extends File implements ContainerFile {
         else if(logCount == MAX_LOG_COUNT)
           log.info("Scan ...");
 
-
         // bim
         if(normalizedPath.startsWith(bimPath)) {
           Path inside = bimPath.relativize(normalizedPath);
           if(!inside.startsWith(repositoryPath)) {
-
 
             if(isRdfFile(inside.toString())) {
               contentFiles.put(inside.toString(), zipPath);
@@ -412,7 +401,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
           } else {
             inside = repositoryPath.relativize(inside);
 
-
             // Do this to detect errors upfront
             if(isRdfFile(inside.toString())) {
               repositoryFiles.put(inside.toString(), zipPath);
@@ -425,7 +413,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
             } else {
               invalidRepositoryFiles.put(inside.toString(), zipPath);
             }
-
           }
 
         // woa
@@ -545,7 +532,6 @@ public class ContainerFileImpl extends File implements ContainerFile {
             break;
           }
         }
-
       }
 
       // Adding rdf files finished
@@ -594,14 +580,11 @@ public class ContainerFileImpl extends File implements ContainerFile {
 
       // Adding attachments finished
       pendingAttachmentFiles = new ArrayList();
-
-
       zout.close();
 
     } catch(IOException e) {
       log.error(e.getMessage(), e);
     }
-
     return new ContainerFileImpl(containerFile.toString());
   }
 

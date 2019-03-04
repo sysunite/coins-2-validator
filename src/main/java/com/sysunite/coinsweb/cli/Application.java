@@ -42,9 +42,7 @@ import java.util.ArrayList;
  * @author bastbijl, Sysunite 2017
  */
 public class Application {
-
   private static final Logger log = LoggerFactory.getLogger(Application.class);
-
 
   private static CliOptions options;
 
@@ -79,13 +77,9 @@ public class Application {
       setLoggers(null);
     }
 
-
-
-
     Store.factory = new ConnectorFactoryImpl();
     StepDeserializer.factory = new StepFactoryImpl();
     ConfigFactory.setDescribeFactory(new DescribeFactoryImpl());
-
 
     // Get containers
     ArrayList<File> containers = new ArrayList();
@@ -277,7 +271,6 @@ public class Application {
     return connector;
   }
 
-
   private static void setLoggers(String filePath) {
 
     LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -298,7 +291,6 @@ public class Application {
       Path userDir = Paths.get(System.getProperty("user.dir"));
       Path localizedPath = userDir.relativize(fullPath);
       CliOptions.printOutput("Writing log to "+localizedPath);
-
 
       PatternLayoutEncoder ple = new PatternLayoutEncoder();
       ple.setPattern("%date{yyyy-MM-dd HH:mm:ss} %level [%file:%line] %msg%n");
@@ -323,7 +315,6 @@ public class Application {
         serverAppender.start();
         root.addAppender(serverAppender);
       }
-
 
       ch.qos.logback.classic.Logger loggers = lc.getLogger("com.sysunite");
       loggers.addAppender(fileAppender);

@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
  * @author bastbijl, Sysunite 2017
  */
 public class GraphDB extends Rdf4jConnector {
-
   private static final Logger log = LoggerFactory.getLogger(GraphDB.class);
 
   public static final String REFERENCE = "graphdb";
@@ -36,10 +35,7 @@ public class GraphDB extends Rdf4jConnector {
   String user;
   String password;
 
-
   boolean createRepo;
-
-
 
   public GraphDB(Environment config) {
 
@@ -47,7 +43,6 @@ public class GraphDB extends Rdf4jConnector {
       throw new RuntimeException("No endpoint url specified");
     }
     url = config.getStore().getConfig().get("endpoint");
-
 
     if(config.getStore().getConfig().containsKey("repositoryId")) {
       repositoryId = config.getStore().getConfig().get("repositoryId");
@@ -59,11 +54,9 @@ public class GraphDB extends Rdf4jConnector {
       password = config.getStore().getConfig().get("password");
     }
 
-
     cleanUp = config.getCleanUp();
     createRepo = config.getCreateRepo();
     deleteRepo = config.getDestroyRepo();
-
   }
 
   public void setRepositoryId(String repositoryId) {
@@ -106,10 +99,6 @@ public class GraphDB extends Rdf4jConnector {
     initialized = true;
   }
 
-
-
-
-
   @Override
   public void close() {
     if(!initialized) {
@@ -122,9 +111,6 @@ public class GraphDB extends Rdf4jConnector {
       }
     }
   }
-
-
-
 
   private RepositoryConfig createRepositoryConfig(String repositoryId) throws IOException {
 

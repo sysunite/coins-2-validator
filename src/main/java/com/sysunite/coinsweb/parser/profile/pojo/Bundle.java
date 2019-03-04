@@ -14,7 +14,6 @@ import java.util.ArrayList;
  * @author bastbijl, Sysunite 2017
  */
 public class Bundle {
-
   private static final Logger log = LoggerFactory.getLogger(Bundle.class);
 
   public static final String VALIDATION = "validation";
@@ -32,7 +31,6 @@ public class Bundle {
   @JacksonXmlElementWrapper(localName="queries")
   private ArrayList<Query> queries;
 
-
   public String getType() {
     return type;
   }
@@ -40,14 +38,12 @@ public class Bundle {
     this.type = type;
   }
 
-
   public String getReference() {
     return reference;
   }
   public void setReference(String reference) {
     this.reference = reference;
   }
-
 
   @JsonGetter("description")
   public String getDescription() {
@@ -59,7 +55,6 @@ public class Bundle {
   public void setDescription(String description) {
     this.description = description;
   }
-
 
   public ArrayList<Query> getQueries() {
     return queries;

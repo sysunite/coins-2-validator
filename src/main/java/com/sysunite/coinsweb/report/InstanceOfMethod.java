@@ -11,7 +11,6 @@ import java.util.List;
  * @author bastbijl, Sysunite 2017
  */
 public class InstanceOfMethod implements TemplateMethodModelEx {
-
   private static final Logger log = LoggerFactory.getLogger(InstanceOfMethod.class);
 
   public TemplateModel exec(List args) throws TemplateModelException {

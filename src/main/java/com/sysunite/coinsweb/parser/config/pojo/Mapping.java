@@ -19,7 +19,6 @@ import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 @JsonInclude(Include.NON_NULL)
 @JsonDeserialize(converter=MappingSanitizer.class)
 public class Mapping extends ConfigPart {
-
   private static final Logger log = LoggerFactory.getLogger(Mapping.class);
 
   private GraphVarImpl variable;
@@ -110,7 +109,6 @@ public class Mapping extends ConfigPart {
 }
 
 class MappingSanitizer extends StdConverter<Mapping, Mapping> {
-
   private static final Logger log = LoggerFactory.getLogger(MappingSanitizer.class);
 
   @Override

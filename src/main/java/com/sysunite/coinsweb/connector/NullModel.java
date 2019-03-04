@@ -15,10 +15,7 @@ import static com.sysunite.coinsweb.rdfutil.Utils.withoutHash;
 @SuppressWarnings("unchecked")
 public class NullModel extends AbstractModel {
 
-
   private static final long serialVersionUID = -9161104123818983614L;
-
-
 
   Set<Namespace> namespaces = new LinkedHashSet<>();
   Set<Resource> contexts = new LinkedHashSet<>();  //todo this does not work as
@@ -40,7 +37,6 @@ public class NullModel extends AbstractModel {
 
   public NullModel(int size) {
     super();
-
   }
 
   public NullModel(Set<Namespace> namespaces, Collection<? extends Statement> c) {
@@ -167,11 +163,4 @@ public class NullModel extends AbstractModel {
   public void removeTermIteration(Iterator iterator, Resource subj, IRI pred, Value obj, Resource... contexts) {
 
   }
-
-
-
-
-
-
-
 }

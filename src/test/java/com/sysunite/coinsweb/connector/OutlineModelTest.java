@@ -13,21 +13,14 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.Set;
 
-
 /**
  * @author bastbijl, Sysunite 2017
  */
 public class OutlineModelTest {
-
   Logger log = LoggerFactory.getLogger(OutlineModelTest.class);
-
-
 
   @Test
   public void test() {
-
-
-
 //    File a = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/a.ttl").getFile());
 //    File b = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/b.ttl").getFile());
 //    File c = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/c.ttl").getFile());
@@ -39,7 +32,6 @@ public class OutlineModelTest {
 //    File sparql = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/sparql.ttl").getFile());
 //    File voiv = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/void.ttl").getFile());
 //    File otl = new File(getClass().getClassLoader().getResource("otl-2.1/otl-2.1.ttl").getFile());
-
 
 //    File nquad = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/nquad.nq").getFile());
     File content = new File(getClass().getClassLoader().getResource("com.sysunite.coinsweb/connector/content.rdf").getFile());
@@ -58,15 +50,9 @@ public class OutlineModelTest {
 //
 //    read(nquad);
     read(content);
-
-
-
-
-
   }
 
   public void read(File file) {
-
     String backupNameSpace = "http://example.com/backup";
 
     try {
@@ -95,5 +81,4 @@ public class OutlineModelTest {
     }
     return;
   }
-
 }

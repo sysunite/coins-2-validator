@@ -35,20 +35,14 @@ import static com.sysunite.coinsweb.rdfutil.Utils.withoutHash;
  * @author bastbijl, Sysunite 2017
  */
 public abstract class Rdf4jConnector implements Connector {
-
   private static final Logger log = LoggerFactory.getLogger(Rdf4jConnector.class);
   protected Repository repository;
   protected boolean initialized = false;
-
 
   protected boolean cleanUp = false;
   protected boolean deleteRepo = false;
 
   private int RETRIES = 4;
-
-
-
-
 
   @Override
   public boolean testConnection() {
@@ -156,7 +150,6 @@ public abstract class Rdf4jConnector implements Connector {
     update("ADD <"+fromContext+"> TO <"+toContext+">");
   }
 
-
   @Override
   public void replaceResource(String context, String resource, String replace) throws ConnectorException {
 
@@ -238,9 +231,6 @@ public abstract class Rdf4jConnector implements Connector {
     }
   }
 
-
-
-
   @Override
   public void uploadFile(InputStream inputStream, String fileName, String baseUri, ArrayList<String> contexts) throws ConnectorException {
     if(!initialized) {
@@ -283,9 +273,6 @@ public abstract class Rdf4jConnector implements Connector {
     }
   }
 
-
-
-
   public List<Object> listPhiGraphs() throws ConnectorException {
 
     ArrayList<Object> list = new ArrayList<>();
@@ -301,7 +288,6 @@ public abstract class Rdf4jConnector implements Connector {
     "?context val:sourceFile    ?fileName . " +
     "?context val:sourceHash    ?hash . " +
     "}}";
-
 
     List<Object> result = select(query);
     for(Object rowObject :  result) {
@@ -324,10 +310,6 @@ public abstract class Rdf4jConnector implements Connector {
     return list;
   }
 
-
-
-
-
   public Map<String, Set<String>> listPhiContextsPerHash() throws ConnectorException {
 
     Map<String, Set<String>> list = new HashMap<>();
@@ -339,7 +321,6 @@ public abstract class Rdf4jConnector implements Connector {
     "WHERE { graph ?context { " +
     "?context val:sourceHash ?hash . " +
     "}} ORDER BY ?hash";
-
 
     List<Object> result = select(query);
 
@@ -366,7 +347,6 @@ public abstract class Rdf4jConnector implements Connector {
 
     return list;
   }
-
 
   public Map<Set<String>, Set<String>> listSigmaGraphsWithIncludes() throws ConnectorException {
 
@@ -405,7 +385,6 @@ public abstract class Rdf4jConnector implements Connector {
       list.put(previousContext, previousSet);
     }
 
-
     HashMap<String, Set<String>> fingerPrintedContextList = new HashMap<>();
     HashMap<String, Set<String>> fingerPrintedInclusionsList = new HashMap<>();
     for(String context : list.keySet()) {
@@ -422,7 +401,6 @@ public abstract class Rdf4jConnector implements Connector {
       }
       Set<String> contexts = fingerPrintedContextList.get(fingerPrint);
       contexts.add(context);
-
     }
 
     HashMap<Set<String>, Set<String>> compressedList = new HashMap<>();
@@ -434,9 +412,6 @@ public abstract class Rdf4jConnector implements Connector {
 
     return compressedList;
   }
-
-
-
 
   public void storeFinishedInferences(String hashes, Set<GraphVar> graphVars, Map<GraphVar, String> contextMap, String inferenceCode) throws ConnectorException {
 
@@ -470,7 +445,6 @@ public abstract class Rdf4jConnector implements Connector {
     "  ?context val:bundle ?inferenceCode . " +
     "  ?context val:compositionFingerPrint ?fingerPrint . " +
     "}} ORDER BY ?context";
-
 
     List<Object> result = select(query);
 
@@ -511,11 +485,9 @@ public abstract class Rdf4jConnector implements Connector {
         mapping.setInitialized();
         mapping.setInclusionSet(sigmaGraphs.get(sigmaUri));
 
-
         resultMap.put(sigmaUri, mapping);
       }
     }
-
 
     Map<String, Set<String>> inferenceMap = listInferenceCodePerSigmaGraph();
     for(String sigmaUri : inferenceMap.keySet()) {
@@ -582,8 +554,6 @@ public abstract class Rdf4jConnector implements Connector {
     return 0l;
   }
 
-
-
   @Override
   public List<String> getContexts() {
     if(!initialized) {
@@ -617,7 +587,6 @@ public abstract class Rdf4jConnector implements Connector {
     return contextsIRI;
   }
 
-
   @Override
   public void writeContextsToFile(List<String> contexts, OutputStream outputStream, Map<String, String> prefixMap, String mainContext) {
     Function<Statement, Statement> filter = s->s;
@@ -631,10 +600,8 @@ public abstract class Rdf4jConnector implements Connector {
 
     Function<Statement, Statement> filter = (Function<Statement, Statement>) statementFilter;
 
-
     RDFXMLBasePrettyWriter writer = new RDFXMLBasePrettyWriter(outputStream);
     writer.setBase(mainContext);
-
 
     writer.handleNamespace("", mainContext+"#");
     for(String prefix : prefixMap.keySet()) {
@@ -666,7 +633,6 @@ public abstract class Rdf4jConnector implements Connector {
     } catch (ConnectorException e) {
       log.error(e.getMessage(), e);
     }
-
   }
 
   // Writes the file to the outputStream and returns a Map of imports: fileUpload context -> original context

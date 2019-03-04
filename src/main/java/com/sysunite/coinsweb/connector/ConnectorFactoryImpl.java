@@ -15,7 +15,6 @@ import java.util.Map;
  * @author bastbijl, Sysunite 2017
  */
 public class ConnectorFactoryImpl implements ConnectorFactory {
-
   private static final Logger log = LoggerFactory.getLogger(ConnectorFactoryImpl.class);
 
   private static final Map<String, Class<? extends Connector>> register;

@@ -8,7 +8,6 @@ import org.junit.Test;
  * @author bastbijl, Sysunite 2017
  */
 public class ContainerFileImplTest {
-
   Logger log = LoggerFactory.getLogger(ContainerFileImplTest.class);
 
   @Test

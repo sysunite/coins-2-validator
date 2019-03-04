@@ -23,11 +23,9 @@ import static com.sysunite.coinsweb.rdfutil.Utils.containsNamespace;
  */
 @JsonInclude(Include.NON_NULL)
 public class FileSystemValidation extends ConfigPart implements ValidationStep {
-
   private static final Logger log = LoggerFactory.getLogger(FileSystemValidation.class);
 
   public static final String REFERENCE = "FileSystemValidation";
-
 
   // Configuration items
   private String type = REFERENCE;
@@ -45,7 +43,6 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
   public void setLookIn(GraphVarImpl lookIn) {
     this.lookIn = lookIn;
   }
-
 
   // Result items
   private boolean failed = true;
@@ -215,7 +212,6 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
 
     ContainerFileImpl container = (ContainerFileImpl) containerCandidate;
 
-
     if(container.isScanned()) {
       log.warn("This ContainerFileImpl was already scanned, please let FileSystemValidation be the first to do this");
     }
@@ -264,15 +260,11 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
     coreModelImported = containsNamespace("http://www.coinsweb.nl/cbim-2.0.rdf", container.getResolvableImports());
     unmatchedImports = container.getInvalidImports();
 
-
-
     graphSet.load();
     isLoadableAsGraphSet = !graphSet.loadingFailed();
 
     valid = fileFound && nonCorruptZip && forwardSlashes && oneBimFile && noWrongContentFile && noWrongRepositoryFile && noSubsInBim && noOrphans && noCollidingNamespaces && allImportsImportable && coreModelImported && isLoadableAsGraphSet;
     failed = !isLoadableAsGraphSet;
-
-
 
     // Prepare data to transfer to the template
     if(getFailed()) {
@@ -297,7 +289,4 @@ public class FileSystemValidation extends ConfigPart implements ValidationStep {
 
     return clone;
   }
-
-
-
 }

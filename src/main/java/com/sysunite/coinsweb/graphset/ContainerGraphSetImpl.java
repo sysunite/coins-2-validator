@@ -19,9 +19,7 @@ import static com.sysunite.coinsweb.graphset.ContainerGraphSetFactory.fingerPrin
  * @author bastbijl, Sysunite 2017
  */
 public class ContainerGraphSetImpl implements ContainerGraphSet {
-
   private static final Logger log = LoggerFactory.getLogger(ContainerGraphSetImpl.class);
-
 
   private ContainerFileImpl containerToLazyLoad = null;
   private Map<String, Set<GraphVar>> inferencePreference;
@@ -34,7 +32,6 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   private GraphVarImpl main;
 
   private List<Mapping> mappings;
-
 
   public ContainerGraphSetImpl(List<Mapping> mappings) {
     this.mappings = mappings;
@@ -53,10 +50,6 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   public void setMain(Object main) {
     this.main = (GraphVarImpl) main;
   }
-
-
-
-
 
   @Override
   public void lazyLoad(ContainerFile container, Map<String, Set<GraphVar>> inferencePreference) {
@@ -91,7 +84,6 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 
     log.trace("Built this compose plan: " + ReportFactory.buildJson(mappings));
 
-
     containerToLazyLoad.getConfig().setVariables(mappings);
     this.containerToLazyLoad = null;
   }
@@ -99,7 +91,6 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   public Connector getConnector() {
     return connector;
   }
-
 
   public List<Object> select(String query) throws ConnectorException {
 
@@ -119,15 +110,6 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     List<Object> result = connector.select(query, limit);
     return result;
   }
-
-
-
-
-
-
-
-
-
 
   public void setVariables(List<Mapping> mappings) {
     this.mappings = mappings;
@@ -177,9 +159,6 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     return result;
   }
 
-
-
-
   public boolean update(String query) {
     if(requiresLoad()) {
       load();
@@ -193,19 +172,13 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
     return true;
   }
 
-
-
-
-
   /**
    * Remove the contexts (graphs) from the connection that belong to this graphSet
    */
   @Override
   public void cleanup() {
 
-
     if(!requiresLoad()) {
-
 //      HashSet<String> contexts = new HashSet<>();
 //      log.info("Will wipe these graphs (if enabled) to remove GraphSet graphs from the Connector:");
 //      for(Mapping mapping : mappings) {
@@ -221,7 +194,6 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
 //      for(String context : contexts) {
 //        log.info("- "+context);
 //      }
-
       try {
         connector.wipe();
       } catch (ConnectorException e) {
@@ -229,8 +201,6 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
       }
     }
   }
-
-
 
   public boolean requiresLoad() {
     return (containerToLazyLoad != null);
@@ -242,8 +212,6 @@ public class ContainerGraphSetImpl implements ContainerGraphSet {
   public boolean loadingFailed() {
     return loadingFailed;
   }
-
-
 
   @Override
   public void pushUpdatesToCompose() {

@@ -24,7 +24,6 @@
  **/
 package com.sysunite.coinsweb.steps.profile;
 
-
 import com.sysunite.coinsweb.connector.ConnectorException;
 import com.sysunite.coinsweb.graphset.ContainerGraphSet;
 import com.sysunite.coinsweb.graphset.GraphVar;
@@ -47,7 +46,6 @@ import java.util.*;
  * @author Bastiaan Bijl
  */
 public class ValidationExecutor {
-
   private static final Logger log = LoggerFactory.getLogger(ValidationExecutor.class);
 
   private ProfileFile profile;
@@ -58,7 +56,6 @@ public class ValidationExecutor {
   private Map<String, String> validationGraphs = new HashMap<>();
 //  // Map context to list of inferenceCode
 //  Map<String, List<String>> executedInferences = new HashMap();
-
 
   public ValidationExecutor(ProfileFile profile, ContainerGraphSet graphSet, ProfileValidation validationConfig) {
     this.profile = profile;
@@ -79,23 +76,11 @@ public class ValidationExecutor {
   }
 
   public void validate() {
-
-
     log.info("Execute profile");
-
-
 
     boolean valid = true;
 
     try {
-
-//      // Load executed interferences
-//      for(GraphVar graphVar : graphSet.contextMap().keySet()) {
-//        String context = graphSet.contextMap().get(graphVar);
-//        List<String> list = getFinishedInferences(context);
-//        executedInferences.put(context, list);
-//      }
-
       // Execute bundles in order of appearance
       for (Bundle bundle : profile.getBundles()) {
 
@@ -132,14 +117,9 @@ public class ValidationExecutor {
     validationConfig.setValid(valid);
   }
 
-
-
   private InferenceBundleStatistics executeInferenceBundle(Bundle bundle) throws ConnectorException {
 
-
     InferenceBundleStatistics bundleStats = new InferenceBundleStatistics(bundle);
-
-
     String inferenceCode = ProfileFactory.inferenceCode(profile, bundle);
 
     long quadsAddedThisRunSum = 0l;
@@ -156,7 +136,6 @@ public class ValidationExecutor {
       }
 
       long start = new Date().getTime();
-
 
       for (int i = 0; i < bundleStats.getQueries().size(); i++) {
 
@@ -208,7 +187,6 @@ public class ValidationExecutor {
 
       long executionTime = (new Date().getTime()) - start;
 
-
       Map<GraphVar, Long> current = graphSet.quadCount();
 
       Map<GraphVar, Long> quadsAddedThisRun = quadsAddedPerGraph(previous, current);
@@ -221,7 +199,6 @@ public class ValidationExecutor {
 
       log.info("Finished run "+run+" for bundle \""+bundle.getReference()+"\", this total amount of quads was added this run: "+quadsAddedThisRun);
 
-
       run++;
     } while(quadsAddedThisRunSum > 0);
 
@@ -230,7 +207,6 @@ public class ValidationExecutor {
 
       Set<GraphVar> usedVars = QueryFactory.usedVars(bundle);
       graphSet.getConnector().storeFinishedInferences(graphSet.getCompositionFingerPrint(usedVars), usedVars, graphSet.contextMap(), inferenceCode);
-
     }
 
     // Push changes to any copy graphs
@@ -250,7 +226,7 @@ public class ValidationExecutor {
       Query query = bundleStats.getQueries().get(i);
       QueryStatistics queryStats = bundleStats.getQuery(query.getReference());
 
-      log.info("Execute \""+query.getReference()+"\":");
+      log.info("Execute \"" + query.getReference() + "\":");
 
       int max = validationConfig.getMaxResults();
 
@@ -261,13 +237,12 @@ public class ValidationExecutor {
 
       List<Object> result = graphSet.select(queryString, Integer.toUnsignedLong(max));
 
-
       LinkedList<Map<String, String>> results = new LinkedList<>();
       ArrayList<String> formattedResults = new ArrayList<>();
 
       boolean hasNoResults;
 
-      if(result.isEmpty()) {
+      if (result.isEmpty()) {
         hasNoResults = true;
         log.info("No results, which is good");
 
@@ -275,17 +250,15 @@ public class ValidationExecutor {
         hasNoResults = false;
         log.info("Results found, this is bad");
 
-
-
         Template formatTemplate = query.getFormatTemplate();
 
-        if(formatTemplate != null) {
-          for(Object bindingSet : result) {
+        if (formatTemplate != null) {
+          for (Object bindingSet : result) {
             BindingSet resultRow = (BindingSet) bindingSet;
             HashMap<String, String> row = new HashMap<>();
-            for(String binding : resultRow.getBindingNames()) {
+            for (String binding : resultRow.getBindingNames()) {
               Value value = resultRow.getValue(binding);
-              if(value == null) {
+              if (value == null) {
                 row.put(binding, "NULL");
               } else {
                 row.put(binding, value.stringValue());
@@ -299,26 +272,16 @@ public class ValidationExecutor {
 
       long executionTime = new Date().getTime() - start;
 
-
-
-
-
       queryStats.addExecutionTimeMs(executionTime);
       queryStats.setResultSet(results);
       queryStats.addFormattedResults(formattedResults);
 
-
       valid &= hasNoResults;
-
     }
 
     bundleStats.setValid(valid);
     return bundleStats;
   }
-
-
-
-
 
   public List<String> getFinishedInferences(String context) throws ConnectorException {
 
@@ -341,9 +304,6 @@ public class ValidationExecutor {
     }
     return inferenceCodes;
   }
-
-
-
 
   public static Map<GraphVar, Long> quadsAddedPerGraph(Map<GraphVar, Long> previous, Map<GraphVar, Long> current) {
 

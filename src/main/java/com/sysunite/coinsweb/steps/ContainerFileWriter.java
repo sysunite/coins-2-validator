@@ -10,17 +10,14 @@ import com.sysunite.coinsweb.parser.config.pojo.Locator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * @author bastbijl, Sysunite 2017
  */
 @JsonInclude(JsonInclude.Include.NON_NULL) // todo wrong this line?
 public class ContainerFileWriter extends ConfigPart implements ValidationStep {
-
   private static final Logger log = LoggerFactory.getLogger(ContainerFileWriter.class);
 
   public static final String REFERENCE = "ContainerFileWriter";
-
 
   // Configuration items
   private String type = REFERENCE;
@@ -47,7 +44,6 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
     }
   }
 
-
   // Result items
   private boolean failed = true;
   public boolean getFailed() {
@@ -70,10 +66,7 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
 
   @Override
   public void execute(ContainerFile container, ContainerGraphSet graphSet) {
-
-
     try {
-
       if(graphSet.getMain() == null) {
         throw new RuntimeException("No main context (graphname) is set");
       }
@@ -114,7 +107,6 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
 //        log.error(e.getMessage(), e);
 //      }
 
-
 //      File ccrFile;
 //      if (location.getParent() != null) {
 //        ccrFile = location.getParent().resolve(location.getPath()).toFile();
@@ -124,9 +116,6 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
 //
 //      log.info("Save the container file to: "+ccrFile.getPath());
 //      ((ContainerFileImpl)container).writeZip(ccrFile.toPath());
-
-
-
 
       valid = true;
       failed = false;
@@ -152,7 +141,4 @@ public class ContainerFileWriter extends ConfigPart implements ValidationStep {
     clone.setFailed(this.getFailed());
     return clone;
   }
-
-
-
 }

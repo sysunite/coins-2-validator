@@ -10,7 +10,6 @@ public abstract class ConfigPart {
   @JsonIgnore
   protected ConfigFile parent;
 
-
   public ConfigFile getParent() {
     return parent;
   }

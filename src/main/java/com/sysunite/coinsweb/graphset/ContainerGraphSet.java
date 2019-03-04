@@ -31,7 +31,6 @@ public interface ContainerGraphSet {
 
   void cleanup();
 
-
   void load();
   boolean requiresLoad();
   void setFailed();

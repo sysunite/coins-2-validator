@@ -31,7 +31,6 @@ import static com.sysunite.coinsweb.rdfutil.Utils.withoutHash;
  * @author bastbijl, Sysunite 2017
  */
 public class DescribeFactoryImpl implements DescribeFactory {
-
   private static final Logger log = LoggerFactory.getLogger(DescribeFactoryImpl.class);
 
   public static void expandGraphConfig(ConfigFile configFile) {
@@ -68,7 +67,6 @@ public class DescribeFactoryImpl implements DescribeFactory {
     ArrayList<Graph> graphs = new ArrayList();
     return graphs;
   }
-
 
   public ArrayList<Graph> graphsInContainerFile(File file, ArrayList<GraphVarImpl> dataGraphs, ArrayList<GraphVarImpl> schemaGraphs) {
     if(!(file instanceof ContainerFileImpl)) {
@@ -130,7 +128,6 @@ public class DescribeFactoryImpl implements DescribeFactory {
     return graphs;
   }
 
-
   /**
    * To represent each set of triples in a file URI's are used
    *
@@ -168,7 +165,6 @@ public class DescribeFactoryImpl implements DescribeFactory {
 
     // Store imports
     resultImports.addAll(model.getImports());
-
 
     HashSet<String> result = new HashSet<>();
 

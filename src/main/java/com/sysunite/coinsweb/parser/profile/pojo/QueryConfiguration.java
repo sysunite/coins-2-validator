@@ -10,13 +10,11 @@ import org.slf4j.LoggerFactory;
  * @author bastbijl, Sysunite 2017
  */
 public class QueryConfiguration {
-
   private static final Logger log = LoggerFactory.getLogger(QueryConfiguration.class);
 
   @JacksonXmlCData
   @JacksonXmlProperty(localName = "defaultPrefixes")
   private String defaultPrefixes;
-
 
   public String getDefaultPrefixes() {
     return defaultPrefixes;
@@ -27,10 +25,7 @@ public class QueryConfiguration {
 
   public QueryConfiguration clone() {
     QueryConfiguration clone = new QueryConfiguration();
-
     clone.setDefaultPrefixes(clone.getDefaultPrefixes());
-
     return clone;
   }
-
 }

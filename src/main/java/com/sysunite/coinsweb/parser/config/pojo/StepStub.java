@@ -16,11 +16,9 @@ import org.slf4j.LoggerFactory;
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 public class StepStub extends ConfigPart implements ValidationStep {
-
   private static final Logger log = LoggerFactory.getLogger(StepStub.class);
 
   private String type;
-
 
   public String getType() {
     return type;

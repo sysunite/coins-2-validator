@@ -1,6 +1,5 @@
 package com.sysunite.coinsweb.parser.config.factory;
 
-
 import com.sysunite.coinsweb.filemanager.ContainerFile;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.Container;
@@ -23,7 +22,6 @@ import java.security.NoSuchAlgorithmException;
  * @author bastbijl, Sysunite 2017
  */
 public class FileFactory {
-
   private static final Logger log = LoggerFactory.getLogger(ConfigFactory.class);
 
   public static File toFile(Container containerConfig) {
@@ -151,9 +149,6 @@ public class FileFactory {
     }
     throw new RuntimeException("Source of type "+source.getType()+" could not be read as file: "+triedReference);
   }
-
-
-
 
   public static void calculateAndSetHash(Source source, ContainerFile container) {
     if(source.getHash() != null) {

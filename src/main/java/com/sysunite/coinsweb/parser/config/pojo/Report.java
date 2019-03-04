@@ -14,7 +14,6 @@ import static com.sysunite.coinsweb.parser.Parser.*;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(converter=ReportSanitizer.class)
 public class Report extends ConfigPart {
-
   private static final Logger log = LoggerFactory.getLogger(Report.class);
 
   public static final String JSON = "json";
@@ -49,8 +48,6 @@ public class Report extends ConfigPart {
     this.template.setParent(this.getParent());
   }
 
-
-
   @Override
   public void setParent(Object parent) {
     super.setParent(parent);
@@ -61,11 +58,9 @@ public class Report extends ConfigPart {
       this.template.setParent(parent);
     }
   }
-
 }
 
 class ReportSanitizer extends StdConverter<Report, Report> {
-
   private static final Logger log = LoggerFactory.getLogger(ReportSanitizer.class);
 
   @Override

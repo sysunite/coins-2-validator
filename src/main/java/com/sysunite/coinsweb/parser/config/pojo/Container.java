@@ -22,7 +22,6 @@ import static com.sysunite.coinsweb.parser.Parser.*;
 @JsonInclude(Include.NON_NULL)
 @JsonDeserialize(converter=ContainerSanitizer.class)
 public class Container extends ConfigPart {
-
   private static final Logger log = LoggerFactory.getLogger(Environment.class);
 
   public static final String CONTAINER = "container";
@@ -46,7 +45,6 @@ public class Container extends ConfigPart {
   public Container() {
     this.code = RandomStringUtils.random(8, true, true);
   }
-
 
   private String mapSigmaContext(String confContext) {
     return confContext + "-" + code;
@@ -91,7 +89,6 @@ public class Container extends ConfigPart {
   public boolean isVirtual() {
     return VIRTUAL.equals(this.type);
   }
-
 
   public void setType(String type) {
     validate(type, CONTAINER, VIRTUAL);
@@ -146,7 +143,6 @@ public class Container extends ConfigPart {
     }
   }
 
-
   @JsonIgnore
   public Container clone() {
     Container clone = new Container();
@@ -168,7 +164,6 @@ public class Container extends ConfigPart {
 }
 
 class ContainerSanitizer extends StdConverter<Container, Container> {
-
   private static final Logger log = LoggerFactory.getLogger(ContainerSanitizer.class);
 
   @Override

@@ -17,7 +17,6 @@ import java.util.ArrayList;
  * @author bastbijl, Sysunite 2017
  */
 public class StepDeserializer extends StdDeserializer<ValidationStep[]> {
-
   private static final Logger log = LoggerFactory.getLogger(StepDeserializer.class);
 
   public static StepFactory factory;

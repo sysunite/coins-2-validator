@@ -10,12 +10,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-
 /**
  * @author bastbijl, Sysunite 2017
  */
 public class ConfigFileReverseTest {
-
   Logger log = LoggerFactory.getLogger(ConfigFileReverseTest.class);
 
   @Test

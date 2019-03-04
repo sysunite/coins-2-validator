@@ -21,7 +21,6 @@ import static com.sysunite.coinsweb.parser.Parser.validate;
 @JsonInclude(Include.NON_NULL)
 @JsonDeserialize(converter=LocatorSanitizer.class)
 public class Locator extends ConfigPart {
-
   private static final Logger log = LoggerFactory.getLogger(Locator.class);
 
   public static final String FILE = "file";
@@ -87,7 +86,6 @@ public class Locator extends ConfigPart {
 }
 
 class LocatorSanitizer extends StdConverter<Locator, Locator> {
-
   private static final Logger log = LoggerFactory.getLogger(LocatorSanitizer.class);
 
   @Override

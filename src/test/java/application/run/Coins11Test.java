@@ -11,7 +11,6 @@ import java.io.File;
  * @author bastbijl, Sysunite 2017
  */
 public class Coins11Test extends HostFiles {
-
   Logger log = LoggerFactory.getLogger(Coins11Test.class);
 
   File file = new File(getClass().getClassLoader().getResource("coins-1.1/coins11-9.85-generated.yml").getFile());
@@ -38,7 +37,6 @@ public class Coins11Test extends HostFiles {
       "VC9.ccr",
       "VC10.ccr",
       "VC11.ccr",
-
     };
 
     Application.main(args);

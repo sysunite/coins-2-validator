@@ -18,14 +18,11 @@ import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 @JsonInclude(Include.NON_NULL)
 @JsonDeserialize(converter=GraphSanitizer.class)
 public class Graph extends ConfigPart {
-
   private static final Logger log = LoggerFactory.getLogger(Graph.class);
 
   private Source source;
   private ArrayList<GraphVarImpl> as;
   private Boolean main;
-
-
 
   public Source getSource() {
     return source;
@@ -65,7 +62,6 @@ public class Graph extends ConfigPart {
 }
 
 class GraphSanitizer extends StdConverter<Graph, Graph> {
-
   private static final Logger log = LoggerFactory.getLogger(GraphSanitizer.class);
 
   @Override
@@ -73,7 +69,6 @@ class GraphSanitizer extends StdConverter<Graph, Graph> {
 
     isNotNull(obj.getSource());
     isNotNull(obj.getAs());
-
 
     return obj;
   }

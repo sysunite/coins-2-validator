@@ -14,9 +14,7 @@ import java.util.Set;
  * @author bastbijl, Sysunite 2017
  */
 public class ContainerGraphSetFactoryTest {
-
   Logger log = LoggerFactory.getLogger(ContainerGraphSetFactoryTest.class);
-
 
   @Test
   public void test982() throws IOException {

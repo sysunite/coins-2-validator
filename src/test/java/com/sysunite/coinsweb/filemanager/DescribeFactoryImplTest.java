@@ -9,12 +9,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
-
 /**
  * @author bastbijl, Sysunite 2017
  */
 public class DescribeFactoryImplTest {
-
   Logger log = LoggerFactory.getLogger(DescribeFactoryImplTest.class);
 
   @Test

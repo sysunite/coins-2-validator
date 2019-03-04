@@ -24,7 +24,6 @@
  **/
 package com.sysunite.coinsweb.steps.profile;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -43,7 +42,6 @@ import java.util.Map;
  */
 @JsonInclude(Include.NON_NULL)
 public class InferenceBundleStatistics extends Bundle {
-
   private static final Logger log = LoggerFactory.getLogger(InferenceBundleStatistics.class);
 
   @JsonIgnore
@@ -76,7 +74,6 @@ public class InferenceBundleStatistics extends Bundle {
     this.id = Long.toHexString(Double.doubleToLongBits(Math.random()));
     this.queryList = bundleConfig.getQueries();
   }
-
 
   public String getId() {
     return id;

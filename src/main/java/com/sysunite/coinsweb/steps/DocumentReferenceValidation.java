@@ -28,11 +28,9 @@ import static com.sysunite.coinsweb.parser.Parser.isNotNull;
  */
 @JsonInclude(Include.NON_NULL)
 public class DocumentReferenceValidation extends ConfigPart implements ValidationStep {
-
   private static final Logger log = LoggerFactory.getLogger(DocumentReferenceValidation.class);
 
   public static final String REFERENCE = "DocumentReferenceValidation";
-
 
   // Configuration items
   private String type = REFERENCE;
@@ -50,7 +48,6 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
   public void setLookIn(GraphVarImpl lookIn) {
     this.lookIn = lookIn;
   }
-
 
   // Result items
   private boolean failed = true;
@@ -86,7 +83,6 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
   public void setUnmatchedInternalDocumentReferences(HashMap<String, String> unmatchedInternalDocumentReferences) {
     this.unmatchedInternalDocumentReferences = unmatchedInternalDocumentReferences;
   }
-
 
   public void checkConfig() {
     isNotNull(lookIn);
@@ -146,12 +142,8 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
         }
       }
 
-
       valid = allReferencesAreSatisfied;
       failed = false;
-
-
-
 
     } catch (RuntimeException e) {
       log.warn("Executing failed validationStep of type "+getType());
@@ -190,8 +182,8 @@ public class DocumentReferenceValidation extends ConfigPart implements Validatio
 //    clone.setFailed(this.getFailed());
     return clone;
   }
-
 }
+
 class DocumentReferenceSerializer extends StdSerializer<HashMap<String, String>> {
 
   public DocumentReferenceSerializer() {
@@ -204,35 +196,13 @@ class DocumentReferenceSerializer extends StdSerializer<HashMap<String, String>>
 
   @Override
   public void serialize(HashMap<String, String> map, JsonGenerator gen, SerializerProvider provider) throws IOException {
-
-
-
-//    if(gen instanceof YAMLGenerator) {
-
-//      YAMLGenerator ymlGen = (YAMLGenerator) gen;
-      gen.writeStartArray();
-      for (String key : map.keySet()) {
-        gen.writeStartObject();
-        gen.writeStringField("uri", key);
-        gen.writeStringField("fileName", map.get(key));
-        gen.writeEndObject();
-      }
-      gen.writeEndArray();
-
-
-//    } else {
-//
-//      gen.writeRawValue("");
-//
-//      for (String key : map.keySet()) {
-//        gen.writeFieldName("document");
-//        gen.writeStartObject();
-//        gen.writeStringField("uri", key);
-//        gen.writeStringField("fileName", map.get(key));
-//        gen.writeEndObject();
-//      }
-//    }
-
-
+    gen.writeStartArray();
+    for (String key : map.keySet()) {
+      gen.writeStartObject();
+      gen.writeStringField("uri", key);
+      gen.writeStringField("fileName", map.get(key));
+      gen.writeEndObject();
+    }
+    gen.writeEndArray();
   }
 }

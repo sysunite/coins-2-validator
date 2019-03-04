@@ -12,11 +12,7 @@ import java.util.List;
  * @author bastbijl, Sysunite 2017
  */
 public class Utils {
-
   private static final Logger log = LoggerFactory.getLogger(Utils.class);
-
-
-
 
   static List<String> rdf4jFileExtensions = Arrays.asList(
     "rdf", "rdfs", "owl", "xml",
@@ -102,8 +98,4 @@ public class Utils {
     }
     return false;
   }
-
-
-
-
 }

@@ -22,7 +22,6 @@ import java.util.Set;
  * @author bastbijl, Sysunite 2017
  */
 public class Describe {
-
   private static final Logger log = LoggerFactory.getLogger(Describe.class);
 
   public static String run(List<File> containers, boolean fullConfig, boolean useAbsolutePaths) {

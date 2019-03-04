@@ -24,7 +24,6 @@ import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 @JsonInclude(Include.NON_NULL)
 @JsonDeserialize(converter=ConfigFileSanitizer.class)
 public class ConfigFile {
-
   private static final Logger log = LoggerFactory.getLogger(ConfigFile.class);
 
   private Environment environment;
@@ -93,7 +92,6 @@ public class ConfigFile {
     this.version = version;
   }
 
-
   public void localizeTo(Path path) {
     this.localizeTo = path;
   }
@@ -118,7 +116,6 @@ public class ConfigFile {
 }
 
 class ConfigFileSanitizer extends StdConverter<ConfigFile, ConfigFile> {
-
   private static final Logger log = LoggerFactory.getLogger(ConfigFileSanitizer.class);
 
   @Override
@@ -131,8 +128,6 @@ class ConfigFileSanitizer extends StdConverter<ConfigFile, ConfigFile> {
     if(!Version.VERSION.equals(obj.getVersion())) {
       throw new RuntimeException("The config yml is not suitable for this version of the coins-validator");
     }
-
-
     return obj;
   }
 }

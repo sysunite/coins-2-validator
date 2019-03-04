@@ -16,14 +16,10 @@ import static com.sysunite.coinsweb.rdfutil.Utils.withoutHash;
 @SuppressWarnings("unchecked")
 public class OutlineModel extends HashModel {
 
-
   Set<Namespace> namespaces = new HashSet<>();
   Set<Resource> contexts = new LinkedHashSet<>();
   Set<Resource> ontologies = new LinkedHashSet<>();
   Set<String> imports = new LinkedHashSet<>();
-
-
-
 
   public Set<Resource> getContexts() {
     return contexts;
@@ -35,18 +31,10 @@ public class OutlineModel extends HashModel {
     return imports;
   }
 
-
   @Override
   public Model unmodifiable() {
     return this;
   }
-
-
-
-
-
-
-
 
   @Override
   public Optional<Namespace> getNamespace(String prefix) {

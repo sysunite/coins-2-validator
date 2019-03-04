@@ -22,7 +22,6 @@ import java.io.IOException;
  */
 @JacksonXmlRootElement(localName = "query")
 public class Query {
-
   private static final Logger log = LoggerFactory.getLogger(Query.class);
 
   @JacksonXmlProperty(localName = "reference", isAttribute = true)
@@ -38,14 +37,12 @@ public class Query {
   @JacksonXmlProperty(localName = "sparql")
   protected String query;
 
-
   public String getReference() {
     return reference;
   }
   public void setReference(String reference) {
     this.reference = reference;
   }
-
 
   @JsonGetter("description")
   public String getDescription() {
@@ -91,14 +88,12 @@ public class Query {
     return formatTemplate;
   }
 
-
   public String getQuery() {
     return query;
   }
   public void setQuery(String query) {
     this.query = IndentedCDATAPrettyPrinter.indentText(query, 0).trim();
   }
-
 
   public Query clone() {
     Query clone = new Query();

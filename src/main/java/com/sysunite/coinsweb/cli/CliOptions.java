@@ -18,7 +18,6 @@ import java.util.Properties;
  * @author bastbijl, Sysunite 2017
  */
 public class CliOptions {
-
   private static final Logger log = LoggerFactory.getLogger(CliOptions.class);
 
   public static final String DESCRIBE_FILE_MODE = "describe";
@@ -27,7 +26,6 @@ public class CliOptions {
   public static final String CREATE_MODE = "create";
 
   public static boolean QUIET = false;
-
 
   public static String getVersion() {
     // Load version from properties file
@@ -82,14 +80,6 @@ public class CliOptions {
     }
   }
 
-
-
-
-
-
-
-
-
   // Instance variables
   private CommandLineParser parser = new BasicParser();
   private CommandLine cmd;
@@ -112,8 +102,6 @@ public class CliOptions {
     }
   }
 
-
-
   // External interface methods
   public boolean ymlToConsole() { return cmd.hasOption("yml-to-console"); }
   public boolean absolutePaths() { return cmd.hasOption("a"); }
@@ -127,8 +115,6 @@ public class CliOptions {
     }
     return Integer.parseInt(cmd.getOptionValue("log-port"));
   }
-
-
 
   public boolean hasMode() {
     if(cmd.getArgs().length < 1) {
@@ -154,7 +140,6 @@ public class CliOptions {
   public boolean createMode() {
     return hasMode() && CREATE_MODE.equals(cmd.getArgs()[0].trim());
   }
-
 
   public boolean hasProfileFile() {
     if(cmd.getArgs().length < 2) {
@@ -224,8 +209,6 @@ public class CliOptions {
     return uris.toArray(new String[0]);
   }
 
-
-
   public static Path resolvePath(String path) {
 
     try {
@@ -250,7 +233,6 @@ public class CliOptions {
     return path;
   }
 
-
   public static List<Path> resolvePaths(List<String> paths) {
     List<Path> result = new ArrayList<>();
     try {
@@ -261,8 +243,6 @@ public class CliOptions {
     }
     return result;
   }
-
-
 
   public static boolean isUri(String uri) {
     if(!uri.toString().startsWith("http")) {

@@ -14,12 +14,10 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.ArrayList;
 
-
 /**
  * @author bastbijl, Sysunite 2017
  */
 public class GenerateTest {
-
   Logger log = LoggerFactory.getLogger(GenerateTest.class);
 
   @BeforeClass
@@ -40,8 +38,6 @@ public class GenerateTest {
     String yml = ConfigFactory.toYml(configFile);
     System.out.println(yml);
   }
-
-
 
   private static class ConnectorFactoryStub implements com.sysunite.coinsweb.connector.ConnectorFactory {
     @Override

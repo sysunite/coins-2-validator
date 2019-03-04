@@ -10,7 +10,6 @@ import java.util.List;
  * @author bastbijl, Sysunite 2017
  */
 public class NullTrueFalseMethod implements TemplateMethodModelEx {
-
   private static final Logger log = LoggerFactory.getLogger(NullTrueFalseMethod.class);
 
   public TemplateModel exec(List args) throws TemplateModelException {

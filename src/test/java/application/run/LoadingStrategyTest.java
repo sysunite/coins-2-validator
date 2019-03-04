@@ -7,12 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
-
 /**
  * @author bastbijl, Sysunite 2017
  */
 public class LoadingStrategyTest extends HostFiles {
-
   Logger log = LoggerFactory.getLogger(LoadingStrategyTest.class);
 
   File file = new File(getClass().getClassLoader().getResource("loading-strategy/config-9.85-virtuoso.yml").getFile());

@@ -13,22 +13,17 @@ import org.slf4j.LoggerFactory;
  */
 @JsonInclude(Include.NON_NULL)
 public class ReportFile {
-
   private static final Logger log = LoggerFactory.getLogger(ReportFile.class);
 
   @JacksonXmlProperty(localName = "container")
   @JacksonXmlElementWrapper(localName="containers")
   private Container[] containers;
 
-
   public Container[] getContainers() {
     return containers;
   }
-
-
 
   public void setContainers(Container[] containers) {
     this.containers = containers;
   }
 }
-

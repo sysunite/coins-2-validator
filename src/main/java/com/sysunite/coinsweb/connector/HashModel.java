@@ -11,14 +11,12 @@ import java.util.*;
 @SuppressWarnings("unchecked")
 public class HashModel implements Model {
 
-
   HashSet<Namespace> namespaces = new HashSet<>();
   int hash = 0;
 
   public int hashCode() {
     return hash;
   }
-
 
   @Override
   public Model unmodifiable() {
@@ -177,7 +175,6 @@ public class HashModel implements Model {
 
   public static int extensiveHash(Statement statement) {
     if(statement.getObject() instanceof Literal) {
-
 
       int result = Objects.hash(statement.getSubject(), statement.getPredicate(), statement.getContext());
 

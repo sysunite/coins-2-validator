@@ -24,7 +24,6 @@
  **/
 package com.sysunite.coinsweb.steps.profile;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -45,7 +44,6 @@ import java.util.Map;
  */
 @JsonInclude(Include.NON_NULL)
 public class QueryStatistics extends Query {
-
   private static final Logger log = LoggerFactory.getLogger(QueryStatistics.class);
 
   private long executionTimeMs;
@@ -65,9 +63,6 @@ public class QueryStatistics extends Query {
   @JacksonXmlProperty(localName = "sparql")
   private String executedQuery;
 
-
-
-
   public QueryStatistics(Query queryConfig) {
 
     // Copy fields
@@ -77,14 +72,12 @@ public class QueryStatistics extends Query {
     setResultFormat(queryConfig.getResultFormat());
   }
 
-
   public Boolean getValid() {
     if(resultSet == null) {
       return null;
     }
     return resultSet.isEmpty();
   }
-
 
   @Override
   @JsonIgnore
@@ -105,8 +98,6 @@ public class QueryStatistics extends Query {
   public List<String> getFormattedResults() {
     return formattedResults;
   }
-
-
 
   public void setExecutedQuery(String query) {
     this.executedQuery = IndentedCDATAPrettyPrinter.indentText(query, 0).trim();

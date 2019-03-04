@@ -23,7 +23,6 @@ import java.util.List;
  * @author bastbijl, Sysunite 2017
  */
 public class ConnectorTest extends HostFiles {
-
   Logger log = LoggerFactory.getLogger(ConnectorTest.class);
 
   @Test

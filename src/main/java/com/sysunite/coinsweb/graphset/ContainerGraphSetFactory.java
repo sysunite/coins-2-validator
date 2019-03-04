@@ -29,7 +29,6 @@ import static java.util.Collections.sort;
  * @author bastbijl, Sysunite 2017
  */
 public class ContainerGraphSetFactory {
-
   private static final Logger log = LoggerFactory.getLogger(ContainerGraphSetFactory.class);
 
   public static ContainerGraphSet lazyLoad(ContainerFile container, Container containerConfig, Connector connector, Map<String, Set<GraphVar>> inferencePreference) {
@@ -186,7 +185,6 @@ public class ContainerGraphSetFactory {
     log.info("Uploaded, store phi graph header");
     connector.storePhiGraphExists(source, context, fileName, source.getHash());
   }
-
 
   public static String generatePhiContext() {
     return QueryFactory.VALIDATOR_HOST + "uploadedFile-" + RandomStringUtils.random(8, true, true);
@@ -351,10 +349,7 @@ public class ContainerGraphSetFactory {
     return "".join(delimiter, list);
   }
 
-
-
   public static String fingerPrintComposition(String context, Map<Set<String>, Set<String>> sigmaGraphsMap, Map<String, Set<String>> actualInferences, Set<String> cycleDetection) {
-
     if(cycleDetection == null) {
       cycleDetection = new HashSet<>();
       cycleDetection.add(context);
@@ -386,7 +381,6 @@ public class ContainerGraphSetFactory {
     }
     return subGraphsFingerPrint + inferencesFingerPrint + subFingerPrint;
   }
-
 
   // Currently only support for inferencePreference map with one inferenceCode mapping to one graphVar
   // and each graphVar only mentioned once in the whole list
@@ -427,44 +421,23 @@ public class ContainerGraphSetFactory {
         needle = fingerPrint(hashes, "-") +"|"+ inferenceCode ;
       }
     }
-
-
-
-
     return needle;
   }
-
-
 
   public static ComposePlan composeSigmaList(ContainerGraphSetImpl graphSet, Connector connector, List<Mapping> variables, List<Graph> originalGraphs,  Map<String, Set<GraphVar>> inferencePreference) {
 
     ComposePlan composePlan = new ComposePlan();
-
-
-
 
     HashMap<GraphVar, String> varMap = new HashMap();
     for(Mapping mapping : variables) {
       varMap.put(mapping.getVariable(), mapping.getGraphname());
     }
 
-//    Map<String, Set<String>> hashToContext = connector.listPhiContextsPerHash();
-//    Map<String, String> contextToHash = new HashMap<>();
-//    for(String hash : hashToContext.keySet()) {
-//      Set<String> contexts = hashToContext.get(hash);
-//      for(String context : contexts) {
-//        contextToHash.put(context, hash);
-//      }
-//    }
-//    Map<String, String> contextToFileName = connector.listFileNamePerPhiContext();
-
-
     // Create wish lists
     HashSet<GraphVarImpl> allGraphVars = new HashSet<>();
     HashMap<GraphVarImpl, List<String>> graphVarIncludesPhiGraphMap = new HashMap<>();
     HashMap<GraphVarImpl, List<GraphVarImpl>> graphVarIncludesGraphVarMap = new HashMap<>();
     for (Graph graph : originalGraphs) {
-
 
       if(Source.STORE.equals(graph.getSource().getType())) {
 
@@ -498,10 +471,7 @@ public class ContainerGraphSetFactory {
           inclusions.add(graph.getSource().getStoreContext());
         }
       }
-
     }
-
-
 
     List<Mapping> updatedVarList = new ArrayList<>();
     HashMap<Set<String>, List<GraphVarImpl>> fromSetsToFix = new HashMap<>();
@@ -509,7 +479,6 @@ public class ContainerGraphSetFactory {
     // Find a graphVar that is not mapped and is not included by an unmapped graphVar
     HashMap<GraphVarImpl, String> mappedGraphVars = new HashMap<>();
     GraphVarImpl next = null;
-
 
     while(mappedGraphVars.size() < allGraphVars.size()) {
       for (GraphVarImpl var : allGraphVars) {
@@ -535,11 +504,8 @@ public class ContainerGraphSetFactory {
         throw new RuntimeException("Not able to find the next GraphVar to map");
       }
 
-
-
       // Now mapping this graphVar
       String mappedContext = varMap.get(next);
-
 
       // Include phi graph
       if(graphVarIncludesPhiGraphMap.containsKey(next)) {
@@ -553,8 +519,6 @@ public class ContainerGraphSetFactory {
 
         Set<String> fromSet = new HashSet<>();
         fromSet.addAll(froms);
-
-
 
         Mapping mapping = new Mapping(next, mappedContext, null, null, fromSet, new HashSet());
         mapping.setInitialized();
@@ -571,24 +535,15 @@ public class ContainerGraphSetFactory {
           composePlan.addReversed(ComposePlan.Action.COPY, froms.get(froms.size() - 1), asResource(mappedContext), false);
         }
 
-
         Set<String> fromSet = new HashSet<>();
         fromSetsToFix.put(fromSet, froms);
 
         Mapping mapping = new Mapping(next, mappedContext, null, null, fromSet, new HashSet());
         mapping.setInitialized();
         updatedVarList.add(mapping);
-
       }
-
-
-
-
       mappedGraphVars.put(next, mappedContext);
       composePlan.updateFroms(next, asResource(mappedContext));
-
-
-
     }
 
     for(Set<String> setToFill : fromSetsToFix.keySet()) {
@@ -597,16 +552,7 @@ public class ContainerGraphSetFactory {
       }
     }
 
-
-
-
-
     graphSet.setVariables(updatedVarList);
     return composePlan;
   }
-
-
-
-
-
 }

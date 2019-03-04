@@ -28,18 +28,13 @@ import java.util.Set;
  * @author bastbijl, Sysunite 2017
  */
 public class Validation {
-
   private static final Logger log = LoggerFactory.getLogger(Validation.class);
-
 
   public static boolean run(ConfigFile configFile, Connector connector) {
 
-
     boolean failed = false;
 
-
     log.info("Entered first phase of run, \uD83D\uDD0E iterate over containers");
-
 
     // For each container file execute steps
     for(Container containerConfig : configFile.getRun().getContainers()) {
@@ -57,13 +52,11 @@ public class Validation {
 
       containerConfig.setContainer(containerFile);
 
-
 //      // Skip all tests if loading container file failed
 //      if(!containerFile.exists() || containerFile.isCorruptZip()) {
 //        log.warn("Skipping validation because of problem with container file");
 //        continue;
 //      }
-
 
       // Get inference preferences
       Map<String, Set<GraphVar>> inferencePreference = new HashMap<>();
@@ -77,9 +70,6 @@ public class Validation {
 
       // Init graphSet
       ContainerGraphSet graphSet = ContainerGraphSetFactory.lazyLoad(containerFile, containerConfig, connector, inferencePreference);
-
-
-
 
       // Execute the steps
       for (ValidationStep stepTemplate : configFile.getRun().getSteps()) {
@@ -117,7 +107,6 @@ public class Validation {
     log.info("Close the connector");
     connector.close();
 
-
     log.info("Entered second phase of run, \uD83D\uDDDE generate reports");
 
     // Generate the reports
@@ -141,8 +130,6 @@ public class Validation {
         payload = ReportFactory.buildCustom(configFile, FileFactory.toFile(report.getTemplate()));
       }
 
-
-
       if(Locator.FILE.equals(report.getLocation().getType()) && payload != null) {
         Path path = CliOptions.makeUnique(configFile.resolve(report.getLocation().getPath()));
         report.getLocation().setPath(path.toString());
@@ -152,7 +139,6 @@ public class Validation {
         ReportFactory.postReport(payload, report.getLocation().getUri(), "application/xml");
       }
     }
-
     return !failed;
   }
 

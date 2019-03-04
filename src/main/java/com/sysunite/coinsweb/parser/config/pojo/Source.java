@@ -19,7 +19,6 @@ import static com.sysunite.coinsweb.parser.Parser.*;
 @JsonInclude(Include.NON_NULL)
 @JsonDeserialize(converter=SourceSanitizer.class)
 public class Source extends ConfigPart {
-
   private static final Logger log = LoggerFactory.getLogger(Source.class);
 
   public static final String FILE = "file";
@@ -30,7 +29,6 @@ public class Source extends ConfigPart {
   @JsonIgnore
   private static int fileNameCount = 0;
 
-
   private String type;
   private String path;
   private String uri;
@@ -38,7 +36,6 @@ public class Source extends ConfigPart {
   private String storeContext;
   private GraphVarImpl graph;
   private String hash;
-
 
   public String getType() {
     return type;
@@ -138,9 +135,6 @@ public class Source extends ConfigPart {
     return anyLibraryFile;
   }
 
-
-
-
   @JsonIgnore
   public Source clone() {
     Source clone = new Source();
@@ -161,7 +155,6 @@ public class Source extends ConfigPart {
 }
 
 class SourceSanitizer extends StdConverter<Source, Source> {
-
   private static final Logger log = LoggerFactory.getLogger(GraphSanitizer.class);
 
   @Override
@@ -207,7 +200,6 @@ class SourceSanitizer extends StdConverter<Source, Source> {
       isNull(obj.getUri());
       isNull(obj.getGraphname());
     }
-
 
     return obj;
   }

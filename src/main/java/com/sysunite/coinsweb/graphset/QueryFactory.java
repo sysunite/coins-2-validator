@@ -23,12 +23,10 @@ import java.util.Set;
  * @author bastbijl, Sysunite 2017
  */
 public class QueryFactory {
-
   private static final Logger log = LoggerFactory.getLogger(QueryFactory.class);
 
   public static final String VALIDATOR_HOST = "http://www.coinsweb.nl/";
   public static final String VALIDATOR_NS = "http://www.coinsweb.nl/2017/07/validator#";
-
 
   public static String buildQuery(Query query, Map<String, String> data) {
     return buildQuery(query, data, null, 0);
@@ -64,10 +62,6 @@ public class QueryFactory {
     }
     return result;
   }
-
-
-
-
 
   public static String toSelectQuery(String insertQuery) {
 
@@ -107,8 +101,6 @@ public class QueryFactory {
     return mappedQuery;
   }
 
-
-
   private static String parseFreemarker(String queryTemplate, Map<String, String> data) {
     Configuration cfg = new Configuration();
     StringTemplateLoader templateLoader = new StringTemplateLoader();
@@ -128,6 +120,4 @@ public class QueryFactory {
 
     throw new RuntimeException("Something went wrong building query.");
   }
-
-
 }

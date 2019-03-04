@@ -24,7 +24,6 @@
  **/
 package com.sysunite.coinsweb.steps.profile;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -40,7 +39,6 @@ import java.util.ArrayList;
  */
 @JsonInclude(Include.NON_NULL)
 public class ValidationBundleStatistics extends Bundle {
-
   private static final Logger log = LoggerFactory.getLogger(ValidationBundleStatistics.class);
 
   @JsonIgnore
@@ -62,14 +60,10 @@ public class ValidationBundleStatistics extends Bundle {
     setDescription(bundleConfig.getDescription());
     setQueries(bundleConfig.getQueries());
 
-
-
     // Make new fields
     this.id = Long.toHexString(Double.doubleToLongBits(Math.random()));
     this.queryList = bundleConfig.getQueries();
   }
-
-
 
   public String getId() {
     return id;
@@ -82,7 +76,6 @@ public class ValidationBundleStatistics extends Bundle {
   public ArrayList<Query> getQueries() {
     return queryList;
   }
-
 
   public void addExecutionTimeMs(long executionTimeMs) {
     this.executionTimeMs += executionTimeMs;
@@ -110,8 +103,6 @@ public class ValidationBundleStatistics extends Bundle {
     }
     throw new RuntimeException("No Query registered with this reference code: " + reference);
   }
-
-
 
   public boolean getValid() {
     return valid;

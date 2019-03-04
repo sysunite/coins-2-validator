@@ -14,9 +14,7 @@ import java.util.Set;
  * @author bastbijl, Sysunite 2017
  */
 public class QueryFactoryTest {
-
   Logger log = LoggerFactory.getLogger(QueryFactoryTest.class);
-
 
   @Test
   public void test982() throws IOException {

@@ -12,20 +12,17 @@ import java.util.Map;
 
 import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 
-
 /**
  * @author bastbijl, Sysunite 2017
  */
 @JsonInclude(Include.NON_NULL)
 @JsonDeserialize(converter=StoreSanitizer.class)
 public class Store extends ConfigPart {
-
   private static final Logger log = LoggerFactory.getLogger(Store.class);
 
   public static ConnectorFactory factory;
 
   private String type;
-
 
   private Map<String, String> config;
 
@@ -36,7 +33,6 @@ public class Store extends ConfigPart {
     return config;
   }
 
-
   public void setType(String type) {
     this.type = type;
   }
@@ -44,13 +40,10 @@ public class Store extends ConfigPart {
   public void setConfig(Map<String, String> config) {
     this.config = config;
   }
-
 }
 
 class StoreSanitizer extends StdConverter<Store, Store> {
-
   private static final Logger log = LoggerFactory.getLogger(StoreSanitizer.class);
-
 
   @Override
   public Store convert(Store obj) {

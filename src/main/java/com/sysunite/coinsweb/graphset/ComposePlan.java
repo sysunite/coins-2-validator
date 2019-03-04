@@ -11,15 +11,12 @@ import java.util.List;
  * @author bastbijl, Sysunite 2017
  */
 public class ComposePlan {
-
   private static final Logger log = LoggerFactory.getLogger(ComposePlan.class);
 
   private List<Move> list = new ArrayList<>();
   private List<Move> unFinished = new ArrayList<>();
 
   private int pointer = 0;
-
-
 
   public enum Action { COPY, ADD }
 
@@ -49,8 +46,6 @@ public class ComposePlan {
       }
     }
   }
-
-
 
   public String toString() {
     String result = "";

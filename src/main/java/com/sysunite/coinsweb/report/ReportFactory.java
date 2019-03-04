@@ -37,9 +37,7 @@ import java.util.Map;
  * @author bastbijl, Sysunite 2017
  */
 public class ReportFactory {
-
   private static final Logger log = LoggerFactory.getLogger(ReportFactory.class);
-
 
   public static String buildHtml(ConfigFile configFile) {
     return build(configFile, "report.ftl");
@@ -146,8 +144,6 @@ public class ReportFactory {
     }
     return responseBody;
   }
-
-
 
   public static void saveReport(String payload, Path path) {
 

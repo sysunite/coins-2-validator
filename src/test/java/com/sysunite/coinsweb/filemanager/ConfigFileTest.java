@@ -13,12 +13,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
-
 /**
  * @author bastbijl, Sysunite 2017
  */
 public class ConfigFileTest {
-
   Logger log = LoggerFactory.getLogger(ConfigFileTest.class);
 
   @BeforeClass

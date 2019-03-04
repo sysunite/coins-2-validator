@@ -17,7 +17,6 @@ import java.util.*;
  * @author bastbijl, Sysunite 2017
  */
 public class ConfigFactory {
-
   private static final Logger log = LoggerFactory.getLogger(ConfigFactory.class);
 
   private static DescribeFactory describeFactory = null;
@@ -25,8 +24,6 @@ public class ConfigFactory {
   public static void setDescribeFactory(DescribeFactory factory) {
     ConfigFactory.describeFactory = factory;
   }
-
-
 
   public static String toYml(Object configFile) {
 
@@ -126,7 +123,6 @@ public class ConfigFactory {
 
     ArrayList<Report> reports = new ArrayList();
 
-
     Locator reportLocator = new Locator();
     reportLocator.setType("file");
     reportLocator.setPath("report.html");
@@ -138,7 +134,6 @@ public class ConfigFactory {
 
     return reports.toArray(new Report[0]);
   }
-
 
   public static Container getDefaultContainer(File containerFile) {
 
@@ -162,7 +157,6 @@ public class ConfigFactory {
     variables.add(fullMapping);
     variables.add(instancesMapping);
     variables.add(libraryMapping);
-
 
     ArrayList<Graph> graphs;
     if(describeFactory != null) {
@@ -200,7 +194,7 @@ public class ConfigFactory {
     }
 
     Container container = new Container();
-    container.setParent(new ConfigFile());
+//    container.setParent(new ConfigFile());
     container.setType("container");
     container.setLocation(locator);
     container.setVariables(variables);
@@ -210,10 +204,6 @@ public class ConfigFactory {
   }
 
   public static Run getDefaultRun(List<File> containersList) {
-
-
-
-
     Run run = new Run();
 
     run.setContainers(getDefaultContainers(containersList));

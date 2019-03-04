@@ -18,13 +18,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-
 /**
  * @author bastbijl, Sysunite 2017
  */
 public class ProfileFileTest {
-
-
 
   @Test
   public void test960() throws IOException {
@@ -62,8 +59,6 @@ public class ProfileFileTest {
     testTemplate("profile.lite-9.85-virtuoso.xml");
   }
   public void testTemplate(String resourceFile) throws IOException {
-
-
 
     InputStream file = getClass().getClassLoader().getResource(resourceFile).openStream();
     ProfileFile profileFile = ProfileFile.parse(file);
@@ -108,16 +103,13 @@ public class ProfileFileTest {
   @Test
   public void writeProfileXml() throws IOException {
 
-
     XmlMapper objectMapper = new XmlMapper();
     objectMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
     ObjectWriter xmlWriter = objectMapper.writer(new IndentedCDATAPrettyPrinter());
 
-
     QueryConfiguration queryConfiguration = new QueryConfiguration();
     queryConfiguration.setDefaultPrefixes("PREFIX yo: <http://prefixer#yo>");
-
 
     File file = new File(Paths.get(getClass().getClassLoader().getResource("profile.format-demo.xml").getFile()).getParent().getParent().getParent()+"/written-profile.xml");
     ProfileFile profileFile = new ProfileFile();
@@ -126,7 +118,6 @@ public class ProfileFileTest {
     profileFile.setAuthor("Profile tester");
     profileFile.setQueryLanguage("SPARQL-1.1");
     profileFile.setQueryConfiguration(queryConfiguration);
-
 
     Bundle bundle = new Bundle();
     bundle.setType(Bundle.VALIDATION);
@@ -145,10 +136,6 @@ public class ProfileFileTest {
     bundles.add(bundle);
     profileFile.setBundles(bundles);
 
-
     xmlWriter.writeValue(file, profileFile);
-
-
-
   }
 }

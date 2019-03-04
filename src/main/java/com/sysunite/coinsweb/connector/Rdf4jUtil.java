@@ -17,14 +17,9 @@ import java.util.ArrayList;
  */
 public class Rdf4jUtil {
 
-
-
   public static RDFFormat interpretFormat(File file) {
     return interpretFormat(file.getName());
   }
-
-
-
 
   public static RDFFormat interpretFormat(String fileName) {
 
@@ -77,8 +72,6 @@ public class Rdf4jUtil {
 
     return null;
   }
-
-
 
   public static ArrayList<String> getImports(Source source, ContainerFile container) {
     String triedReference = "error interpreting source";

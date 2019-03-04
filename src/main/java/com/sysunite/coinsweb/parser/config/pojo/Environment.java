@@ -14,7 +14,6 @@ import static com.sysunite.coinsweb.parser.Parser.isNotNull;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(converter=EnvironmentSanitizer.class)
 public class Environment extends ConfigPart {
-
   private static final Logger log = LoggerFactory.getLogger(Environment.class);
 
   private Store store;
@@ -74,7 +73,6 @@ public class Environment extends ConfigPart {
 }
 
 class EnvironmentSanitizer extends StdConverter<Environment, Environment> {
-
   private static final Logger log = LoggerFactory.getLogger(EnvironmentSanitizer.class);
 
   @Override

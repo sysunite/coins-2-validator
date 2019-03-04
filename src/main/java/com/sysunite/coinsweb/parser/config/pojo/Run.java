@@ -16,7 +16,6 @@ import static com.sysunite.coinsweb.parser.Parser.isNotNull;
  */
 @JsonDeserialize(converter=RunSanitizer.class)
 public class Run extends ConfigPart {
-
   private static final Logger log = LoggerFactory.getLogger(Run.class);
 
   private Container[] containers;
@@ -81,7 +80,6 @@ public class Run extends ConfigPart {
 }
 
 class RunSanitizer extends StdConverter<Run, Run> {
-
   private static final Logger log = LoggerFactory.getLogger(RunSanitizer.class);
 
   @Override
@@ -89,7 +87,6 @@ class RunSanitizer extends StdConverter<Run, Run> {
 
     isNotEmpty(obj.getContainers());
     isNotNull(obj.getSteps());
-
 
     return obj;
   }

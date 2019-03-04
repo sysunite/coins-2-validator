@@ -271,7 +271,6 @@ public class ValidationExecutor {
       }
 
       long executionTime = new Date().getTime() - start;
-
       queryStats.addExecutionTimeMs(executionTime);
       queryStats.setResultSet(results);
       queryStats.addFormattedResults(formattedResults);

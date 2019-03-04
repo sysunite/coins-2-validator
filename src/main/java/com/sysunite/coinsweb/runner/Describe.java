@@ -85,7 +85,6 @@ public class Describe {
   public static void run(Connector connector, Path toCcr, String context) throws ConnectorException {
     ContainerFileImpl containerFile = new ContainerFileImpl(toCcr.toString()+".tmp");
     containerFile.setPendingContentContext(context);
-    containerFile.addPendingAttachmentFile(new File("/Users/bastiaanbijl/Documents/Sysunite/GitHub/Sysunite/coins-2-validator/validator-cli/src/test/resources/composetest.yml"));
-    ContainerFileImpl container = containerFile.writeZip(toCcr, connector);
+    containerFile.writeZip(toCcr, connector);
   }
 }

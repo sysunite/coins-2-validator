@@ -155,14 +155,16 @@
   <build>
     <resources>
       <resource>
-        <directory>src/main/resources</directory>
+        <directory>src/main/resources/com/sysunite/coinsweb/cli</directory>
+        <targetPath>com/sysunite/coinsweb/cli</targetPath>
         <filtering>true</filtering>
         <includes>
           <include>coins-validator.properties</include>
         </includes>
       </resource>
       <resource>
-        <directory>src/main/resources</directory>
+        <directory>src/main/resources/com/sysunite/coinsweb/cli</directory>
+        <targetPath>com/sysunite/coinsweb/cli</targetPath>
         <filtering>false</filtering>
         <excludes>
           <exclude>coins-validator.properties</exclude>

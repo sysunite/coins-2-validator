@@ -63,7 +63,7 @@ public class Application {
     }
 
     if (options.writeLog()) {
-      setLoggers("src/test/resources/validator.log");
+      setLoggers("validator.log");
       log.info(")} COINS 2.0 validator - version " + CliOptions.getVersion());
       log.info("(accepting configuration yml files version "+ Version.VERSION+")");
 

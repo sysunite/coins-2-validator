@@ -9,13 +9,17 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.sysunite.coinsweb.parser.profile.util.IndentedCDATAPrettyPrinter;
 import com.sysunite.coinsweb.parser.profile.util.Markdown;
+import com.sysunite.coinsweb.util.FreemarkerUtil;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import freemarker.template.TemplateModelException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author bastbijl, Sysunite 2017
@@ -70,14 +74,35 @@ public class Query {
     }
   }
   @JsonIgnore
+  public List<String> getBindingsOrder() {
+    List<String> list = new ArrayList<>();
+    try {
+      Template template = getFormatTemplate();
+      if(template != null) {
+        for(String var : FreemarkerUtil.referenceSet(template)) {
+          if(!list.contains(var)) {
+            list.add(var);
+          }
+        }
+      }
+    } catch (TemplateModelException e) {
+      log.warn("Failed reading freemarker template variable names");
+    }
+    return list;
+  }
+  @JsonIgnore
   private Template formatTemplate ;
   @JsonIgnore
   public Template getFormatTemplate() {
     if(formatTemplate == null) {
+      String resultFormat = parseResultFormat();
+      if(resultFormat == null) {
+        return null;
+      }
       StringTemplateLoader templateLoader = new StringTemplateLoader();
       Configuration cfg = new Configuration();
       cfg.setTemplateLoader(templateLoader);
-      templateLoader.putTemplate("resultFormat", parseResultFormat());
+      templateLoader.putTemplate("resultFormat", resultFormat);
       try {
         formatTemplate = cfg.getTemplate("resultFormat");
       } catch (IOException e) {

@@ -81,7 +81,7 @@ public class ProfileFileTest {
         System.out.println("query reference: " + query.parseDescription());
         System.out.println("query format:\n>>>>>" + query.parseResultFormat() + "<<<<<");
         System.out.println("query body:\n>>>>>" + query.getQuery() + "<<<<<");
-
+        System.out.println("query bindings order:\n>>>>>" + query.getBindingsOrder() + "<<<<<");
       }
     }
   }

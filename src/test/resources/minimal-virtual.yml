@@ -1,0 +1,27 @@
+version: '2.0.8'
+
+environment:
+  store:
+    type: rdf4j-sail-memory
+
+run:
+
+  containers:
+
+    - type: virtual
+
+      variables:
+        - graphname: http://full/union
+          variable: FULL_UNION_GRAPH
+
+      graphs:
+        - source:
+            type: file
+            path: empty.rdf
+            graphname: '*'
+          as:
+          - FULL_UNION_GRAPH
+
+  steps: []
+
+  reports: []

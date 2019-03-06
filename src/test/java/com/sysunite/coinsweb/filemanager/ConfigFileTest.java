@@ -1,11 +1,11 @@
 package com.sysunite.coinsweb.filemanager;
 
-import com.sysunite.coinsweb.connector.Connector;
+import com.sysunite.coinsweb.connector.ConnectorFactoryImpl;
 import com.sysunite.coinsweb.parser.config.factory.ConfigFactory;
 import com.sysunite.coinsweb.parser.config.pojo.ConfigFile;
 import com.sysunite.coinsweb.parser.config.pojo.StepDeserializer;
 import com.sysunite.coinsweb.parser.config.pojo.Store;
-import com.sysunite.coinsweb.steps.ValidationStep;
+import com.sysunite.coinsweb.steps.StepFactoryImpl;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -21,8 +21,8 @@ public class ConfigFileTest {
 
   @BeforeClass
   public static void before() {
-    Store.factory = new ConnectorFactoryStub();
-    StepDeserializer.factory = new StepFactoryStub();
+    Store.factory = new ConnectorFactoryImpl();
+    StepDeserializer.factory = new StepFactoryImpl();
 
     ConfigFactory.setDescribeFactory(new DescribeFactoryImpl());
   }
@@ -58,39 +58,5 @@ public class ConfigFileTest {
     DescribeFactoryImpl.expandGraphConfig(configFile);
     String ymlExpanded = ConfigFactory.toYml(configFile);
     System.out.println(ymlExpanded);
-  }
-
-  private static class ConnectorFactoryStub implements com.sysunite.coinsweb.connector.ConnectorFactory {
-    @Override
-    public boolean exists(String key) {
-      return true;
-    }
-
-    @Override
-    public Class<? extends Connector> get(String key) {
-      return null;
-    }
-
-    @Override
-    public Connector build(Object config) {
-      return null;
-    }
-  }
-
-  private static class StepFactoryStub implements com.sysunite.coinsweb.steps.StepFactory {
-    @Override
-    public boolean exists(String key) {
-      return true;
-    }
-
-    @Override
-    public ValidationStep[] getDefaultSteps() {
-      return null;
-    }
-
-    @Override
-    public Class<? extends ValidationStep> get(String key) {
-      return null;
-    }
   }
 }

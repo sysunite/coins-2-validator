@@ -19,6 +19,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,6 +83,9 @@ public class DescribeFactoryImpl implements DescribeFactory {
     return graphs;
   }
   public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content) {
+    return contentGraphsInContainer(containerFile, content, "bim/*");
+  }
+  public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content, String pathPattern) {
     ArrayList<Graph> graphs = new ArrayList();
     for(String contentFile : containerFile.getContentFiles()) {
 
@@ -86,15 +93,19 @@ public class DescribeFactoryImpl implements DescribeFactory {
       try {
         for (String namespace : containerFile.getContentFileNamespaces(contentFile)) {
 
-          Source source = new Source();
-          source.setType("container");
-          source.setPath(containerFile.getContentFilePath(contentFile).toString());
-          source.setGraphname(namespace);
+          String path = containerFile.getContentFilePath(contentFile).toString();
+          if(filterPath(path, pathPattern)) {
 
-          Graph graph = new Graph();
-          graph.setSource(source);
-          graph.setAs(content);
-          graphs.add(graph);
+            Source source = new Source();
+            source.setType("container");
+            source.setPath(path);
+            source.setGraphname(namespace);
+
+            Graph graph = new Graph();
+            graph.setSource(source);
+            graph.setAs(content);
+            graphs.add(graph);
+          }
         }
       } catch (RuntimeException e) {
         log.warn(e.getMessage());
@@ -103,6 +114,9 @@ public class DescribeFactoryImpl implements DescribeFactory {
     return graphs;
   }
   public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content) {
+    return libraryGraphsInContainer(containerFile, content, "bim/repository/*");
+  }
+  public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content, String pathPattern) {
     ArrayList<Graph> graphs = new ArrayList();
     for(String repositoryFile : containerFile.getRepositoryFiles()) {
 
@@ -111,15 +125,19 @@ public class DescribeFactoryImpl implements DescribeFactory {
         ArrayList<String> namespaces = containerFile.getRepositoryFileNamespaces(repositoryFile);
         for (String namespace : namespaces) {
 
-          Source source = new Source();
-          source.setType("container");
-          source.setPath(containerFile.getRepositoryFilePath(repositoryFile).toString());
-          source.setGraphname(namespace);
+          String path = containerFile.getRepositoryFilePath(repositoryFile).toString();
+          if(filterPath(path, pathPattern)) {
 
-          Graph graph = new Graph();
-          graph.setSource(source);
-          graph.setAs(content);
-          graphs.add(graph);
+            Source source = new Source();
+            source.setType("container");
+            source.setPath(path);
+            source.setGraphname(namespace);
+
+            Graph graph = new Graph();
+            graph.setSource(source);
+            graph.setAs(content);
+            graphs.add(graph);
+          }
         }
       } catch (RuntimeException e) {
         log.warn(e.getMessage());
@@ -207,7 +225,7 @@ public class DescribeFactoryImpl implements DescribeFactory {
     }
 
     // If still no namespace
-    log.info("Add default namespace to represent set triples in file: "+namespace.get().getName());
+    log.info("Add default namespace to represent set triples in file: " + namespace.get().getName());
     resultContexts.add(backupNamespace);
   }
 
@@ -224,4 +242,8 @@ public class DescribeFactoryImpl implements DescribeFactory {
     ontologiesMap.put(fileName, ontologies);
   }
 
+  public static boolean filterPath(String path, String pattern) {
+    PathMatcher matcher =  FileSystems.getDefault().getPathMatcher("glob:" + pattern);
+    return matcher.matches(Paths.get(path));
+  }
 }

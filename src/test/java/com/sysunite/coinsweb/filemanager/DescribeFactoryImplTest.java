@@ -9,6 +9,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * @author bastbijl, Sysunite 2017
  */
@@ -49,5 +52,14 @@ public class DescribeFactoryImplTest {
     } catch (FileNotFoundException e) {
       log.error(e.getMessage(), e);
     }
+  }
+
+  @Test
+  public void testWildcard() {
+    assertTrue(DescribeFactoryImpl.filterPath("bim/testdata_211.ttl", "bim/*.ttl"));
+    assertTrue(DescribeFactoryImpl.filterPath("bim/testdata_211.ttl", "bim/*2*.ttl"));
+    assertTrue(DescribeFactoryImpl.filterPath("bim/testdata_211.ttl", "bim/*"));
+    assertTrue(DescribeFactoryImpl.filterPath("bim/testdata_211.ttl", "**"));
+    assertFalse(DescribeFactoryImpl.filterPath("bim/testdata_211.ttl", "bim/*.docx"));
   }
 }

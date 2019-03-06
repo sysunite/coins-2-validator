@@ -11,7 +11,7 @@ run:
   - type: container
     location:
       type: file
-      path: some.ccr
+      path: voorbeeldcontainer-6.ccr
 
     variables:
       - graphname: http://full/union
@@ -37,13 +37,6 @@ run:
         graphname: '*'
       as:
       - SCHEMA_UNION_GRAPH
-      - FULL_UNION_GRAPH
-
-    - source:
-        type: file
-        path: empty.rdf
-        graphname: '*'
-      as:
       - FULL_UNION_GRAPH
 
   steps: []

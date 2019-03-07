@@ -170,7 +170,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
     }
 
     for (String storeContext : imports) {
-      log.info("Found import in some triple file: "+storeContext);
+      log.info("Found import in some triple file: " + storeContext);
 
       boolean found = Utils.containsNamespace(storeContext, availableGraphs);
 

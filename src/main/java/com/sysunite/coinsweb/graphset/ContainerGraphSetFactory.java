@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.util.*;
 
@@ -193,143 +192,88 @@ public class ContainerGraphSetFactory {
   // Extends wildcards and loads the namespace for each file
   public static ArrayList<Graph> loadList(List<Graph> originalGraphs, ContainerFile container) {
 
-    Graph allContentFile = null;
-    Graph allLibraryFile = null;
+    // Each namespace should be filled from only one source (Graph)
+    HashMap<String, Graph> namespaceToGraph = new HashMap<>();
 
     // Explicit graphs
-    ArrayList<String> explicitGraphs = new ArrayList();
     for(Graph graph : originalGraphs) {
 
       // Only consider these now
-      if(!Source.ONLINE.equals(graph.getSource().getType()) &&
-         !Source.CONTAINER.equals(graph.getSource().getType()) &&
-         !Source.FILE.equals(graph.getSource().getType())) {
+      if(!Source.FILE.equals(graph.getSource().getType()) &&
+         !Source.ONLINE.equals(graph.getSource().getType()) &&
+         !Source.CONTAINER.equals(graph.getSource().getType())) {
         continue;
       }
 
-      if(!graph.getSource().anyGraph()) {
-        String graphName = graph.getSource().getGraphname();
-        if(containsNamespace(graphName, explicitGraphs)) {
-          throw new RuntimeException("The namespace "+graphName+ " is being mentioned more than once, this is not allowed");
-        }
-        log.info("Reserve this namespace to load from explicitly mentioned source: "+graphName);
-        explicitGraphs.add(graphName);
-      }
+      if(Source.FILE.equals(graph.getSource().getType()) ||
+         Source.ONLINE.equals(graph.getSource().getType())) {
 
-      if(Source.CONTAINER.equals(graph.getSource().getType())) {
-
-        // Keep track of fallback graph definitions
-        if (graph.getSource().anyContentFile()) {
-          if (allContentFile != null) {
-            throw new RuntimeException("Only one graph with content file asterisk allowed");
-          }
-          allContentFile = graph;
-        }
-        if (graph.getSource().anyLibraryFile()) {
-          if (allLibraryFile != null) {
-            throw new RuntimeException("Only one graph with library file asterisk allowed");
-          }
-          allLibraryFile = graph;
-        }
-      }
-    }
-
-    // Implicit graphs
-    ArrayList<Graph> loadList = new ArrayList();
-    ArrayList<String> implicitGraphs = new ArrayList();
-
-    ArrayList<Graph> contentGraphs;
-    ArrayList<Graph> libraryGraphs;
-
-    if(allContentFile != null) {
-      contentGraphs = DescribeFactoryImpl.contentGraphsInContainer(container, allContentFile.getAs());
-      for(Graph graph : contentGraphs) {
-        String graphName = graph.getSource().getGraphname();
-        log.info("Found graph in content file: "+graphName);
-        if(!containsNamespace(graphName, explicitGraphs)) {
-          log.info("Will load content file from wildcard definition");
-          if(containsNamespace(graphName, implicitGraphs)) {
-            throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: "+graphName);
-          }
-          implicitGraphs.add(graphName);
-          loadList.add(graph);
-        }
-      }
-    }
-
-    if(allLibraryFile != null) {
-      libraryGraphs = DescribeFactoryImpl.libraryGraphsInContainer(container, allLibraryFile.getAs());
-      for(Graph graph : libraryGraphs) {
-        String graphName = graph.getSource().getGraphname();
-        log.info("Found graph in library file: "+graphName);
-        if(!containsNamespace(graphName, explicitGraphs)) {
-          log.info("Will load library file from wildcard definition");
-          if(containsNamespace(graphName, implicitGraphs)) {
-            throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: "+graphName);
-          }
-          implicitGraphs.add(graphName);
-          loadList.add(graph);
-        }
-      }
-    }
-
-    // If a graph points to a file or link online instead of a file in a container
-    for(Graph originalGraph : originalGraphs) {
-      if(originalGraph.getSource().anyGraph() &&
-      (Source.FILE.equals(originalGraph.getSource().getType()) || Source.ONLINE.equals(originalGraph.getSource().getType()))) {
-
-        File file = FileFactory.toFile(originalGraph.getSource().asLocator());
+        File file = FileFactory.toFile(graph.getSource().asLocator());
         try {
           ArrayList<String> namespaces = new ArrayList<>();
           ArrayList<String> imports = new ArrayList<>();
           ArrayList<String> ontologies = new ArrayList<>();
           DescribeFactoryImpl.contextsInFile(new FileInputStream(file), file.getName(), namespaces, imports, ontologies);
-          for (String graphName : namespaces) {
-            log.info("Found graph in file/online: "+graphName);
-            if (!containsNamespace(graphName, explicitGraphs)) {
-              log.info("Will load graph from file because of wildcard graph definition");
-              if (containsNamespace(graphName, implicitGraphs)) {
-                throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: " + graphName);
-              }
-              implicitGraphs.add(graphName);
+          if(!graph.getSource().anyGraph()) {
+            String selection = graph.getSource().getGraphname();
+            if(!containsNamespace(selection, namespaces)) {
+              throw new RuntimeException("Could not find graph " + selection + " in file/online: " + graph.getSource().asLocator());
+            }
+            log.info("Found selected graph in file/online: " + selection);
+            if (containsNamespace(selection, namespaceToGraph.keySet())) {
+              throw new RuntimeException("Collision in graphs names, this one can be found in more than one source: " + selection);
+            }
+            namespaceToGraph.put(selection, graph);
+          } else {
+            for (String graphName : namespaces) {
+              log.info("Found graph in file/online: " + graphName);
 
-              Graph graph = originalGraph.clone();
+              if (containsNamespace(graphName, namespaceToGraph.keySet())) {
+                throw new RuntimeException("Collision in graphs names, this one can be found in more than one source: " + graphName);
+              }
+
+              Graph clone = graph.clone();
               graph.getSource().setGraphname(graphName);
-              loadList.add(graph);
+              namespaceToGraph.put(graphName, clone);
             }
           }
         } catch (FileNotFoundException e) {
           throw new RuntimeException(e);
         }
       }
-    }
 
-    // Now load the explicit graphs
-    for(Graph graph : originalGraphs) {
+      if(Source.CONTAINER.equals(graph.getSource().getType())) {
 
-      // Only consider these now
-      if(!Source.ONLINE.equals(graph.getSource().getType()) &&
-         !Source.CONTAINER.equals(graph.getSource().getType()) &&
-         !Source.FILE.equals(graph.getSource().getType())) {
-        loadList.add(graph);
-      } else {
-
-        if (!graph.getSource().anyGraph()) {
-
-          // Check if the file in the container is available
-          if (Source.CONTAINER.equals(graph.getSource().getType())) {
-            try {
-              container.getFile(Paths.get(graph.getSource().getPath()));
-            } catch (RuntimeException e) {
-              throw e;
+        if(graph.getSource().isContentFile()) {
+          ArrayList<Graph> contentGraphs = DescribeFactoryImpl.contentGraphsInContainer(container, graph.getAs(), graph.getSource().getPath());
+          for (Graph clone : contentGraphs) {
+            String graphName = graph.getSource().getGraphname();
+            log.info("Found graph in content file: " + graphName);
+            if (containsNamespace(graphName, namespaceToGraph.keySet())) {
+              throw new RuntimeException("Collision in graphs names, this one can be found in more than one source: " + graphName);
             }
+            namespaceToGraph.put(graphName, clone);
           }
 
-          log.info("Will load explicitly defined file for context: " + graph.getSource().getGraphname());
-          loadList.add(graph);
+        } else if(graph.getSource().isLibraryFile()) {
+          ArrayList<Graph> libraryGraphs = DescribeFactoryImpl.libraryGraphsInContainer(container, graph.getAs(), graph.getSource().getPath());
+          for (Graph clone : libraryGraphs) {
+            String graphName = graph.getSource().getGraphname();
+            log.info("Found graph in library file: " + graphName);
+            if (containsNamespace(graphName, namespaceToGraph.keySet())) {
+              throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: " + graphName);
+            }
+            namespaceToGraph.put(graphName, clone);
+          }
+
+        } else {
+          throw new RuntimeException("The only location inside a container to address is inside the /bim/ or /bim/repository/ folder");
         }
       }
     }
+
+    ArrayList<Graph> loadList = new ArrayList<>();
+    loadList.addAll(namespaceToGraph.values());
     return loadList;
   }
 

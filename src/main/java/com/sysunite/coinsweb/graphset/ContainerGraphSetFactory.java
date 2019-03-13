@@ -213,29 +213,17 @@ public class ContainerGraphSetFactory {
           ArrayList<String> namespaces = new ArrayList<>();
           ArrayList<String> imports = new ArrayList<>();
           ArrayList<String> ontologies = new ArrayList<>();
-          DescribeFactoryImpl.contextsInFile(new FileInputStream(file), file.getName(), namespaces, imports, ontologies);
-          if(!graph.getSource().anyGraph()) {
-            String selection = graph.getSource().getGraphname();
-            if(!containsNamespace(selection, namespaces)) {
-              throw new RuntimeException("Could not find graph " + selection + " in file/online: " + graph.getSource().asLocator());
-            }
-            log.info("Found selected graph in file/online: " + selection);
-            if (containsNamespace(selection, namespaceToGraph.keySet())) {
-              throw new RuntimeException("Collision in graphs names, this one can be found in more than one source: " + selection);
-            }
-            namespaceToGraph.put(selection, graph);
-          } else {
-            for (String graphName : namespaces) {
-              log.info("Found graph in file/online: " + graphName);
+          DescribeFactoryImpl.contextsInFile(new FileInputStream(file), file.getName(), namespaces, imports, ontologies, graph.getSource().getGraphname());
+          for (String graphName : namespaces) {
+            log.info("Found graph in file/online: " + graphName);
 
-              if (containsNamespace(graphName, namespaceToGraph.keySet())) {
-                throw new RuntimeException("Collision in graphs names, this one can be found in more than one source: " + graphName);
-              }
-
-              Graph clone = graph.clone();
-              graph.getSource().setGraphname(graphName);
-              namespaceToGraph.put(graphName, clone);
+            if (containsNamespace(graphName, namespaceToGraph.keySet())) {
+              throw new RuntimeException("Collision in graphs names, this one can be found in more than one source: " + graphName);
             }
+
+            Graph clone = graph.clone();
+            clone.getSource().setGraphname(graphName);
+            namespaceToGraph.put(graphName, clone);
           }
         } catch (FileNotFoundException e) {
           throw new RuntimeException(e);
@@ -243,11 +231,12 @@ public class ContainerGraphSetFactory {
       }
 
       if(Source.CONTAINER.equals(graph.getSource().getType())) {
+        Source source = graph.getSource();
 
-        if(graph.getSource().isContentFile()) {
-          ArrayList<Graph> contentGraphs = DescribeFactoryImpl.contentGraphsInContainer(container, graph.getAs(), graph.getSource().getPath());
+        if(source.isContentFile()) {
+          ArrayList<Graph> contentGraphs = DescribeFactoryImpl.contentGraphsInContainer(container, graph.getAs(), source.getPath(), source.getGraphname());
           for (Graph clone : contentGraphs) {
-            String graphName = graph.getSource().getGraphname();
+            String graphName = clone.getSource().getGraphname();
             log.info("Found graph in content file: " + graphName);
             if (containsNamespace(graphName, namespaceToGraph.keySet())) {
               throw new RuntimeException("Collision in graphs names, this one can be found in more than one source: " + graphName);
@@ -255,10 +244,10 @@ public class ContainerGraphSetFactory {
             namespaceToGraph.put(graphName, clone);
           }
 
-        } else if(graph.getSource().isLibraryFile()) {
-          ArrayList<Graph> libraryGraphs = DescribeFactoryImpl.libraryGraphsInContainer(container, graph.getAs(), graph.getSource().getPath());
+        } else if(source.isLibraryFile()) {
+          ArrayList<Graph> libraryGraphs = DescribeFactoryImpl.libraryGraphsInContainer(container, graph.getAs(), source.getPath(), source.getGraphname());
           for (Graph clone : libraryGraphs) {
-            String graphName = graph.getSource().getGraphname();
+            String graphName = clone.getSource().getGraphname();
             log.info("Found graph in library file: " + graphName);
             if (containsNamespace(graphName, namespaceToGraph.keySet())) {
               throw new RuntimeException("Collision in implicit graphs names, this one can be found in more than one source: " + graphName);

@@ -208,7 +208,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
   HashMap<String, ArrayList<String>> contentFileNamespaces = new HashMap();
   public ArrayList<String> getContentFileNamespaces(String filename) {
     if(!contentFileNamespaces.containsKey(filename)) {
-      DescribeFactoryImpl.contextsInFile(getContentFile(filename), filename, contentFileNamespaces, fileImports, fileOntologies);
+      DescribeFactoryImpl.contextsInFile(getContentFile(filename), filename, contentFileNamespaces, fileImports, fileOntologies, "*");
     }
     return contentFileNamespaces.get(filename);
   }
@@ -216,7 +216,7 @@ public class ContainerFileImpl extends File implements ContainerFile {
   HashMap<String, ArrayList<String>> repositoryFileNamespaces = new HashMap();
   public ArrayList<String> getRepositoryFileNamespaces(String filename) {
     if(!repositoryFileNamespaces.containsKey(filename)) {
-      DescribeFactoryImpl.contextsInFile(getRepositoryFile(filename), filename, repositoryFileNamespaces, fileImports, fileOntologies);
+      DescribeFactoryImpl.contextsInFile(getRepositoryFile(filename), filename, repositoryFileNamespaces, fileImports, fileOntologies, "*");
     }
     return repositoryFileNamespaces.get(filename);
   }

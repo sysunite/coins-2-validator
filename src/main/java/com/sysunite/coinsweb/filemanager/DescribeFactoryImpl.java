@@ -83,28 +83,29 @@ public class DescribeFactoryImpl implements DescribeFactory {
     return graphs;
   }
   public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content) {
-    return contentGraphsInContainer(containerFile, content, "bim/*");
+    return contentGraphsInContainer(containerFile, content, "bim/*", "*");
   }
-  public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content, String pathPattern) {
+  public static ArrayList<Graph> contentGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content, String pathPattern, String namespacePattern) {
     ArrayList<Graph> graphs = new ArrayList();
     for(String contentFile : containerFile.getContentFiles()) {
 
-      log.info("Look for graphs in content file "+contentFile);
+      log.info("Look for graphs in content file " + contentFile);
       try {
         for (String namespace : containerFile.getContentFileNamespaces(contentFile)) {
+          if(filterNamespace(namespace, namespacePattern)) {
+            String path = containerFile.getContentFilePath(contentFile).toString();
+            if (filterPath(path, pathPattern)) {
 
-          String path = containerFile.getContentFilePath(contentFile).toString();
-          if(filterPath(path, pathPattern)) {
+              Source source = new Source();
+              source.setType("container");
+              source.setPath(path);
+              source.setGraphname(namespace);
 
-            Source source = new Source();
-            source.setType("container");
-            source.setPath(path);
-            source.setGraphname(namespace);
-
-            Graph graph = new Graph();
-            graph.setSource(source);
-            graph.setAs(content);
-            graphs.add(graph);
+              Graph graph = new Graph();
+              graph.setSource(source);
+              graph.setAs(content);
+              graphs.add(graph);
+            }
           }
         }
       } catch (RuntimeException e) {
@@ -114,29 +115,30 @@ public class DescribeFactoryImpl implements DescribeFactory {
     return graphs;
   }
   public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content) {
-    return libraryGraphsInContainer(containerFile, content, "bim/repository/*");
+    return libraryGraphsInContainer(containerFile, content, "bim/repository/*", "*");
   }
-  public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content, String pathPattern) {
+  public static ArrayList<Graph> libraryGraphsInContainer(ContainerFile containerFile, ArrayList<GraphVarImpl> content, String pathPattern, String namespacePattern) {
     ArrayList<Graph> graphs = new ArrayList();
     for(String repositoryFile : containerFile.getRepositoryFiles()) {
 
-      log.info("Look for graphs in content file "+repositoryFile);
+      log.info("Look for graphs in content file " + repositoryFile);
       try {
         ArrayList<String> namespaces = containerFile.getRepositoryFileNamespaces(repositoryFile);
         for (String namespace : namespaces) {
+          if(filterNamespace(namespace, namespacePattern)) {
+            String path = containerFile.getRepositoryFilePath(repositoryFile).toString();
+            if(filterPath(path, pathPattern)) {
 
-          String path = containerFile.getRepositoryFilePath(repositoryFile).toString();
-          if(filterPath(path, pathPattern)) {
+              Source source = new Source();
+              source.setType("container");
+              source.setPath(path);
+              source.setGraphname(namespace);
 
-            Source source = new Source();
-            source.setType("container");
-            source.setPath(path);
-            source.setGraphname(namespace);
-
-            Graph graph = new Graph();
-            graph.setSource(source);
-            graph.setAs(content);
-            graphs.add(graph);
+              Graph graph = new Graph();
+              graph.setSource(source);
+              graph.setAs(content);
+              graphs.add(graph);
+            }
           }
         }
       } catch (RuntimeException e) {
@@ -156,86 +158,100 @@ public class DescribeFactoryImpl implements DescribeFactory {
    * - Use the namespace with the empty prefix
    * - Fall back to the backup namespace that is composed of the fileName
    */
-  public static void contextsInFile(InputStream inputStream, String fileName, ArrayList<String> resultContexts, ArrayList<String> resultImports, ArrayList<String> resultOntologies) {
+  public static void contextsInFile(InputStream inputStream, String fileName,
+                                    ArrayList<String> resultContexts,
+                                    ArrayList<String> resultImports,
+                                    ArrayList<String> resultOntologies,
+                                    String namespacePattern) {
 
+    // Init
     String backupNamespace = QueryFactory.VALIDATOR_HOST + fileName;
-
     RDFFormat format = Rdf4jUtil.interpretFormat(fileName);
     if(format == null) {
       throw new RuntimeException("Not able to determine format of file: " + fileName);
     }
     log.info("Found file type "+format.getName()+" for file: "+fileName);
     log.info("Parse the file to determine contexts");
-
     OutlineModel model = new OutlineModel();
     RDFParser rdfParser = Rio.createParser(format);
     rdfParser.setRDFHandler(new StatementCollector(model));
-
     try {
       rdfParser.parse(inputStream, backupNamespace);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage());
     }
 
+    // Fill lists
     for(Resource resource : model.getOntologies()) {
       resultOntologies.add(resource.stringValue());
     }
-
-    // Store imports
     resultImports.addAll(model.getImports());
 
-    HashSet<String> result = new HashSet<>();
-
     // If there are contexts, use these
+    HashSet<String> uniqueContexts = new HashSet<>();
+    String contextString;
     for(Resource context : model.getContexts()) {
       if(context != null) {
-        String contextString = withoutHash(context.stringValue());
-        log.info("Add context to represent set triples in file: "+contextString);
-        result.add(contextString);
+        contextString = withoutHash(context.stringValue());
+        if(filterNamespace(contextString, namespacePattern)) {
+          log.info("Add context to represent set triples in file: " + contextString);
+          uniqueContexts.add(contextString);
+        }
       }
     }
-    if(result.size() > 0) {
-      resultContexts.addAll(result);
+    if(uniqueContexts.size() > 0) {
+      resultContexts.addAll(uniqueContexts);
       return;
     }
 
     // If not, look for ontologies
-    for(Resource ontology : model.getOntologies()) {
-      if(ontology != null && !equalNamespace(backupNamespace, ontology.stringValue())) {
-        String ontologyString = withoutHash(ontology.stringValue());
-        log.info("Add ontology to represent set triples in file: "+ontologyString);
-        result.add(ontologyString);
+    for(String ontology : resultOntologies) {
+      if(ontology != null && !equalNamespace(backupNamespace, ontology)) {
+        contextString = withoutHash(ontology);
+        if(filterNamespace(contextString, namespacePattern)) {
+          log.info("Add ontology to represent set triples in file: " + contextString);
+          uniqueContexts.add(contextString);
+        }
       }
     }
-    if(result.size() > 0) {
-      resultContexts.addAll(result);
+    if(uniqueContexts.size() > 0) {
+      resultContexts.addAll(uniqueContexts);
       return;
     }
 
     // If no contexts, use the empty namespace
     Optional<Namespace> namespace = model.getNamespace("");
     if (namespace.isPresent()) {
-      String namespaceString = withoutHash(namespace.get().getName());
-      log.info("Add empty-prefix namespace to represent set triples in file: "+namespace.get().getName());
-      result.add(namespaceString);
+      contextString = withoutHash(namespace.get().getName());
+      if(filterNamespace(contextString, namespacePattern)) {
+        log.info("Add empty-prefix namespace to represent set triples in file: " + namespace.get().getName());
+        uniqueContexts.add(contextString);
+      }
     }
-    if(result.size() > 0) {
-      resultContexts.addAll(result);
+    if(uniqueContexts.size() > 0) {
+      resultContexts.addAll(uniqueContexts);
       return;
     }
 
     // If still no namespace
-    log.info("Add default namespace to represent set triples in file: " + namespace.get().getName());
-    resultContexts.add(backupNamespace);
+    if(filterNamespace(backupNamespace, namespacePattern)) {
+      log.info("Add default namespace to represent set triples in file: " + backupNamespace);
+      resultContexts.add(backupNamespace);
+      return;
+    }
   }
 
-  public static void contextsInFile(InputStream inputStream, String fileName, HashMap<String, ArrayList<String>> namespacesMap, HashMap<String, ArrayList<String>> importsMap, HashMap<String, ArrayList<String>> ontologiesMap) {
+  public static void contextsInFile(InputStream inputStream, String fileName,
+                                    HashMap<String, ArrayList<String>> namespacesMap,
+                                    HashMap<String, ArrayList<String>> importsMap,
+                                    HashMap<String, ArrayList<String>> ontologiesMap,
+                                    String namespacePattern) {
 
     ArrayList<String> contexts = new ArrayList<>();
     ArrayList<String> imports = new ArrayList<>();
     ArrayList<String> ontologies = new ArrayList<>();
 
-    contextsInFile(inputStream, fileName, contexts, imports, ontologies);
+    contextsInFile(inputStream, fileName, contexts, imports, ontologies, namespacePattern);
 
     namespacesMap.put(fileName, contexts);
     importsMap.put(fileName, imports);
@@ -245,5 +261,9 @@ public class DescribeFactoryImpl implements DescribeFactory {
   public static boolean filterPath(String path, String pattern) {
     PathMatcher matcher =  FileSystems.getDefault().getPathMatcher("glob:" + pattern);
     return matcher.matches(Paths.get(path));
+  }
+
+  public static boolean filterNamespace(String namespace, String pattern) {
+    return "*".equals(pattern) || namespace.equals(pattern);
   }
 }

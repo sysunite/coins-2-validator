@@ -25,7 +25,7 @@ public class DescribeFactoryImplTest {
       ArrayList<String> namespaces = new ArrayList<>();
       ArrayList<String> imports = new ArrayList<>();
       ArrayList<String> ontologies = new ArrayList<>();
-      DescribeFactoryImpl.contextsInFile(new FileInputStream(dataroom), dataroom.getName(), namespaces, imports, ontologies);
+      DescribeFactoryImpl.contextsInFile(new FileInputStream(dataroom), dataroom.getName(), namespaces, imports, ontologies, "*");
       for(String item : namespaces) {
         log.info(item);
       }
@@ -41,7 +41,7 @@ public class DescribeFactoryImplTest {
       ArrayList<String> namespaces = new ArrayList<>();
       ArrayList<String> imports = new ArrayList<>();
       ArrayList<String> ontologies = new ArrayList<>();
-      DescribeFactoryImpl.contextsInFile(new FileInputStream(nquad), nquad.getName(), namespaces, imports, ontologies);
+      DescribeFactoryImpl.contextsInFile(new FileInputStream(nquad), nquad.getName(), namespaces, imports, ontologies, "*");
       for(String item : namespaces) {
         log.info(item);
       }

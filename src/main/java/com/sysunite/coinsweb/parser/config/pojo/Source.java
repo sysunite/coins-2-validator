@@ -113,14 +113,13 @@ public class Source extends ConfigPart {
     return clone;
   }
 
-  @JsonIgnore
-  public boolean anyGraph() {
-    boolean anyGraph = "*".equals(graphname);
-    return anyGraph;
-  }
+//  @JsonIgnore
+//  public boolean anyGraph() {
+//    return "*".equals(graphname);
+//  }
   @JsonIgnore
   public boolean isContentFile() {
-    return CONTAINER.equals(type) && getPath() != null && getPath().startsWith("bim/");
+    return !isLibraryFile() && CONTAINER.equals(type) && getPath() != null && getPath().startsWith("bim/");
   }
   @JsonIgnore
   public boolean isLibraryFile() {

@@ -17,10 +17,10 @@ public class QueryFactoryTest {
   Logger log = LoggerFactory.getLogger(QueryFactoryTest.class);
 
   @Test
-  public void test982() throws IOException {
+  public void test() throws IOException {
     XmlMapper objectMapper = new XmlMapper();
 
-    InputStream file = getClass().getClassLoader().getResource("profile.lite-9.82.xml").openStream();
+    InputStream file = getClass().getClassLoader().getResource("profile.lite-9.85.xml").openStream();
     ProfileFile profileFile = objectMapper.readValue(file, ProfileFile.class);
     Set<GraphVar> set = QueryFactory.usedVars(profileFile);
 

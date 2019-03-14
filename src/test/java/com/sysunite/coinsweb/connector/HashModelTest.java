@@ -17,7 +17,6 @@ import java.nio.ByteBuffer;
  * @author bastbijl, Sysunite 2017
  */
 public class HashModelTest {
-
   Logger log = LoggerFactory.getLogger(HashModelTest.class);
 
   @Test

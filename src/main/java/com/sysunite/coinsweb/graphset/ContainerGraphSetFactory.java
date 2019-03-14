@@ -194,18 +194,16 @@ public class ContainerGraphSetFactory {
 
     // Each namespace should be filled from only one source (Graph)
     HashMap<String, Graph> namespaceToGraph = new HashMap<>();
+    ArrayList<Graph> loadList = new ArrayList<>();
 
     // Explicit graphs
     for(Graph graph : originalGraphs) {
 
-      // Only consider these now
-      if(!Source.FILE.equals(graph.getSource().getType()) &&
-         !Source.ONLINE.equals(graph.getSource().getType()) &&
-         !Source.CONTAINER.equals(graph.getSource().getType())) {
-        continue;
+      if(Source.STORE.equals(graph.getSource().getType())) {
+        loadList.add(graph);
       }
 
-      if(Source.FILE.equals(graph.getSource().getType()) ||
+      else if(Source.FILE.equals(graph.getSource().getType()) ||
          Source.ONLINE.equals(graph.getSource().getType())) {
 
         File file = FileFactory.toFile(graph.getSource().asLocator());
@@ -230,7 +228,7 @@ public class ContainerGraphSetFactory {
         }
       }
 
-      if(Source.CONTAINER.equals(graph.getSource().getType())) {
+      else if(Source.CONTAINER.equals(graph.getSource().getType())) {
         Source source = graph.getSource();
 
         if(source.isContentFile()) {
@@ -259,9 +257,12 @@ public class ContainerGraphSetFactory {
           throw new RuntimeException("The only location inside a container to address is inside the /bim/ or /bim/repository/ folder");
         }
       }
+
+      else {
+        throw new RuntimeException("Unsupported graph source type");
+      }
     }
 
-    ArrayList<Graph> loadList = new ArrayList<>();
     loadList.addAll(namespaceToGraph.values());
     return loadList;
   }

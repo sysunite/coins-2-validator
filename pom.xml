@@ -6,8 +6,7 @@
 
   <groupId>com.sysunite.coinsweb</groupId>
   <artifactId>coins-validator</artifactId>
-  <version>2.2.0</version>
-  <!--<packaging>jar</packaging>-->
+  <version>2.3.0</version>
 
   <!-- Required metadata for Central -->
   <name>coins-validator</name>

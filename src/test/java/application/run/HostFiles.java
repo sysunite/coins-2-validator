@@ -2,6 +2,7 @@ package application.run;
 
 import application.SimpleHttpServer;
 import org.junit.Before;
+import org.junit.BeforeClass;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,8 +12,8 @@ import java.util.ArrayList;
  */
 public class HostFiles {
 
-  @Before
-  public void startFileServer() {
+  @BeforeClass
+  public static void startFileServer() {
     ArrayList<File> files = new ArrayList<>();
     files.add(new File(HostFiles.class.getClassLoader().getResource("profiles/profile.lite-9.83-generated.xml").getFile()));
     files.add(new File(HostFiles.class.getClassLoader().getResource("profiles/profile.lite-9.84-generated.xml").getFile()));

@@ -1,7 +1,6 @@
 version: '2.0.8'
 
 environment:
-
   store:
     type: graphdb
     config:
@@ -16,7 +15,6 @@ run:
     location:
       type: file
       path: override.ccr
-
 
     variables:
     - graphname: http://full/union
@@ -51,32 +49,6 @@ run:
       as:
       - FULL_UNION_GRAPH
 
-      
-  steps:
+  steps: []
 
-  - type: FileSystemValidation
-    lookIn: INSTANCE_UNION_GRAPH
-
-  - type: DocumentReferenceValidation
-    lookIn: INSTANCE_UNION_GRAPH
-
-  - type: ProfileValidation
-    profile:
-      type: online
-      uri: http://localhost:9877/profile.lite-1.01-generated.xml
-    maxResults: 100
-    reportInferenceResults: false
-
-  reports:
-#  - type: json
-#    location:
-#      type: file
-#      path: report.json
-  - type: xml
-    location:
-      type: file
-      path: report.xml
-  - type: html
-    location:
-      type: file
-      path: report.html
+  reports: []

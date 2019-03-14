@@ -5,46 +5,45 @@ environment:
     type: rdf4j-sail-memory
 
 run:
-
   containers:
-
   - type: container
     location:
       type: file
-      path: some.ccr
+      path: override.ccr
 
     variables:
-      - graphname: http://full/union
-        variable: FULL_UNION_GRAPH
-      - graphname: http://instances/union
-        variable: INSTANCE_UNION_GRAPH
-      - graphname: http://library/union
-        variable: SCHEMA_UNION_GRAPH
+    - graphname: http://full/union
+      variable: FULL_UNION_GRAPH
+    - graphname: http://instances/union
+      variable: INSTANCE_UNION_GRAPH
+      filename: special.rdf
+    - graphname: http://library/union
+      variable: SCHEMA_UNION_GRAPH
 
     graphs:
-
     - source:
         type: container
         path: bim/*
         graphname: '*'
       as:
       - INSTANCE_UNION_GRAPH
-      - FULL_UNION_GRAPH
-
     - source:
         type: container
-        path: bim\repository\*
+        path: bim/repository/coins*
         graphname: '*'
       as:
       - SCHEMA_UNION_GRAPH
-      - FULL_UNION_GRAPH
-
     - source:
-        type: file
-        path: empty.rdf
-        graphname: '*'
+        type: store
+        graph: INSTANCE_UNION_GRAPH
+      as:
+      - FULL_UNION_GRAPH
+    - source:
+        type: store
+        graph: SCHEMA_UNION_GRAPH
       as:
       - FULL_UNION_GRAPH
 
   steps: []
+
   reports: []

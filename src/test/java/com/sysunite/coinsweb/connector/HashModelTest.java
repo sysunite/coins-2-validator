@@ -17,27 +17,26 @@ import java.nio.ByteBuffer;
  * @author bastbijl, Sysunite 2017
  */
 public class HashModelTest {
-
   Logger log = LoggerFactory.getLogger(HashModelTest.class);
 
   @Test
   public void test() {
-    File a = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/a.ttl").getFile());
-    File b = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/b.ttl").getFile());
-    File c = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/c.ttl").getFile());
-    File d = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/d.ttl").getFile());
-    File d2 = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/d2.ttl").getFile());
-    File d3 = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/d3.ttl").getFile());
-    File e = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/e.ttl").getFile());
-    File f = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/f.ttl").getFile());
-    File schema = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/schema.ttl").getFile());
-    File shacl = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/shacl.ttl").getFile());
-    File sparql = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/sparql.ttl").getFile());
-    File voiv = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/void.ttl").getFile());
+    File a = new File(getClass().getResource("a.ttl").getFile());
+    File b = new File(getClass().getResource("b.ttl").getFile());
+    File c = new File(getClass().getResource("c.ttl").getFile());
+    File d = new File(getClass().getResource("d.ttl").getFile());
+    File d2 = new File(getClass().getResource("d2.ttl").getFile());
+    File d3 = new File(getClass().getResource("d3.ttl").getFile());
+    File e = new File(getClass().getResource("e.ttl").getFile());
+    File f = new File(getClass().getResource("f.ttl").getFile());
+    File schema = new File(getClass().getResource("schema.ttl").getFile());
+    File shacl = new File(getClass().getResource("shacl.ttl").getFile());
+    File sparql = new File(getClass().getResource("sparql.ttl").getFile());
+    File voiv = new File(getClass().getResource("void.ttl").getFile());
     File otl = new File(getClass().getClassLoader().getResource("otl-2.1/otl-2.1.ttl").getFile());
 
-    File nquad = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/nquad.nq").getFile());
-    File content = new File(getClass().getClassLoader().getResource("com/sysunite/coinsweb/connector/content.rdf").getFile());
+    File nquad = new File(getClass().getResource("nquad.nq").getFile());
+    File content = new File(getClass().getResource("content.rdf").getFile());
 
     log.info(StringUtils.leftPad(new BigInteger(1, getHash(a)).toString(16), 8, '0'));
     log.info(StringUtils.leftPad(new BigInteger(1, getHash(b)).toString(16), 8, '0'));

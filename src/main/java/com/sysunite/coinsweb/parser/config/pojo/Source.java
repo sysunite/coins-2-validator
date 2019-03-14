@@ -113,26 +113,17 @@ public class Source extends ConfigPart {
     return clone;
   }
 
+//  @JsonIgnore
+//  public boolean anyGraph() {
+//    return "*".equals(graphname);
+//  }
   @JsonIgnore
-  public boolean anyGraph() {
-    boolean anyGraph = "*".equals(graphname);
-    return anyGraph;
+  public boolean isContentFile() {
+    return !isLibraryFile() && CONTAINER.equals(type) && getPath() != null && getPath().startsWith("bim/");
   }
   @JsonIgnore
-  public boolean anyContentFile() {
-    boolean anyContentFile = CONTAINER.equals(type) && getPath() != null && getPath().equals("bim/*");
-    if(anyContentFile && !"*".equals(graphname)) {
-      throw new RuntimeException("Set graphname to \"*\" when using an asterisk in the container path, it was "+graphname);
-    }
-    return anyContentFile;
-  }
-  @JsonIgnore
-  public boolean anyLibraryFile() {
-    boolean anyLibraryFile = CONTAINER.equals(type) && getPath() != null && getPath().equals("bim/repository/*");
-    if(anyLibraryFile && !"*".equals(graphname)) {
-      throw new RuntimeException("Set graphname to \"*\" when using an asterisk in the container path, it was "+graphname);
-    }
-    return anyLibraryFile;
+  public boolean isLibraryFile() {
+    return CONTAINER.equals(type) && getPath() != null && getPath().startsWith("bim/repository/");
   }
 
   @JsonIgnore
@@ -188,7 +179,7 @@ class SourceSanitizer extends StdConverter<Source, Source> {
       isNull(obj.getGraph());
 
       if(obj.getPath().contains("*")) {
-        if(!obj.anyContentFile() && !obj.anyLibraryFile()) {
+        if(!obj.isContentFile() && !obj.isLibraryFile()) {
           throw new RuntimeException("Only wildcard allowed for bim or bim-repository folder");
         }
       }
